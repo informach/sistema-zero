@@ -20,6 +20,14 @@ Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e 
 
 ## Produção e publicação
 
+**Atualização de 27/11/2026:** os vídeos corrigidos da Aula 1, Parte 4; Aula 2, Parte 6; e Aula 3,
+Parte 8 estão publicados em staging e produção, no Kids e no adulto. Cada vídeo recebeu uma nova
+versão no mesmo endereço, com a capa da parte reenviada e ativada. As durações foram atualizadas nas
+aulas e a base do Zappy recebeu as transcrições novas. A reprodução foi conferida nos quatro
+contextos. Consulte o [registro da substituição](troca-videos-2026-11-27.md), o
+[comprovante técnico](troca-videos-2026-11-27.json) e as
+[transcrições atuais](transcricoes/2026-11-27/). As notas de produção abaixo preservam o histórico.
+
 ### Números dos blocos — 08/11/2026
 
 Todos os projetos da Ilha usam **inteiros ou no máximo uma casa decimal** nos blocos,

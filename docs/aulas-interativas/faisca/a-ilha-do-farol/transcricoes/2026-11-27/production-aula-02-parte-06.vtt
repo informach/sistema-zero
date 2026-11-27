@@ -1,0 +1,137 @@
+WEBVTT
+
+1
+00:00:00.400 --> 00:00:04.280
+Aqui no seu jogo, clique em "rodar de novo" e pegue a chave.
+
+2
+00:00:04.700 --> 00:00:08.660
+Tá vendo? A chave some, mas o aviso lá em cima continua
+
+3
+00:00:08.700 --> 00:00:11.680
+o mesmo, porque nada muda o aviso no encontro.
+
+4
+00:00:12.120 --> 00:00:15.480
+O aviso mostra o texto guardado na variável "aviso".
+
+5
+00:00:15.940 --> 00:00:19.900
+Por isso, para mudar o aviso, basta mudar esse texto no encontro com
+
+6
+00:00:19.920 --> 00:00:23.820
+a chave. No encontro com a chave, deixe à vista o lugar logo
+
+7
+00:00:23.880 --> 00:00:26.180
+abaixo do bloco que muda "tem chave".
+
+8
+00:00:26.660 --> 00:00:30.300
+Abra a programação e depois "variáveis" e pegue o bloco
+
+9
+00:00:30.320 --> 00:00:33.880
+"alterar variável para". Arraste e solte logo
+
+10
+00:00:33.940 --> 00:00:37.900
+abaixo do bloco de "tem chave". Repare, ele chega com
+
+11
+00:00:37.960 --> 00:00:41.520
+contador. Clique em "contador" e escolha "aviso".
+
+12
+00:00:41.940 --> 00:00:45.280
+O valor vem com um número, mas o aviso é uma mensagem.
+
+13
+00:00:45.640 --> 00:00:47.840
+Por isso, troque o número por um texto.
+
+14
+00:00:48.320 --> 00:00:52.220
+Abra a programação e depois "valores" e pegue o bloco "texto".
+
+15
+00:00:52.700 --> 00:00:55.980
+Solte em cima do número. Ele entra no lugar do número.
+
+16
+00:00:56.300 --> 00:01:00.120
+Repare, o texto chega com "olá". Clique em "olá",
+
+17
+00:01:00.540 --> 00:01:03.460
+apague e escreva: "Você pegou a chave!
+
+18
+00:01:03.820 --> 00:01:06.820
+Agora vá ao farol". Agora vamos testar.
+
+19
+00:01:07.220 --> 00:01:10.480
+Clique em "rodar de novo" mais uma vez e pegue a chave.
+
+20
+00:01:10.800 --> 00:01:14.680
+Olha só, a chave some e o aviso novo aparece lá em
+
+21
+00:01:14.780 --> 00:01:18.300
+cima. Toque na tecla R. A chave e o aviso do
+
+22
+00:01:18.360 --> 00:01:22.320
+começo voltam. Se algo não funcionou no seu jogo, volte aos
+
+23
+00:01:22.380 --> 00:01:26.260
+blocos e confira se ficou assim. Dentro do encontro com a chave
+
+24
+00:01:26.340 --> 00:01:29.440
+estão: esconder o objeto chave, tem chave
+
+25
+00:01:29.500 --> 00:01:31.980
+verdadeiro e o aviso com o texto novo.
+
+26
+00:01:32.300 --> 00:01:35.320
+Depois de corrigir, teste de novo. Funcionou?
+
+27
+00:01:35.740 --> 00:01:39.720
+Clique em "verificar projeto". Se faltar alguma coisa, corrija os
+
+28
+00:01:39.780 --> 00:01:43.380
+blocos e clique novamente. Quando aparecer "objetivo
+
+29
+00:01:43.440 --> 00:01:47.180
+cumprido", clique em "enviar meu projeto" e confirme em
+
+30
+00:01:47.200 --> 00:01:51.160
+"enviar". Pronto, você escolheu um lugar em três dimensões
+
+31
+00:01:51.200 --> 00:01:54.320
+para a chave e ensinou o personagem a pegar a chave.
+
+32
+00:01:54.620 --> 00:01:58.380
+Na próxima aula, o farol vai conferir se o personagem está com a
+
+33
+00:01:58.420 --> 00:02:01.980
+chave. Quando aparecer "projeto enviado", clique em
+
+34
+00:02:02.000 --> 00:02:02.900
+"concluir aula".

@@ -1,0 +1,193 @@
+WEBVTT
+
+1
+00:00:00.420 --> 00:00:04.360
+Aqui no seu jogo, clique em "Rodar de novo", no alto do estúdio,
+
+2
+00:00:04.680 --> 00:00:07.220
+e segure uma seta do teclado. Tá vendo?
+
+3
+00:00:07.640 --> 00:00:11.500
+O personagem fica parado, porque o jogo ainda não sabe que a seta
+
+4
+00:00:11.580 --> 00:00:15.120
+faz ele andar. Na experiência, quem mudava de lugar era a
+
+5
+00:00:15.260 --> 00:00:18.820
+câmera. Agora, quem vai sair do lugar é o personagem.
+
+6
+00:00:19.280 --> 00:00:22.860
+Lembra dos quadros do jogo 2D? O jogo desenha a cena
+
+7
+00:00:23.020 --> 00:00:26.420
+muitas vezes por segundo, e cada desenho é um quadro.
+
+8
+00:00:26.800 --> 00:00:30.780
+No 3D, é igual. Para o personagem andar, o jogo precisa olhar
+
+9
+00:00:30.800 --> 00:00:32.400
+as setas em todo quadro.
+
+10
+00:00:32.479 --> 00:00:34.880
+E onde eu coloco o bloco que faz ele andar?
+
+11
+00:00:35.480 --> 00:00:39.420
+Dentro do bloco "A cada quadro da cena", na área "Enquanto
+
+12
+00:00:39.460 --> 00:00:41.780
+estiver rodando". Encontre essa área.
+
+13
+00:00:42.240 --> 00:00:45.880
+Se ela não estiver aparecendo, arraste um espaço vazio entre os
+
+14
+00:00:45.940 --> 00:00:49.560
+blocos até ela aparecer. Repare, dentro de "A
+
+15
+00:00:49.820 --> 00:00:53.120
+cada quadro da cena", já tem o bloco "Escrever na tela".
+
+16
+00:00:53.560 --> 00:00:57.000
+O bloco novo vai no começo, no espaço ao lado da palavra
+
+17
+00:00:57.080 --> 00:01:00.900
+"Fazer". Abra "Jogo 3D", depois "Movimento" e
+
+18
+00:01:00.960 --> 00:01:04.481
+depois "Andar com o teclado" e pegue o bloco "Fazer
+
+19
+00:01:04.580 --> 00:01:08.420
+personagem andar com as setas". Arraste e solte no espaço
+
+20
+00:01:08.460 --> 00:01:12.000
+ao lado de "Fazer". Repare, o "Escrever na tela"
+
+21
+00:01:12.200 --> 00:01:14.760
+desce e fica logo abaixo do bloco novo.
+
+22
+00:01:15.100 --> 00:01:17.440
+É este bloco que faz o personagem andar.
+
+23
+00:01:17.860 --> 00:01:21.600
+Em todo quadro, ele olha qual seta você está segurando e
+
+24
+00:01:21.680 --> 00:01:23.440
+leva o personagem para aquele lado.
+
+25
+00:01:23.780 --> 00:01:27.380
+O nome no bloco já é "Personagem", o objeto que vai andar,
+
+26
+00:01:27.860 --> 00:01:31.640
+e o número é a velocidade. Quanto maior, mais rápido o
+
+27
+00:01:31.680 --> 00:01:35.180
+personagem anda. Clique no três e troque por quatro.
+
+28
+00:01:35.580 --> 00:01:39.500
+Agora vamos testar. Clique em "Rodar de novo" mais uma vez.
+
+29
+00:01:39.900 --> 00:01:43.340
+Depois, segure a seta da direita por um tempo e solte.
+
+30
+00:01:43.820 --> 00:01:47.740
+Olha só! Ele anda enquanto você segura a seta e para
+
+31
+00:01:47.780 --> 00:01:51.680
+quando você solta. Andando, ele mexe as pernas e os braços.
+
+32
+00:01:52.000 --> 00:01:55.760
+Parado, ele respira. Agora faça o mesmo com as outras
+
+33
+00:01:55.820 --> 00:01:59.760
+três setas. Depois, leve o personagem até a ponte e até
+
+34
+00:01:59.780 --> 00:02:02.360
+a beirada da ilha. Ele não cai na água.
+
+35
+00:02:02.760 --> 00:02:06.680
+Se algo não funcionou no seu jogo, volte aos blocos e confira
+
+36
+00:02:06.720 --> 00:02:10.241
+se ficou assim. Dentro de "A cada quadro da cena",
+
+37
+00:02:10.581 --> 00:02:14.160
+primeiro vem "Fazer personagem andar com as setas", com a
+
+38
+00:02:14.220 --> 00:02:18.100
+velocidade quatro, e logo abaixo dele está "Escrever
+
+39
+00:02:18.140 --> 00:02:21.220
+na tela". Depois de corrigir, teste de novo.
+
+40
+00:02:21.640 --> 00:02:24.380
+Funcionou? Clique em "Verificar projeto".
+
+41
+00:02:24.740 --> 00:02:28.520
+Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+42
+00:02:28.940 --> 00:02:32.800
+Quando aparecer "Objetivo cumprido", clique em "Enviar meu
+
+43
+00:02:32.840 --> 00:02:36.540
+projeto" e confirme em "Enviar". Pronto, você
+
+44
+00:02:36.560 --> 00:02:38.620
+programou o movimento do personagem.
+
+45
+00:02:39.000 --> 00:02:41.920
+Agora ele anda pela ilha em três dimensões.
+
+46
+00:02:42.260 --> 00:02:46.220
+Na próxima aula, você vai escolher um lugar para a chave e ensinar
+
+47
+00:02:46.260 --> 00:02:49.800
+o personagem a pegar a chave. Quando aparecer "Projeto
+
+48
+00:02:49.840 --> 00:02:52.160
+enviado", clique em "Concluir aula".

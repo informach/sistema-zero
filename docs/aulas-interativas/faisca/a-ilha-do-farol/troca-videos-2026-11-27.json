@@ -1,0 +1,939 @@
+{
+  "course": "A Ilha do Farol",
+  "updatedAt": "2026-11-27T11:14:52.096Z",
+  "sourceFolder": "C:/Users/tocha/Downloads/Ilha do Farol",
+  "method": "Novas versões nos mesmos IDs do Vimeo, compartilhadas entre Kids e adulto em cada ambiente. Capas reenviadas e ativadas após o processamento.",
+  "contexts": [
+    {
+      "environment": "staging",
+      "audience": "kids",
+      "course": {
+        "id": "081a0a6b-ea00-59ea-afc9-8842e0c9446f",
+        "slug": "jornada-faisca-base-3d",
+        "titulo": "A Ilha do Farol",
+        "status": "published",
+        "publico": "kids"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "f63fe236-5862-42c9-81c8-cb26a113eac2",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "972c7cd4-7c5d-4395-853b-f263724c4348",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 3,
+          "id": "0769f0d5-42d4-4a20-b3b8-d259936843d3",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-4",
+        "2-6",
+        "3-8"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-4",
+          "id": "1249059712",
+          "status": "available",
+          "duracao": 177,
+          "arquivo": 176.7,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-6",
+          "id": "1249060158",
+          "status": "available",
+          "duracao": 128,
+          "arquivo": 127.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "3-8",
+          "id": "1249060193",
+          "status": "available",
+          "duracao": 98,
+          "arquivo": 97.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "staging",
+          "audience": "kids",
+          "key": "1-4",
+          "videoId": "1249059712",
+          "domain": "https://community-kids-staging.up.railway.app",
+          "version": "/videos/1249059712/versions/1258494235",
+          "picture": "/videos/1249059712/pictures/2231253459",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.513279,
+            "duration": 176.66666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 171.67698,
+            "duration": 176.666666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 102,
+            "audioDecodedBytes": 38416
+          },
+          "ok": true
+        },
+        {
+          "environment": "staging",
+          "audience": "kids",
+          "key": "2-6",
+          "videoId": "1249060158",
+          "domain": "https://community-kids-staging.up.railway.app",
+          "version": "/videos/1249060158/versions/1258494236",
+          "picture": "/videos/1249060158/pictures/2231253477",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.51824,
+            "duration": 127.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 122.576819,
+            "duration": 127.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 138,
+            "audioDecodedBytes": 38800
+          },
+          "ok": true
+        },
+        {
+          "environment": "staging",
+          "audience": "kids",
+          "key": "3-8",
+          "videoId": "1249060193",
+          "domain": "https://community-kids-staging.up.railway.app",
+          "version": "/videos/1249060193/versions/1258494237",
+          "picture": "/videos/1249060193/pictures/2231253499",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.511771,
+            "duration": 97.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 92.582731,
+            "duration": 97.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 98,
+            "audioDecodedBytes": 38613
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "environment": "staging",
+      "audience": "adult",
+      "course": {
+        "id": "383a819c-7d2d-5270-a0ae-921e299f898e",
+        "slug": "jornada-faisca-base-3d-adulto",
+        "titulo": "A Ilha do Farol",
+        "status": "published",
+        "publico": "adult"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "749b2db9-33ea-5526-aea5-e8616c978273",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "f107a776-9f52-5c0a-a8ed-3bc6d302a2c8",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 3,
+          "id": "41d9ddcc-435e-5fe7-a4b0-2ded37b99a8a",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-4",
+        "2-6",
+        "3-8"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-4",
+          "id": "1249059712",
+          "status": "available",
+          "duracao": 177,
+          "arquivo": 176.7,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-6",
+          "id": "1249060158",
+          "status": "available",
+          "duracao": 128,
+          "arquivo": 127.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "3-8",
+          "id": "1249060193",
+          "status": "available",
+          "duracao": 98,
+          "arquivo": 97.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "staging",
+          "audience": "adult",
+          "key": "1-4",
+          "videoId": "1249059712",
+          "domain": "https://community-staging-66f2.up.railway.app",
+          "version": "/videos/1249059712/versions/1258494235",
+          "picture": "/videos/1249059712/pictures/2231253459",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.522176,
+            "duration": 176.66666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 171.684562,
+            "duration": 176.666666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 103,
+            "audioDecodedBytes": 38608
+          },
+          "ok": true
+        },
+        {
+          "environment": "staging",
+          "audience": "adult",
+          "key": "2-6",
+          "videoId": "1249060158",
+          "domain": "https://community-staging-66f2.up.railway.app",
+          "version": "/videos/1249060158/versions/1258494236",
+          "picture": "/videos/1249060158/pictures/2231253477",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.516146,
+            "duration": 127.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 122.578354,
+            "duration": 127.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 137,
+            "audioDecodedBytes": 38800
+          },
+          "ok": true
+        },
+        {
+          "environment": "staging",
+          "audience": "adult",
+          "key": "3-8",
+          "videoId": "1249060193",
+          "domain": "https://community-staging-66f2.up.railway.app",
+          "version": "/videos/1249060193/versions/1258494237",
+          "picture": "/videos/1249060193/pictures/2231253499",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.507738,
+            "duration": 97.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 92.575637,
+            "duration": 97.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 99,
+            "audioDecodedBytes": 38613
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "environment": "production",
+      "audience": "kids",
+      "course": {
+        "id": "081a0a6b-ea00-59ea-afc9-8842e0c9446f",
+        "slug": "jornada-faisca-base-3d",
+        "titulo": "A Ilha do Farol",
+        "status": "published",
+        "publico": "kids"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "436bfd8e-605f-59c1-a4e9-2f2de99cdeb0",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "24471f59-456c-5c23-ae00-253760be047a",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 3,
+          "id": "82306c94-4c62-558c-a546-ba313835b1de",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-4",
+        "2-6",
+        "3-8"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-4",
+          "id": "1249440889",
+          "status": "available",
+          "duracao": 177,
+          "arquivo": 176.7,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-6",
+          "id": "1249441894",
+          "status": "available",
+          "duracao": 128,
+          "arquivo": 127.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "3-8",
+          "id": "1249441694",
+          "status": "available",
+          "duracao": 98,
+          "arquivo": 97.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "production",
+          "audience": "kids",
+          "key": "1-4",
+          "videoId": "1249440889",
+          "domain": "https://kids.sistemazero.com.br",
+          "version": "/videos/1249440889/versions/1258494821",
+          "picture": "/videos/1249440889/pictures/2231254096",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.507646,
+            "duration": 176.66666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 171.687664,
+            "duration": 176.666666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 102,
+            "audioDecodedBytes": 38634
+          },
+          "ok": true
+        },
+        {
+          "environment": "production",
+          "audience": "kids",
+          "key": "2-6",
+          "videoId": "1249441894",
+          "domain": "https://kids.sistemazero.com.br",
+          "version": "/videos/1249441894/versions/1258494822",
+          "picture": "/videos/1249441894/pictures/2231254116",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.505016,
+            "duration": 127.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 122.585556,
+            "duration": 127.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 137,
+            "audioDecodedBytes": 38579
+          },
+          "ok": true
+        },
+        {
+          "environment": "production",
+          "audience": "kids",
+          "key": "3-8",
+          "videoId": "1249441694",
+          "domain": "https://kids.sistemazero.com.br",
+          "version": "/videos/1249441694/versions/1258494823",
+          "picture": "/videos/1249441694/pictures/2231254129",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.509344,
+            "duration": 97.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 92.57424,
+            "duration": 97.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 98,
+            "audioDecodedBytes": 38613
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "environment": "production",
+      "audience": "adult",
+      "course": {
+        "id": "383a819c-7d2d-5270-a0ae-921e299f898e",
+        "slug": "jornada-faisca-base-3d-adulto",
+        "titulo": "A Ilha do Farol",
+        "status": "published",
+        "publico": "adult"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "d8ac3529-402b-5e98-a525-2020403f42ec",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "0f9d4272-854e-5dcf-aa56-8466f89d6560",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 3,
+          "id": "7f58d085-086f-52e3-ad99-88b6e266abd6",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-4",
+        "2-6",
+        "3-8"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-4",
+          "id": "1249440889",
+          "status": "available",
+          "duracao": 177,
+          "arquivo": 176.7,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-6",
+          "id": "1249441894",
+          "status": "available",
+          "duracao": 128,
+          "arquivo": 127.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "3-8",
+          "id": "1249441694",
+          "status": "available",
+          "duracao": 98,
+          "arquivo": 97.6,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "production",
+          "audience": "adult",
+          "key": "1-4",
+          "videoId": "1249440889",
+          "domain": "https://comunidade.sistemazero.com.br",
+          "version": "/videos/1249440889/versions/1258494821",
+          "picture": "/videos/1249440889/pictures/2231254096",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.505574,
+            "duration": 176.66666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 171.672838,
+            "duration": 176.666666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 101,
+            "audioDecodedBytes": 38416
+          },
+          "ok": true
+        },
+        {
+          "environment": "production",
+          "audience": "adult",
+          "key": "2-6",
+          "videoId": "1249441894",
+          "domain": "https://comunidade.sistemazero.com.br",
+          "version": "/videos/1249441894/versions/1258494822",
+          "picture": "/videos/1249441894/pictures/2231254116",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.518472,
+            "duration": 127.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 122.582795,
+            "duration": 127.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 138,
+            "audioDecodedBytes": 38800
+          },
+          "ok": true
+        },
+        {
+          "environment": "production",
+          "audience": "adult",
+          "key": "3-8",
+          "videoId": "1249441694",
+          "domain": "https://comunidade.sistemazero.com.br",
+          "version": "/videos/1249441694/versions/1258494823",
+          "picture": "/videos/1249441694/pictures/2231254129",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.508925,
+            "duration": 97.56666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 92.576801,
+            "duration": 97.566666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 99,
+            "audioDecodedBytes": 38613
+          },
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "environment": "staging",
+      "part": "1-4",
+      "videoId": "1249059712",
+      "version": "/videos/1249059712/versions/1258494235",
+      "coverUri": "/videos/1249059712/pictures/2231253459",
+      "coverSha256": "15b1717612616661f201673164b595032a8d4ee1b16a65ae9ee6f9adfd08e650",
+      "durationFile": 176.68802395209582,
+      "durationPublished": 177,
+      "sourceSha256": "51622b78710fdb4c9c39d6792f6126840f81d0fa77f3ffcfe1c01901cf3e26ea",
+      "sourceBytes": 108248427,
+      "transcript": {
+        "uri": "/videos/1249059712/texttracks/346461785",
+        "file": "transcricoes/2026-11-27/staging-aula-01-parte-04.vtt",
+        "sha256": "04dd1ef36f696218919a8f2b2a6c79af977662fde7c57cd89428c3d958be28b9",
+        "active": true
+      },
+      "knowledge": {
+        "sourceRef": "block:f83abaf9-b49c-538a-ab6d-7dc6f5fc3b01",
+        "status": "ready",
+        "contentHash": "04dd1ef36f696218919a8f2b2a6c79af977662fde7c57cd89428c3d958be28b9",
+        "blockRevision": "bc92d9bc3b724b17b8f97855941fe184",
+        "chunks": 2,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "staging",
+      "part": "2-6",
+      "videoId": "1249060158",
+      "version": "/videos/1249060158/versions/1258494236",
+      "coverUri": "/videos/1249060158/pictures/2231253477",
+      "coverSha256": "ef1500e84c0b7c4ba72e407c274733a51dc9685b80a1d7e46efe4203381373d5",
+      "durationFile": 127.58802395209581,
+      "durationPublished": 128,
+      "sourceSha256": "4b3b7ccab670b1c27aae41333ff161777ab8cc68837c28059cce32b82fe35aef",
+      "sourceBytes": 70915408,
+      "transcript": {
+        "uri": "/videos/1249060158/texttracks/346461748",
+        "file": "transcricoes/2026-11-27/staging-aula-02-parte-06.vtt",
+        "sha256": "f4ce578657df2bf282a09306a72bd79c366c96e2475c9df9dcd53a6556c568bb",
+        "active": true
+      },
+      "knowledge": {
+        "sourceRef": "block:72c20521-166c-518c-ad63-3ca579e3a45e",
+        "status": "ready",
+        "contentHash": "f4ce578657df2bf282a09306a72bd79c366c96e2475c9df9dcd53a6556c568bb",
+        "blockRevision": "4652b7fe774c430da0a6608e70603169",
+        "chunks": 2,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "staging",
+      "part": "3-8",
+      "videoId": "1249060193",
+      "version": "/videos/1249060193/versions/1258494237",
+      "coverUri": "/videos/1249060193/pictures/2231253499",
+      "coverSha256": "fba0d8291a430309770ae2c7275854213b798071b2514105d82f717ca195bc59",
+      "durationFile": 97.58802395209581,
+      "durationPublished": 98,
+      "sourceSha256": "579db1d19983303c71d269f892ff9b45d4f09585571385bd2e55ab7150377e9c",
+      "sourceBytes": 53269901,
+      "transcript": {
+        "uri": "/videos/1249060193/texttracks/346461688",
+        "file": "transcricoes/2026-11-27/staging-aula-03-parte-08.vtt",
+        "sha256": "451b7a74ea2a2d80f06134b76719dcba550671b5819b78be082b057af7ec7146",
+        "active": true
+      },
+      "knowledge": {
+        "sourceRef": "block:507f0a8e-2255-5c78-a3f9-084c0366e454",
+        "status": "ready",
+        "contentHash": "451b7a74ea2a2d80f06134b76719dcba550671b5819b78be082b057af7ec7146",
+        "blockRevision": "7bcc2ade0f1d4b8ead31185f68a6e731",
+        "chunks": 1,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "production",
+      "part": "1-4",
+      "videoId": "1249440889",
+      "version": "/videos/1249440889/versions/1258494821",
+      "coverUri": "/videos/1249440889/pictures/2231254096",
+      "coverSha256": "15b1717612616661f201673164b595032a8d4ee1b16a65ae9ee6f9adfd08e650",
+      "durationFile": 176.68802395209582,
+      "durationPublished": 177,
+      "sourceSha256": "51622b78710fdb4c9c39d6792f6126840f81d0fa77f3ffcfe1c01901cf3e26ea",
+      "sourceBytes": 108248427,
+      "transcript": {
+        "uri": "/videos/1249440889/texttracks/346462366",
+        "file": "transcricoes/2026-11-27/production-aula-01-parte-04.vtt",
+        "sha256": "2f59c963b747316ac4b05daf434e7f823b69025e1e641f880d411d1636a592f8",
+        "active": true
+      },
+      "knowledge": {
+        "sourceRef": "block:9ebab9bf-0820-5b87-ae95-53ef6b6bc460",
+        "status": "ready",
+        "contentHash": "2f59c963b747316ac4b05daf434e7f823b69025e1e641f880d411d1636a592f8",
+        "blockRevision": "59215592585b48ef8a96ea8ef0103c3b",
+        "chunks": 2,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "production",
+      "part": "2-6",
+      "videoId": "1249441894",
+      "version": "/videos/1249441894/versions/1258494822",
+      "coverUri": "/videos/1249441894/pictures/2231254116",
+      "coverSha256": "ef1500e84c0b7c4ba72e407c274733a51dc9685b80a1d7e46efe4203381373d5",
+      "durationFile": 127.58802395209581,
+      "durationPublished": 128,
+      "sourceSha256": "4b3b7ccab670b1c27aae41333ff161777ab8cc68837c28059cce32b82fe35aef",
+      "sourceBytes": 70915408,
+      "transcript": {
+        "uri": "/videos/1249441894/texttracks/346462335",
+        "file": "transcricoes/2026-11-27/production-aula-02-parte-06.vtt",
+        "sha256": "30d5947ab6f91a99eae4c3f4be6fa7c9037f5164592ea56d01d0225826e397cf",
+        "active": true
+      },
+      "knowledge": {
+        "sourceRef": "block:5c31a985-219b-52fd-a560-c13e842a24d5",
+        "status": "ready",
+        "contentHash": "30d5947ab6f91a99eae4c3f4be6fa7c9037f5164592ea56d01d0225826e397cf",
+        "blockRevision": "d8a6c3072f4741ddb6beb97b33aff405",
+        "chunks": 2,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "production",
+      "part": "3-8",
+      "videoId": "1249441694",
+      "version": "/videos/1249441694/versions/1258494823",
+      "coverUri": "/videos/1249441694/pictures/2231254129",
+      "coverSha256": "fba0d8291a430309770ae2c7275854213b798071b2514105d82f717ca195bc59",
+      "durationFile": 97.58802395209581,
+      "durationPublished": 98,
+      "sourceSha256": "579db1d19983303c71d269f892ff9b45d4f09585571385bd2e55ab7150377e9c",
+      "sourceBytes": 53269901,
+      "transcript": {
+        "uri": "/videos/1249441694/texttracks/346462315",
+        "file": "transcricoes/2026-11-27/production-aula-03-parte-08.vtt",
+        "sha256": "efb16e994cb10cadfd0c41b50c21cfac7c8c66fbfd9c6cd892d1b223fb8e7723",
+        "active": true
+      },
+      "knowledge": {
+        "sourceRef": "block:fb5bd420-d4d6-5324-a33d-a014e7298ff7",
+        "status": "ready",
+        "contentHash": "efb16e994cb10cadfd0c41b50c21cfac7c8c66fbfd9c6cd892d1b223fb8e7723",
+        "blockRevision": "ffad27fdb87b40179ae4855443b6c517",
+        "chunks": 1,
+        "transcriptHashMatches": true
+      }
+    }
+  ],
+  "zappy": [
+    {
+      "environment": "staging",
+      "videoSourcesUpdated": 17,
+      "notebookSourcesUpdated": 1,
+      "lessonsWithoutTranscript": 0,
+      "failedSources": 0,
+      "studentNotebookPresent": true,
+      "replacedVideoHashesMatchCurrentTranscripts": true,
+      "retiredInactiveCaptions": 5
+    },
+    {
+      "environment": "production",
+      "videoSourcesUpdated": 17,
+      "notebookSourcesUpdated": 1,
+      "lessonsWithoutTranscript": 0,
+      "failedSources": 0,
+      "studentNotebookPresent": true,
+      "replacedVideoHashesMatchCurrentTranscripts": true,
+      "retiredInactiveCaptions": 6
+    }
+  ],
+  "sourceFiles": [
+    {
+      "part": "1-4",
+      "file": "Aula01 - Parte 4.mp4",
+      "sizeBytes": 108248427,
+      "sha256": "51622b78710fdb4c9c39d6792f6126840f81d0fa77f3ffcfe1c01901cf3e26ea",
+      "cover": "capas-das-aulas/aula-01-parte-04.png",
+      "coverSha256": "15b1717612616661f201673164b595032a8d4ee1b16a65ae9ee6f9adfd08e650"
+    },
+    {
+      "part": "2-6",
+      "file": "Aula02 - Parte 6.mp4",
+      "sizeBytes": 70915408,
+      "sha256": "4b3b7ccab670b1c27aae41333ff161777ab8cc68837c28059cce32b82fe35aef",
+      "cover": "capas-das-aulas/aula-02-parte-06.png",
+      "coverSha256": "ef1500e84c0b7c4ba72e407c274733a51dc9685b80a1d7e46efe4203381373d5"
+    },
+    {
+      "part": "3-8",
+      "file": "Aula03 - Parte 8.mp4",
+      "sizeBytes": 53269901,
+      "sha256": "579db1d19983303c71d269f892ff9b45d4f09585571385bd2e55ab7150377e9c",
+      "cover": "capas-das-aulas/aula-03-parte-08.png",
+      "coverSha256": "fba0d8291a430309770ae2c7275854213b798071b2514105d82f717ca195bc59"
+    }
+  ],
+  "notes": [
+    "Seis vídeos Vimeo atualizados, atendendo às doze combinações de parte, público e ambiente.",
+    "Os arquivos MP4 continuam na pasta de origem. As capas existentes e as transcrições atuais ficam junto à documentação do curso.",
+    "A indexação didática automática do Zappy é dos cursos Kids. A conferência da base foi feita nos dois ambientes e o hash das três fontes trocadas é idêntico ao VTT ativo de cada vídeo novo. As transcrições e os vídeos são compartilhados com o adulto.",
+    "Verificação no navegador por página local com o domínio de cada comunidade e player Vimeo real, sem criar conta, matrícula, progresso ou eventos de teste nas comunidades.",
+    "Nenhum código da aplicação alterado ou implantado nesta substituição."
+  ]
+}

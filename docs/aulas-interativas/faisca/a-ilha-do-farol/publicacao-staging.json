@@ -273,5 +273,30 @@
     "producao": "25/11/2026, Kids, aprovada por ela: o mesmo arquivo, cadastrado direto no módulo (--ambiente production --confirmo-producao) em vez de promover de novo, porque a promoção copiaria outra vez os vídeos que mudaram em staging depois da última; https://cdn.sistemazero.com.br/admin/module-animation/cab39b63-e0b5-4eb8-b2ff-1f839b3dac60/animation.edi-animation.json",
     "conferido": "animacao-do-modulo.ts --passo conferir e conferir-curso.ts no Kids dos dois ambientes: Tudo confere",
     "adulto": "sem animação: a comunidade adulta ainda não mostra; vai junto na próxima cópia para o adulto"
+  },
+  "correcaoVideos20261127": {
+    "em": "2026-11-27",
+    "ambientes": [
+      "staging",
+      "production"
+    ],
+    "publicos": [
+      "kids",
+      "adult"
+    ],
+    "partes": [
+      "1-4",
+      "2-6",
+      "3-8"
+    ],
+    "duracoesCadastradasEmSegundos": [
+      177,
+      128,
+      98
+    ],
+    "como": "Novas versões nos mesmos IDs do Vimeo, capas reenviadas e ativadas, durações publicadas em cada curso e transcrições novas na base do Zappy.",
+    "conferido": "12 combinações de parte, público e ambiente: capa, início e final da reprodução com áudio. Base do Zappy sem pendências nos dois ambientes e hashes idênticos aos VTT novos.",
+    "comprovante": "troca-videos-2026-11-27.json",
+    "registro": "troca-videos-2026-11-27.md"
   }
 }
