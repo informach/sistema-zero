@@ -106,7 +106,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Se as vidas acabarem, a missão termina com a tela de nova tentativa. O jogo precisa escolher um resultado por vez. A ordem será: conferir as vidas; se ainda houver vida, conferir a vitória.
+[engaging, energetic, conversational voice] Se as vidas acabarem, a missão termina com a tela de nova tentativa. Agora imagine: no mesmo instante em que o seu laser faz o vigésimo acerto, outra pedra bate na nave e leva o último coração. Qual tela aparece? Sem uma ordem, o jogo poderia tentar mostrar as duas. Por isso a regra será: primeiro conferir as vidas; só se ainda houver vida, conferir a vitória.
 
 [confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 

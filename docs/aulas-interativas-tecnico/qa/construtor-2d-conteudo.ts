@@ -2022,7 +2022,7 @@ const aula9: ConstrutorAula = {
       etapa: 'derrota',
       intro: [
         A(
-          'Se as vidas acabarem, a missão termina com a tela de nova tentativa. O jogo precisa escolher um resultado por vez. A ordem será: conferir as vidas; se ainda houver vida, conferir a vitória.',
+          'Se as vidas acabarem, a missão termina com a tela de nova tentativa. Agora imagine: no mesmo instante em que o seu laser faz o vigésimo acerto, outra pedra bate na nave e leva o último coração. Qual tela aparece? Sem uma ordem, o jogo poderia tentar mostrar as duas. Por isso a regra será: primeiro conferir as vidas; só se ainda houver vida, conferir a vitória.',
           '[apontar bloco "Se valor da variável pontos"]',
         ),
       ],
