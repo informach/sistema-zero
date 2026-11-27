@@ -35,7 +35,7 @@ const SECTIONS: Record<
 > = {
   gift: {
     title: 'Presentes',
-    text: 'Pagamento único, sem prazo ou com prazo em dias, deste público. Uma oferta pausada pode servir só de presente.',
+    text: 'Pagamento único, sem prazo ou com prazo fixo, deste público. Uma oferta pausada pode servir só de presente.',
     add: 'Adicionar presente',
     empty:
       'Nenhum presente nesta lista ainda. Sem nenhum, os links continuam dando o presente padrão.',

@@ -4,9 +4,9 @@
 // as seções aprovadas da página do presente.
 //
 // Oferta no catálogo: a principal do produto (marcada no Admin) (a oferta do Cadê, hoje
-// `cade-todo-mundo-7-dias`). O prazo vem da oferta (a copy o lê do catálogo); o contrato só exige
-// pagamento único com prazo fixo em dias. Registrado DEPOIS da Comunidade: a landing `/kids` segue
-// abrindo o Desafio.
+// `cade-todo-mundo-1-ano`, de 6 meses desde 27/11/2026; o presente é a `cade-todo-mundo-7-dias`). O
+// prazo vem da oferta (a copy o lê do catálogo); o contrato exige pagamento único em meses.
+// Registrado DEPOIS da Comunidade: a landing `/kids` segue abrindo o Desafio.
 
 import { TERMOS_CADE_KIDS } from '../../content/legal/termos-cade-kids'
 import type {
@@ -77,12 +77,12 @@ export const CADE_TODO_MUNDO: FunnelDef = {
     'Seu filho pratica planejamento, raciocínio e comunicação criando um jogo, com orientação. Para 5 a 17 anos; abaixo de 9, com acompanhante. Pagamento único, sem assinatura.',
   theme: 'kids',
   lifetimeAccess: false,
-  // A copy lê o prazo e a garantia da oferta; só o pagamento único com prazo em dias é rígido.
+  // A copy lê o prazo e a garantia da oferta; só o pagamento único com prazo em meses é rígido.
   offerContract: {
     pricingMode: 'one_time',
     accessMode: 'fixed',
     accessDurationValue: null,
-    // A venda é por 1 ano (decisão de 25/11/2026); o presente é outra oferta, de dias.
+    // A venda é por 6 meses (decisão de 27/11/2026; antes, 1 ano); o presente é outra oferta, de dias.
     accessDurationUnit: 'months',
     guaranteeDays: null,
     anyDuration: true,
@@ -90,7 +90,7 @@ export const CADE_TODO_MUNDO: FunnelDef = {
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
   giftCourses: ['cade-todo-mundo'],
-  legal: { termos: TERMOS_CADE_KIDS, termsVersion: 'cade-kids-2026-11-25' },
+  legal: { termos: TERMOS_CADE_KIDS, termsVersion: 'cade-kids-2026-11-27' },
   content: {
     copy: CADE_PRODUTO,
     landing: CADE_LANDING,

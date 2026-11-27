@@ -97,7 +97,7 @@ const confirmationTitle = approved
       <p class="mx-auto mt-4 max-w-md text-lg leading-relaxed text-muted">
         {
           approved ? (
-            isTimedChallenge && accessEnd ? (
+            accessEnd ? (
               <>
                 Seu acesso vai até <strong class="text-ink">{formatSaoPauloDateTime(accessEnd)}</strong>.
                 {buyerEmail ? <> Confira as instruções de acesso em <strong class="text-ink">{buyerEmail}</strong>.</> : ' Confira as instruções no e-mail da compra.'} Se já tem conta, use seu acesso habitual. No primeiro acesso, siga as instruções para criar sua senha.
@@ -108,7 +108,7 @@ const confirmationTitle = approved
               <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
             )
           ) : isTimedChallenge ? (
-            <>{`Os 30 dias ainda não começaram. Assim que o pagamento for aprovado, enviaremos o acesso ${f.audience === 'kids' ? 'e a data final ' : ''}para o e-mail da compra.`}</>
+            <>{`Seu prazo de acesso ainda não começou. Assim que o pagamento for aprovado, enviaremos o acesso ${f.audience === 'kids' ? 'e a data final ' : ''}para o e-mail da compra.`}</>
           ) : (
             <>Assim que o pagamento for aprovado, enviaremos as instruções de acesso para o e-mail da compra.</>
           )

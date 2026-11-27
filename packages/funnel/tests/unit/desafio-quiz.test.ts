@@ -117,10 +117,10 @@ const masculino =
 const femininoErrado = /(?<![\p{L}])ela (encosta|anda|pega|aparece)(?![\p{L}])/u
 /** O produto pelo nome no título, na abertura e no porquê da carta. */
 const produtoNaCarta =
-  /Desafio|Farol|Comunidade|Estúdio|Zappy|[Pp]lataforma|Mural|preço|R\$|assinatura|30 dias/u
+  /Desafio|Farol|Comunidade|Estúdio|Zappy|[Pp]lataforma|Mural|preço|R\$|assinatura|30 dias|6 meses/u
 /** O produto antes do resultado (inclui as saídas). */
 const produto =
-  /Desafio|Farol|Comunidade|Estúdio|Zappy|[Pp]lataforma|Mural|preço|R\$|assinatura|prazo|30 dias|(?<![\p{L}])aulas?(?![\p{L}])|(?<![\p{L}])cursos?(?![\p{L}])/u
+  /Desafio|Farol|Comunidade|Estúdio|Zappy|[Pp]lataforma|Mural|preço|R\$|assinatura|prazo|30 dias|6 meses|(?<![\p{L}])aulas?(?![\p{L}])|(?<![\p{L}])cursos?(?![\p{L}])/u
 
 /** As combinações das três perguntas de perfil nos dois gêneros, com o resto sorteado (semente fixa). */
 function* combinacoes917(): Generator<QuizAnswers> {
@@ -360,7 +360,7 @@ describe('Desafio v5: o resultado em conversa', () => {
     expect(cta(r)).toEqual({
       tipo: 'cta',
       texto:
-        'Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 30 dias.',
+        'Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 6 meses.',
       rotulo: 'Ver como a ideia vira jogo',
       href: '/kids/desafio-primeiro-jogo/oferta',
       nota: 'O preço aparece na próxima página.',
@@ -546,8 +546,8 @@ describe('Desafio v5: o resultado em conversa', () => {
     expect(funnel.offerContract).toEqual({
       pricingMode: 'one_time',
       accessMode: 'fixed',
-      accessDurationValue: 30,
-      accessDurationUnit: 'days',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
       guaranteeDays: 7,
     })
   })

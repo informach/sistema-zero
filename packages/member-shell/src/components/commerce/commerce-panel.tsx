@@ -1,5 +1,6 @@
 'use client'
 import type { CommerceOrigin } from '@sistemazero/core/commerce'
+import { giftDurationLabel } from '@sistemazero/core/referrals'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Check, CheckCircle2, Gift, LoaderCircle } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
@@ -394,9 +395,9 @@ export function CommercePanel({
                 {view.gift.courseTitle || view.gift.offerTitle || title}
               </h3>
               <p className="mt-1 text-muted-foreground text-sm">
-                {view.gift.accessDays === null
-                  ? ''
-                  : `${view.gift.accessDays} dias de acesso. O prazo começa quando você ativa o presente e corre mesmo sem uso. `}
+                {view.gift.accessMonths || view.gift.accessDays !== null
+                  ? `${giftDurationLabel(view.gift.accessDays, view.gift.accessMonths)} de acesso. O prazo começa quando você ativa o presente e corre mesmo sem uso. `
+                  : ''}
                 Sem cobrança ou cartão.
               </p>
             </div>

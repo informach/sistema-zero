@@ -231,6 +231,9 @@ describe('campanhas no HTTP', () => {
       ...KIDS_GIFT_OFFER,
       offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d07',
       offerSlug: 'outra-oferta-kids',
+      // Outro curso: a troca para outra oferta do MESMO curso vale com a campanha no ar (27/11/2026).
+      courseSlug: 'outro-curso-kids',
+      productSku: 'outro-curso-kids',
     })
     const locked = await app.handle(
       req(`/referrals/admin/campaigns/${campaign.id}`, {

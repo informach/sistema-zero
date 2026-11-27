@@ -402,8 +402,8 @@ export function createFakeGateway(): FakeGatewayState {
       }
       return { status: 202, body: { messageId: 'msg-1', status: 'QUEUED' } }
     },
-    async resolveReferralLink(code, offerSlug, checkout): Promise<GatewayResult> {
-      calls.links.push({ code, offerSlug, checkout })
+    async resolveReferralLink(code, offerSlug, checkout, kind): Promise<GatewayResult> {
+      calls.links.push({ code, offerSlug, checkout, ...(kind ? { kind } : {}) })
       return linkResult
     },
     async resolveReferralLinkForProduct(code, kind, skus, checkout): Promise<GatewayResult> {

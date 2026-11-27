@@ -128,22 +128,37 @@ export class AmbassadorOffersService {
 
   /**
    * A opção ligada do público e tipo com este slug ou id; null se não está na lista (ou deixou de
-   * servir). Resolve SÓ a oferta pedida no catálogo; catálogo fora LANÇA
-   * `GiftCatalogUnavailableError` (quem chama responde "tente de novo", nunca "link não existe").
+   * servir). Catálogo fora LANÇA `GiftCatalogUnavailableError` (quem chama responde "tente de
+   * novo", nunca "link não existe").
+   *
+   * Com `sameCourse`, oferta que saiu da lista mas tem outra do MESMO curso ligada (27/11/2026: o
+   * presente do guia passou da oferta de presente à oferta única de 6 meses) devolve a ligada: os
+   * convites e links já enviados com o slug antigo continuam abrindo o mesmo curso.
    */
   async allowed(
     audience: GiftAudience,
     kind: AmbassadorOfferKind,
     offerRef: string,
+    options: { sameCourse?: boolean } = {},
   ): Promise<AmbassadorOfferOption | null> {
     const ref = offerRef.trim()
     if (!ref) return null
     const rows = (await this.repo.list(audience, kind)).filter((r) => r.enabled)
     if (rows.length === 0) return null
     const offer = await this.resolve(ref)
-    if (!offer || !rows.some((r) => r.offerId === offer.offerId)) return null
-    if (ambassadorOfferProblem(offer, audience, kind)) return null
-    return toOption(kind, offer, audience)
+    if (!offer) return null
+    if (rows.some((r) => r.offerId === offer.offerId)) {
+      if (ambassadorOfferProblem(offer, audience, kind)) return null
+      return toOption(kind, offer, audience)
+    }
+    if (!options.sameCourse || !offer.courseSlug) return null
+    for (const row of rows) {
+      const listed = await this.resolve(row.offerId)
+      if (!listed || !sameCourse(listed, offer)) continue
+      if (ambassadorOfferProblem(listed, audience, kind)) continue
+      return toOption(kind, listed, audience)
+    }
+    return null
   }
 
   private async resolve(offerId: string): Promise<GiftOffer | null> {
@@ -153,6 +168,12 @@ export class AmbassadorOffersService {
       throw new GiftCatalogUnavailableError()
     }
   }
+}
+
+/** As duas ofertas entregam o mesmo curso principal (e o mesmo produto, quando os dois vêm). */
+function sameCourse(a: GiftOffer, b: GiftOffer): boolean {
+  if (!a.courseSlug || a.courseSlug !== b.courseSlug) return false
+  return !(a.productSku && b.productSku && a.productSku !== b.productSku)
 }
 
 function toOption(

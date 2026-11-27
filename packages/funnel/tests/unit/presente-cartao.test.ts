@@ -13,6 +13,8 @@ const presente = (
     audience?: 'kids' | 'adult'
     campanha?: boolean
     dias?: number | null
+    /** Presente por meses (27/11/2026: a oferta de 6 meses do Desafio também é o presente). */
+    meses?: number | null
     mural?: boolean
     learner?: 'child' | 'parents' | null
     escolhida?: string | null
@@ -42,6 +44,7 @@ const presente = (
         courseTitle: 'Cadê Todo Mundo?',
         learner: extra.learner === undefined ? 'child' : extra.learner,
         accessDays: extra.dias === undefined ? 7 : extra.dias,
+        ...(extra.meses ? { accessMonths: extra.meses } : {}),
         includesMural: extra.mural ?? true,
       },
     },
@@ -117,7 +120,7 @@ describe('cartaoDoPresente', () => {
 })
 
 describe('copyDoPresente', () => {
-  const cartao = cartaoDoPresente(presente({ dias: 30 }), {
+  const cartao = cartaoDoPresente(presente({ dias: 183, meses: 6 }), {
     communityUrl: 'https://kids.example',
     priceReais: '67',
   })
@@ -156,15 +159,15 @@ describe('revisão do modo presente (26/11/2026)', () => {
     expect(cartaoDoPresente(presente(), { ...opts, priceReais: '0.00' }).precoCheio).toBeNull()
   })
 
-  test('presente de 7 dias no Desafio: a página fala de 7 dias, não dos 30 da venda', () => {
+  test('presente de 7 dias no Desafio: a página fala de 7 dias, não dos 6 meses da venda', () => {
     const cartao = cartaoDoPresente(presente({ dias: 7 }), opts)
     const texto = JSON.stringify(copyDoPresente(PAGINA_DESAFIO_9A17, cartao))
-    expect(texto).not.toMatch(/\b30 dias\b/)
+    expect(texto).not.toMatch(/\b(?:30 dias|6 meses)\b/)
     expect(texto).toContain('7 dias')
   })
 
   test('dúvida que só cita a compra de passagem fica (equipamento), com o texto trocado', () => {
-    const cartao = cartaoDoPresente(presente({ dias: 30 }), opts)
+    const cartao = cartaoDoPresente(presente({ dias: 183, meses: 6 }), opts)
     const kids = copyDoPresente(PAGINA_DESAFIO_9A17, cartao)
     const equipamento = kids.faq.find((d: { pergunta: string }) => /equipamento/i.test(d.pergunta))
     expect(equipamento).toBeDefined()

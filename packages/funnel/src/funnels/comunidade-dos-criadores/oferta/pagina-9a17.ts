@@ -384,7 +384,7 @@ export const PAGINA_9A17 = {
         ],
       ],
       paras: [
-        'O Desafio avulso dá acesso a um primeiro projeto guiado por 30 dias. A Comunidade é a assinatura para continuar pelos cursos e recursos incluídos. Como o Desafio faz parte dela, você pode começar diretamente pela Comunidade.',
+        'O Desafio avulso dá acesso a um primeiro projeto guiado por 6 meses. A Comunidade é a assinatura para continuar pelos cursos e recursos incluídos. Como o Desafio faz parte dela, você pode começar diretamente pela Comunidade.',
       ],
       kind: 'cards',
       id: 'incluido',

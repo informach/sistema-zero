@@ -1,5 +1,6 @@
 import type {
   CourseBenefitContext,
+  GiftAccessPolicy,
   GiftAttribution,
   GiftAudience,
   GiftSource,
@@ -68,10 +69,12 @@ export interface RedemptionRecord {
   attemptCount: number
   completedAt: Date | null
   /**
-   * Dias do presente. Null nos resgates anteriores à política de sete dias e nos resgates por
-   * oferta vitalícia ou com prazo em meses.
+   * Dias do presente, incluindo os dias de calendário calculados dos meses aceitos.
+   * Null nos resgates históricos sem prazo e nas ofertas vitalícias.
    */
   accessDurationDays: number | null
+  /** Política congelada no claim. Ausente nos resgates históricos, que conservam os dias. */
+  giftAccessPolicy?: GiftAccessPolicy | null
   /** Prazo DIVULGADO gravado no resgate (menor que o real), ou null. Só para mostrar. */
   advertisedDays: number | null
   /**
@@ -111,8 +114,9 @@ export function giftSlotOf(
 /** O que um resgate NOVO grava sobre o presente (resolvido no catálogo antes do claim). */
 export interface RedemptionGift {
   offerId: string
-  /** Dias da oferta de prazo fixo em dias; null = vitalícia ou prazo em meses. */
+  /** Dias da oferta; o repositório recalcula meses a partir do instante exato da aceitação. */
   accessDurationDays: number | null
+  accessPolicy?: GiftAccessPolicy
   /** O prazo divulgado da oferta no claim (menor que o real), ou null. */
   advertisedDays?: number | null
 }

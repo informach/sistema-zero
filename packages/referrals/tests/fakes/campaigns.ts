@@ -66,7 +66,13 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     ])
     return value
   }
-  async update(id: string, input: CampaignInput, actor: string, expectedUpdatedAt: string) {
+  async update(
+    id: string,
+    input: CampaignInput,
+    actor: string,
+    expectedUpdatedAt: string,
+    options: { giftOfferSameCourse?: boolean } = {},
+  ) {
     const value = this.items.find((item) => item.id === id)
     if (!value) return null
     if (value.updatedAt.toISOString() !== expectedUpdatedAt) throw new CampaignConflictError()
@@ -83,7 +89,7 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     // sem cadastros).
     const giftOfferId =
       input.giftOfferId === undefined ? (value.giftOfferId ?? null) : input.giftOfferId
-    if (value.giftOfferId && giftOfferId !== value.giftOfferId) {
+    if (value.giftOfferId && giftOfferId !== value.giftOfferId && !options.giftOfferSameCourse) {
       if (value.status !== 'draft') throw new CampaignGiftOfferLockedError()
       if (this.referrals.redemptions.some((r) => r.codeId === ownCode?.id))
         throw new CampaignGiftOfferLockedError()

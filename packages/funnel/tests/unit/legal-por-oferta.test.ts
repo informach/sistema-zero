@@ -15,7 +15,7 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
   })
 
   test('a versão gravada na compra vem do funil do lead', () => {
-    expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-10-21')
+    expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-11-27')
     expect(termsVersionForFunnel('kids/comunidade-dos-criadores')).toBe(
       'comunidade-kids-2026-11-06',
     )
@@ -38,9 +38,12 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
       // Os textos revistos a partir de 20/10/2026 (a Política voltou em 23/10, com a data de
       // nascimento obrigatória).
       (d) =>
-        ['20 de outubro de 2026', '23 de outubro de 2026', '6 de novembro de 2026'].includes(
-          d.atualizadoEm,
-        ),
+        [
+          '20 de outubro de 2026',
+          '23 de outubro de 2026',
+          '6 de novembro de 2026',
+          '27 de novembro de 2026',
+        ].includes(d.atualizadoEm),
     )
     expect(docs.length).toBeGreaterThanOrEqual(3)
     for (const doc of docs) {

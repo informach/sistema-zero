@@ -4,7 +4,7 @@
 // `CadeAdultoBody`, montado com as seções aprovadas da página do presente adulto (tema arcade).
 //
 // Oferta no catálogo: a principal do produto (marcada no Admin) (hoje
-// `cade-todo-mundo-adulto-7-dias`). O prazo vem da oferta. Registrado DEPOIS do Desafio adulto: a
+// `cade-todo-mundo-adulto-1-ano`, de 6 meses desde 27/11/2026; o presente é a `-7-dias`). O prazo vem da oferta. Registrado DEPOIS do Desafio adulto: a
 // landing `/pro` segue abrindo a Comunidade.
 
 import { TERMOS_CADE_ADULTO } from '../../content/legal/termos-cade-adulto'
@@ -91,7 +91,7 @@ export const CADE_ADULTO: FunnelDef = {
     pricingMode: 'one_time',
     accessMode: 'fixed',
     accessDurationValue: null,
-    // A venda é por 1 ano (decisão de 25/11/2026); o presente é outra oferta, de dias.
+    // A venda é por 6 meses (decisão de 27/11/2026; antes, 1 ano); o presente é outra oferta, de dias.
     accessDurationUnit: 'months',
     guaranteeDays: null,
     anyDuration: true,
@@ -99,7 +99,7 @@ export const CADE_ADULTO: FunnelDef = {
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
   giftCourses: ['cade-todo-mundo-adulto'],
-  legal: { termos: TERMOS_CADE_ADULTO, termsVersion: 'cade-adulto-2026-11-25' },
+  legal: { termos: TERMOS_CADE_ADULTO, termsVersion: 'cade-adulto-2026-11-27' },
   content: {
     copy: CADE_ADULTO_PRODUTO,
     landing: CADE_ADULTO_LANDING,

@@ -11,12 +11,15 @@ import type { OfferListItem, Paginated, ProductView } from '@/lib/types'
 
 /**
  * Oferta de presente da campanha (15/11/2026). O presente é uma OFERTA do catálogo do mesmo
- * público da campanha, de pagamento único, sem prazo ou com prazo fixo em DIAS: o referrals
- * recusa assinatura, prazo em meses, oferta arquivada e outro público. Curso, prazo e Mural vêm
+ * público da campanha, de pagamento único, sem prazo ou com prazo fixo (dias ou meses): o referrals
+ * recusa assinatura, oferta arquivada e outro público. Curso, prazo e Mural vêm
  * da oferta escolhida.
  */
 export const GIFT_OFFER_LOCKED_MESSAGE =
   'A oferta de presente só muda enquanto a campanha está em rascunho e sem cadastros. Para trocar, duplique a campanha como nova edição.'
+/** Fora do rascunho (27/11/2026): a troca vale só por outra oferta do mesmo curso. */
+export const GIFT_OFFER_SAME_COURSE_MESSAGE =
+  'Com a campanha no ar, dá para trocar só por outra oferta do mesmo curso. Quem já se cadastrou fica com a oferta que recebeu. Para dar outro curso, duplique a campanha como nova edição.'
 export const GIFT_CATALOG_UNAVAILABLE_MESSAGE =
   'Não foi possível conferir a oferta de presente no Catálogo agora. Tente de novo em instantes.'
 export const GIFT_OFFER_REQUIRED_MESSAGE = 'Escolha a oferta de presente da campanha.'
@@ -30,8 +33,10 @@ export interface GiftOfferOption {
   status: string
   /** Nome do produto principal (o curso). */
   courseName: string | null
+  /** O produto principal: com a campanha no ar, a troca vale só dentro do mesmo produto. */
+  productId: string
   includesMural: boolean
-  /** "7 dias", "1 dia" ou "sem prazo" (`giftDurationLabel`). */
+  /** "7 dias", "6 meses" ou "sem prazo" (`giftDurationLabel`). */
   duration: string
   accessMode: 'fixed' | 'lifetime'
 }
@@ -50,8 +55,9 @@ export function giftOfferIncludes(option: Pick<GiftOfferOption, 'courseName' | '
 }
 
 /**
- * As ofertas que servem de presente: pagamento único, sem prazo ou com prazo em dias (prazo em
- * meses fica de fora). Arquivadas ficam de fora da escolha, mas continuam no mapa para nomear a
+ * As ofertas que servem de presente: pagamento único, sem prazo ou com prazo fixo (dias ou, desde
+ * 27/11/2026, meses: a oferta única de 6 meses de cada curso também é o presente). Arquivadas
+ * ficam de fora da escolha, mas continuam no mapa para nomear a
  * oferta de uma campanha antiga.
  */
 export function toGiftOfferOptions(
@@ -61,11 +67,8 @@ export function toGiftOfferOptions(
   return offers.flatMap((offer) => {
     const { accessMode } = offer
     if (accessMode !== 'fixed' && accessMode !== 'lifetime') return []
-    // Prazo fixo só em dias e com a duração cadastrada: a régua do `giftOfferProblem` do referrals.
-    if (
-      accessMode === 'fixed' &&
-      (offer.accessDurationUnit !== 'days' || !offer.accessDurationValue)
-    )
+    // Prazo fixo com a duração cadastrada: a régua do `giftOfferProblem` do referrals.
+    if (accessMode === 'fixed' && (!offer.accessDurationUnit || !offer.accessDurationValue))
       return []
     return [
       {
@@ -74,10 +77,16 @@ export function toGiftOfferOptions(
         slug: offer.slug,
         status: offer.status,
         courseName: offer.productName,
+        productId: offer.productId,
         includesMural:
           muralProductIds.has(offer.productId) ||
           offer.items.some((item) => muralProductIds.has(item.productId)),
-        duration: giftDurationLabel(accessMode === 'fixed' ? offer.accessDurationValue : null),
+        duration:
+          accessMode !== 'fixed'
+            ? giftDurationLabel(null)
+            : offer.accessDurationUnit === 'months'
+              ? giftDurationLabel(null, offer.accessDurationValue)
+              : giftDurationLabel(offer.accessDurationValue),
         accessMode,
       },
     ]
@@ -197,15 +206,22 @@ export function GiftOfferField({
   locked: boolean
 }) {
   const selected = value ? offers.byId.get(value) : undefined
-  // Arquivada só aparece quando já é a escolhida (campanha antiga).
-  const choices = offers.options.filter((o) => o.status !== 'archived' || o.id === value)
+  // Arquivada só aparece quando já é a escolhida (campanha antiga). Com a campanha no ar, só as
+  // ofertas do mesmo produto (o referrals confere o curso de novo).
+  const choices = offers.options.filter(
+    (o) =>
+      (o.status !== 'archived' || o.id === value) &&
+      (!locked || o.id === value || (selected !== undefined && o.productId === selected.productId)),
+  )
+  // Sem a oferta gravada na lista (catálogo fora, oferta de outra lente), nada a trocar.
+  const disabled = locked && (!selected || choices.length < 2)
   return (
     <fieldset className="min-w-0 space-y-2 rounded-lg border p-4">
       <legend className="px-1 text-sm font-semibold">Oferta de presente</legend>
       <p className="text-sm text-muted-foreground">
         O que quem se cadastra recebe sem pagar: o curso, o prazo e, quando a oferta inclui, o
         Mural. Aparecem as ofertas do Catálogo deste público com pagamento único, sem prazo ou com
-        prazo em dias. Uma oferta pausada pode servir só de presente.
+        prazo fixo. Uma oferta pausada pode servir só de presente.
       </p>
       <label className="block space-y-1 text-sm font-semibold">
         <span>Oferta de presente</span>
@@ -213,7 +229,7 @@ export function GiftOfferField({
           name="campaign-gift-offer"
           className="w-full rounded-md border bg-background p-2 font-normal"
           required={!legacy}
-          disabled={locked}
+          disabled={disabled}
           value={value ?? ''}
           onChange={(event) => onChange(event.target.value || null)}
         >
@@ -244,7 +260,11 @@ export function GiftOfferField({
           deste público. Escolha outra oferta para mudar o presente.
         </p>
       ) : null}
-      {locked ? <p className="text-sm text-muted-foreground">{GIFT_OFFER_LOCKED_MESSAGE}</p> : null}
+      {locked ? (
+        <p className="text-sm text-muted-foreground">
+          {disabled ? GIFT_OFFER_LOCKED_MESSAGE : GIFT_OFFER_SAME_COURSE_MESSAGE}
+        </p>
+      ) : null}
       {offers.status === 'error' ? (
         <p role="alert" className="text-sm text-destructive">
           As ofertas do Catálogo não carregaram.{' '}

@@ -117,6 +117,42 @@ const get = (path: string, headers: Record<string, string>) =>
   new Request(`http://referrals${path}`, { headers })
 
 describe('rotas da origem por aquisição', () => {
+  test('links da página do embaixador distinguem presente e venda da mesma oferta', async () => {
+    const { app, repo } = buildApp()
+    await repo.createAmbassadorWithCode({
+      name: 'Mariana',
+      email: 'mariana@example.com',
+      pageToken: 'm'.repeat(43),
+      code: 'mari-x7k2',
+    })
+    for (const kind of ['gift', 'referral']) {
+      const response = await app.handle(
+        new Request('http://referrals/referrals/admin/ambassador-offers', {
+          method: 'PUT',
+          headers: admin(),
+          body: JSON.stringify({
+            audience: 'kids',
+            kind,
+            items: [{ offerId: DESAFIO.offerId, enabled: true }],
+          }),
+        }),
+      )
+      expect(response.status).toBe(200)
+    }
+    const page = await app.handle(
+      get(`/referrals/internal/ambassadors/by-token/${'m'.repeat(43)}`, {
+        'x-internal-token': TOKEN,
+      }),
+    )
+    expect(page.status).toBe(200)
+    const body = (await page.json()) as { offers: { kind: string; link: string }[] }
+    expect(body.offers.find((o) => o.kind === 'gift')?.link).toBe(
+      `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}?tipo=presente`,
+    )
+    expect(body.offers.find((o) => o.kind === 'referral')?.link).toBe(
+      `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}?tipo=indicacao`,
+    )
+  })
   test('listas: staff lê, só admin grava; presente de assinatura volta 400', async () => {
     const { app } = buildApp()
     const put = (role: string, body: unknown) =>
@@ -391,7 +427,8 @@ describe('rotas da origem por aquisição', () => {
     expect(sent.input.templateKey).toBe('referrals-offer-referral-invite')
     expect(sent.input.variables).toMatchObject({
       oferta: DESAFIO.name,
-      link: `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}`,
+      // O tipo vai no link (27/11/2026): a oferta única de um curso pode ser venda e presente.
+      link: `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}?tipo=indicacao`,
     })
   })
 
@@ -434,6 +471,8 @@ describe('rotas da origem por aquisição', () => {
       input: { templateKey: string; variables: Record<string, string> }
     }
     expect(sent.input.templateKey).toBe('referrals-scholarship-invite')
-    expect(sent.input.variables.link).toBe(`${FUNNEL_URL}/i/mari-x7k2/${KIDS_GIFT_OFFER.offerSlug}`)
+    expect(sent.input.variables.link).toBe(
+      `${FUNNEL_URL}/i/mari-x7k2/${KIDS_GIFT_OFFER.offerSlug}?tipo=presente`,
+    )
   })
 })

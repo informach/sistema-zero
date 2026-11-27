@@ -28,6 +28,8 @@ import { CourseBenefitUnavailableError } from '../../domain/course-benefit'
 import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
+  giftAccessMonths,
+  giftAccessPolicy,
   giftAdvertisedDays,
   giftGuidanceText,
   giftMuralText,
@@ -122,6 +124,7 @@ export interface RedeemOptions {
       audience: GiftAudience,
       kind: 'gift',
       offerRef: string,
+      options?: { sameCourse?: boolean },
     ): Promise<{ offerId: string } | null>
   }
 }
@@ -314,6 +317,8 @@ export class RedeemScholarshipService {
         courseTitle: course?.title ?? null,
         learner: course?.learner ?? null,
         accessDays: giftAdvertisedDays(offer),
+        // Só o presente por meses leva o campo (as leituras de dias ficam como eram).
+        ...monthsField(giftAccessMonths(offer)),
         includesMural: offer.includesMural,
       },
     }
@@ -332,7 +337,11 @@ export class RedeemScholarshipService {
     if (campaign) return campaign.kind === 'sale' ? null : giftOfferRef(campaign, audience)
     const wanted = requested?.trim()
     if (wanted && this.opts.ambassadorOffers) {
-      const option = await this.opts.ambassadorOffers.allowed(audience, 'gift', wanted)
+      // A oferta que saiu da lista cai na ligada do mesmo curso (27/11/2026): a página aberta por
+      // um link antigo (`?oferta-presente=` com o slug de antes) continua resgatando.
+      const option = await this.opts.ambassadorOffers.allowed(audience, 'gift', wanted, {
+        sameCourse: true,
+      })
       return option?.offerId ?? null
     }
     return giftOfferRef(null, audience)
@@ -420,6 +429,7 @@ export class RedeemScholarshipService {
         courseTitle: context.course?.title ?? null,
         learner: context.course?.learner ?? null,
         accessDays: this.shownDaysOf(existing),
+        ...monthsField(this.shownMonthsOf(existing)),
         includesMural: context.offer?.includesMural ?? false,
       } satisfies ReferralGiftOfferView,
     }
@@ -562,7 +572,8 @@ export class RedeemScholarshipService {
           ? {
               gift: {
                 offerId: plan.offer.offerId,
-                accessDurationDays: giftAccessDays(plan.offer),
+                accessDurationDays: giftAccessDays(plan.offer, this.now()),
+                accessPolicy: giftAccessPolicy(plan.offer),
                 // O divulgado de AGORA fica no resgate: mudar a oferta depois não muda a data
                 // que esta pessoa já viu (nem a do members, que gravou o seu na concessão).
                 advertisedDays: shownAdvertised(plan.offer),
@@ -667,8 +678,8 @@ export class RedeemScholarshipService {
   }
 
   /**
-   * Fim do presente: os dias gravados no resgate contados do cadastro (o prazo da oferta é
-   * sempre em dias); sem prazo, null.
+   * Fim do presente: os dias gravados no resgate contados do cadastro (oferta por meses grava os
+   * dias do calendário, ver `giftAccessDays`); sem prazo, null.
    */
   private expiresAtOf(redemption: RedemptionRecord): Date | null {
     return scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
@@ -683,6 +694,15 @@ export class RedeemScholarshipService {
     // O divulgado GRAVADO no resgate (nunca o da oferta de hoje).
     const advertised = redemption.advertisedDays
     return real !== null && advertised !== null && advertised < real ? advertised : real
+  }
+
+  /** Os meses do presente gravado em dias de calendário (oferta por meses), ou null. */
+  private shownMonthsOf(redemption: RedemptionRecord): number | null {
+    if (redemption.advertisedDays !== null) return null
+    const policy = redemption.giftAccessPolicy
+    return policy?.mode === 'fixed' && policy.durationUnit === 'months'
+      ? policy.durationValue
+      : null
   }
 
   /** A data de fim que as pessoas VEEM (a do prazo divulgado). */
@@ -787,6 +807,7 @@ export class RedeemScholarshipService {
               offerRef,
               sourceId: `scholarship:${redemption.id}`,
               anchorAt: redemption.createdAt.toISOString(),
+              ...(redemption.giftAccessPolicy ? { accessPolicy: redemption.giftAccessPolicy } : {}),
               audience: redemption.audience,
               deliveryId: `scholarship:offer:${offerRef}:${redemption.id}`,
             })
@@ -965,7 +986,7 @@ export class RedeemScholarshipService {
         curso: context.course?.title ?? UNKNOWN_COURSE_TITLE,
         prazo:
           shownExpiresAt && shownDays !== null
-            ? `por ${giftDurationLabel(shownDays)}, até ${validade} (horário de Brasília)`
+            ? `por ${giftDurationLabel(shownDays, this.shownMonthsOf(redemption))}, até ${validade} (horário de Brasília)`
             : 'sem prazo para terminar',
         mural: giftMuralText({
           audience: redemption.audience,
@@ -1166,6 +1187,11 @@ function formatValidade(date: Date): string {
     dateStyle: 'long',
     timeStyle: 'short',
   })
+}
+
+/** `accessMonths` só quando o presente é por meses. */
+function monthsField(months: number | null): { accessMonths?: number } {
+  return months === null ? {} : { accessMonths: months }
 }
 
 /** O prazo divulgado da oferta, só quando é menor que o real (o que o resgate grava). */

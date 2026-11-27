@@ -102,8 +102,8 @@ const catalog = createServer((req, res) => {
           : 1
         : null,
       accessMode: slug.startsWith('comunidade-') ? 'billing_cycle' : 'fixed',
-      accessDurationValue: slug.startsWith('comunidade-') ? null : 30,
-      accessDurationUnit: slug.startsWith('comunidade-') ? null : 'days',
+      accessDurationValue: slug.startsWith('comunidade-') ? null : 6,
+      accessDurationUnit: slug.startsWith('comunidade-') ? null : 'months',
       product: { name: 'Desafio do Primeiro Jogo' },
       content: {
         allowsCoupon: true,

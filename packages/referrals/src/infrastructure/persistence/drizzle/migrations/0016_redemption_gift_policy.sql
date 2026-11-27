@@ -1,0 +1,1 @@
+ALTER TABLE "referrals"."scholarship_redemptions" ADD COLUMN "gift_access_policy" jsonb;

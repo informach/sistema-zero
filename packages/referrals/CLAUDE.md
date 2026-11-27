@@ -1,5 +1,47 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Presente com prazo em meses (27/11/2026)
+
+Decisão da dona: cada curso avulso tem uma oferta só, de 6 meses, e o presente é essa mesma
+oferta. `giftOfferProblem` deixou de recusar prazo em meses (vale para campanha, listas dos
+embaixadores e resgate). O resgate grava em `access_duration_days` os dias do calendário contados
+do instante do resgate (`giftAccessDays(offer, now)` → `monthsSpanDays`, a mesma conta
+`addUtcCalendarMonths` do members, que concede pela política da própria oferta). O texto lê meses:
+a leitura pública e a da área de membros mandam `gift.accessMonths` (só quando é por meses) e os
+e-mails dizem "por 6 meses, até …". A migration `0016_redemption_gift_policy` acrescenta o JSON
+nullable `gift_access_policy`: a unidade e a duração ficam congeladas no claim. O repositório
+converte meses usando o mesmo `acceptedAt` da linha. Não inferir meses dos dias de um resgate
+histórico. O grant S2S envia `accessPolicy` ao Members, que precisa estar compatível antes do
+referrals. Ausente, o Members conserva o contrato anterior. O Admin lista as ofertas em meses
+na escolha do presente. O presente do
+Cadê continua em dias (`-7-dias`, 15 reais e 7 divulgados).
+
+Troca da oferta do presente com a campanha no ar: vale quando a oferta nova é do MESMO curso
+(`sameGiftCourse`: as duas resolvem no catálogo com o mesmo `courseSlug`, o mesmo `productSku`
+quando os dois vêm e o mesmo público). O serviço passa `giftOfferSameCourse` ao
+`CampaignRepository.update`, que então não trava nem por status nem por resgates. Cada resgate
+continua com a oferta que recebeu e a vaga sai do curso, que não muda. Troca de curso segue a
+régua antiga (409 `CAMPAIGN_GIFT_OFFER_LOCKED`). É o caminho do guia dos pais: a campanha
+`vilao-em-aliado` passa de `transformando-o-vilao-em-aliado-presente` para a oferta de 6 meses. O
+Admin abre o seletor só com as ofertas do mesmo produto (`GIFT_OFFER_SAME_COURSE_MESSAGE`).
+
+Links já enviados continuam abrindo:
+- **A mesma oferta nas duas listas** (a oferta única é venda e presente): o link por slug
+  `/i/<código>/<oferta>` agora pode dizer o tipo (`?tipo=presente|indicacao`, `referralLinkUrl`
+  com `kind`; os convites por oferta mandam). Checkout sempre escolhe a lista de indicação.
+  O funil repassa como `?kind=` a
+  `GET /referrals/internal/links/:code/:offer` (fora do pathname assinado). Sem tipo, o slug
+  exato de venda conserva a venda, mesmo se entrou também na lista de presentes. Na busca
+  por outra oferta do mesmo curso, o presente continua primeiro para preservar o antigo
+  `-presente`. Sem oferta no link, continua o presente padrão. Os links da página do
+  embaixador e dos convites sempre informam o tipo. Os links curtos do painel
+  (`/i/<código>/<apelido>[/presente]`) já dizem o tipo.
+- **A oferta que saiu da lista** (o `-presente` do guia, citado em convites e em
+  `?oferta-presente=`): `AmbassadorOffersService.allowed(..., { sameCourse: true })` devolve a
+  ligada do MESMO curso (`courseSlug` igual e `productSku` igual quando os dois vêm). O link tenta
+  primeiro as correspondências exatas (presente, indicação) e só depois as do mesmo curso; o
+  resgate (`giftRefFor`) usa o mesmo curso. O convite novo continua exigindo a oferta exata.
+
 ## Origem por aquisição, ofertas dos embaixadores e campanha de venda (25/11/2026, em andamento)
 
 **Uma oferta por curso em cada lista e o link curto por curso (25/11/2026, depois do Lote 4).**

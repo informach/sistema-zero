@@ -35,6 +35,8 @@ const COMMUNITY: GiftOffer = {
   accessMode: 'billing_cycle',
   accessDurationValue: null,
   accessDurationUnit: null,
+  // Combo: sem curso principal (a oferta que sai da lista só cai noutra do MESMO curso).
+  courseSlug: null,
 }
 const DESAFIO: GiftOffer = {
   ...KIDS_GIFT_OFFER,
@@ -42,6 +44,7 @@ const DESAFIO: GiftOffer = {
   offerSlug: 'desafio-primeiro-jogo-30-dias',
   name: 'Desafio do Primeiro Jogo',
   accessDurationValue: 30,
+  courseSlug: 'desafio-primeiro-jogo',
 }
 
 class MemoryOfferLists {
@@ -449,6 +452,77 @@ describe('links de indicação', () => {
     expect((await links.resolve('mari-x7k2', 'comunidade-dos-criadores-mensal', false)).kind).toBe(
       'not_found',
     )
+  })
+
+  test('oferta única nas duas listas: tipo explícito decide e o slug exato antigo continua venda', async () => {
+    const { links, offers, catalog } = await ambassadorWithLists()
+    const unica: GiftOffer = {
+      ...DESAFIO,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d30',
+      offerSlug: 'desafio-6-meses',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
+    }
+    catalog.add(unica)
+    await offers.replace({
+      audience: 'kids',
+      kind: 'gift',
+      items: [
+        { offerId: KIDS_GIFT_OFFER.offerId, enabled: true },
+        { offerId: unica.offerId, enabled: true },
+      ],
+    })
+    await offers.replace({
+      audience: 'kids',
+      kind: 'referral',
+      items: [{ offerId: unica.offerId, enabled: true }],
+    })
+    expect(await links.resolve('mari-x7k2', 'desafio-6-meses', false)).toMatchObject({
+      link: { mode: 'sale' },
+    })
+    expect(await links.resolve('mari-x7k2', 'desafio-6-meses', false, 'referral')).toMatchObject({
+      link: { mode: 'sale', offerSlug: 'desafio-6-meses' },
+    })
+    expect(await links.resolve('mari-x7k2', 'desafio-6-meses', false, 'gift')).toMatchObject({
+      link: { mode: 'gift', offerSlug: 'desafio-6-meses' },
+    })
+    expect(await links.resolve('mari-x7k2', 'desafio-6-meses', true)).toMatchObject({
+      link: { mode: 'sale', target: 'checkout', offerSlug: 'desafio-6-meses' },
+    })
+  })
+
+  test('link antigo com a oferta que saiu da lista abre a ligada do mesmo curso, sem trocar de tipo', async () => {
+    const { links, offers, catalog } = await ambassadorWithLists()
+    // O presente do Desafio era uma oferta própria; agora é a oferta única de 6 meses.
+    const presenteAntigo: GiftOffer = {
+      ...DESAFIO,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d31',
+      offerSlug: 'desafio-presente',
+    }
+    catalog.add(presenteAntigo)
+    await offers.replace({
+      audience: 'kids',
+      kind: 'gift',
+      items: [
+        { offerId: KIDS_GIFT_OFFER.offerId, enabled: true },
+        { offerId: DESAFIO.offerId, enabled: true },
+      ],
+    })
+    expect(await links.resolve('mari-x7k2', 'desafio-presente', false)).toMatchObject({
+      kind: 'ok',
+      link: { mode: 'gift', offerSlug: DESAFIO.offerSlug },
+    })
+    // A venda do Cadê (fora das listas) não vira o presente do Cadê de 7 dias pelo link de venda
+    // quando o link pede indicação; sem nenhuma oferta do curso na lista de indicação, 404.
+    const vendaCade: GiftOffer = {
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d32',
+      offerSlug: 'cade-todo-mundo-6-meses',
+    }
+    catalog.add(vendaCade)
+    expect(
+      (await links.resolve('mari-x7k2', 'cade-todo-mundo-6-meses', false, 'referral')).kind,
+    ).toBe('not_found')
   })
 
   test('embaixador sem oferta no link: o presente padrão (os links antigos)', async () => {

@@ -58,7 +58,7 @@ export default function PreCheckoutModal({
   // (audience ∈ {pro, kids}) — ver registry. Deixar isso explícito evita o pai
   // preencher os dados da criança aqui.
   const isKids = funnel.startsWith('kids/')
-  // O Desafio do Primeiro Jogo, Kids ou adulto (a mesma oferta de 30 dias; a ilha não lê o registry).
+  // O Desafio do Primeiro Jogo, Kids ou adulto (a mesma oferta de 6 meses; a ilha não lê o registry).
   const isChallenge = funnel.endsWith('/desafio-primeiro-jogo')
   const isCommunity = funnel === 'kids/comunidade-dos-criadores'
   const isSubscription = isCommunity || assinatura

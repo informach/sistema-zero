@@ -12,7 +12,7 @@ const PRODUTO = 'Cadê Todo Mundo'
 export const TERMOS_CADE_KIDS: LegalDoc = {
   titulo: 'Termos de Uso do curso Cadê Todo Mundo',
   descricao: `Condições para a contratação e o uso do ${PRODUTO}, da ${EMPRESA.razaoSocial}. A compra e o aceite são feitos por um adulto responsável.`,
-  atualizadoEm: '25 de novembro de 2026',
+  atualizadoEm: '27 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -30,7 +30,7 @@ export const TERMOS_CADE_KIDS: LegalDoc = {
       titulo: '2. O que é e como funciona o Curso',
       paragrafos: [
         `O ${PRODUTO} é um material digital de caráter educacional: duas aulas guiadas, com experiências e atividades de conclusão, em que a criança faz um jogo funcionar no Estúdio, sem instalar programas. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito. O mesmo Curso também pode ser recebido de presente, por um link de convite ou de campanha, nas condições informadas na página do presente.`,
-        'Após a aprovação do pagamento, o acesso às aulas do Curso, ao Estúdio das atividades e ao Mural completo é liberado na área de membros pelo prazo informado na página da oferta, no resumo do checkout e no e-mail de confirmação, em dias corridos contados em períodos exatos de 24 horas. As instruções de primeiro acesso são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'Após a aprovação do pagamento, o acesso às aulas do Curso, ao Estúdio das atividades e ao Mural completo é liberado na área de membros pelo prazo informado na página da oferta, no resumo do checkout e no e-mail de confirmação. Quando o prazo é em meses, a contagem usa meses de calendário. Quando é em dias, cada dia corresponde a 24 horas. As instruções de primeiro acesso são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
         'As aulas do Curso podem ser feitas em mais de um momento. Cada família pode distribuí-las dentro do prazo de acesso.',
         'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento da compra.',
       ],

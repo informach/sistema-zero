@@ -43,7 +43,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -90,7 +90,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -137,7 +137,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 O preço e as condições aparecem na próxima página para vocês conferirem se cabem no orçamento.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -184,7 +184,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -231,7 +231,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -276,7 +276,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Vale mostrar a aventura e os exemplos da próxima página a ela e ouvir o que teria vontade de experimentar antes de decidir.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajudar a decidir se esse é um caminho que vocês querem experimentar.
 
@@ -323,7 +323,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -370,7 +370,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -417,7 +417,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 O preço e as condições aparecem na próxima página para vocês conferirem se cabem no orçamento.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -464,7 +464,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -511,7 +511,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -556,7 +556,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Vale mostrar a aventura e os exemplos da próxima página a ela e ouvir o que teria vontade de experimentar antes de decidir.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajudar a decidir se esse é um caminho que vocês querem experimentar.
 
@@ -603,7 +603,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -650,7 +650,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -697,7 +697,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 O preço e as condições aparecem na próxima página para vocês conferirem se cabem no orçamento.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -744,7 +744,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -791,7 +791,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -836,7 +836,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Vale mostrar a aventura e os exemplos da próxima página a ela e ouvir o que teria vontade de experimentar antes de decidir.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajudar a decidir se esse é um caminho que vocês querem experimentar.
 
@@ -883,7 +883,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -930,7 +930,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -977,7 +977,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -1024,7 +1024,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -1071,7 +1071,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 
@@ -1118,7 +1118,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
 
@@ -1165,7 +1165,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
 
@@ -1212,7 +1212,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 A necessidade de professor individual ao vivo que você procura não é atendida por esse formato. A orientação por mensagens não substitui esse acompanhamento.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
 
@@ -1259,7 +1259,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 O foco aqui é a prática de habilidades em projetos. A necessidade de correção de lições ou reforço do conteúdo da série que você procura não é atendida diretamente por esse formato.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
 
@@ -1306,7 +1306,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
 
@@ -1353,7 +1353,7 @@ A mesma habilidade pode ser praticada nessas situações, retomando o raciocíni
 
 Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.
+O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.
 
 Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol e avaliar se esse é o próximo passo para vocês.
 

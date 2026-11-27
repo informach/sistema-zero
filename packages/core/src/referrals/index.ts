@@ -102,11 +102,15 @@ export interface CourseBenefitClaimSource {
   blockId: string
   accessSource: CommerceAccessSource
 }
+/** Política aceita no resgate e preservada nas retomadas. */
+export type GiftAccessPolicy =
+  | { mode: 'lifetime'; durationValue: null; durationUnit: null }
+  | { mode: 'fixed'; durationValue: number; durationUnit: 'days' | 'months' }
+
 /**
- * O que o presente entrega (15/11/2026): a OFERTA do catálogo escolhida pela campanha (ou a
- * oferta padrão do público, nos códigos de embaixador). O presente só aceita oferta sem prazo
- * (vitalícia) ou de prazo fixo em DIAS: `accessDays` nulo = sem prazo; `learner` vem do curso
- * principal publicado.
+ * Oferta do presente escolhida pela campanha ou embaixador. Aceita prazo em dias ou meses;
+ * `accessDays` traz os dias de calendário e `accessMonths` preserva a unidade exibida.
+ * Sem ambos os prazos, o acesso não expira. `learner` vem do curso principal publicado.
  */
 export interface ReferralGiftOfferView {
   offerId: string
@@ -117,13 +121,27 @@ export interface ReferralGiftOfferView {
   courseTitle: string | null
   learner: 'child' | 'parents' | null
   accessDays: number | null
+  /**
+   * Presente com prazo em MESES (27/11/2026: a oferta única de 6 meses de cada curso também é o
+   * presente). Quando presente, é ele que as pessoas leem ("6 meses"); `accessDays` traz os dias
+   * do calendário (respostas antigas não têm o campo).
+   */
+  accessMonths?: number | null
   includesMural: boolean
 }
 /**
  * O prazo do presente em texto, a fonte única do Admin, do referrals (e-mails) e do funil:
- * "1 dia", "7 dias" ou "sem prazo" (`accessDays` nulo, oferta vitalícia).
+ * "1 dia", "7 dias", "6 meses", "1 ano" (12 meses) ou "sem prazo" (`accessDays` nulo e sem meses,
+ * oferta vitalícia). Os meses, quando vêm, vencem os dias.
  */
-export function giftDurationLabel(accessDays: number | null): string {
+export function giftDurationLabel(accessDays: number | null, accessMonths?: number | null): string {
+  if (accessMonths) {
+    if (accessMonths % 12 === 0) {
+      const years = accessMonths / 12
+      return `${years} ${years === 1 ? 'ano' : 'anos'}`
+    }
+    return `${accessMonths} ${accessMonths === 1 ? 'mês' : 'meses'}`
+  }
   if (accessDays === null) return 'sem prazo'
   return `${accessDays} ${accessDays === 1 ? 'dia' : 'dias'}`
 }

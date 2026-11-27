@@ -1,4 +1,4 @@
-// Termos de Uso do "Desafio do Primeiro Jogo" (compra única, 30 dias de acesso), extraídos de
+// Termos de Uso do "Desafio do Primeiro Jogo" (compra única, 6 meses de acesso desde 27/11/2026; antes, 30 dias), extraídos de
 // `legal-kids.ts` (TERMOS_KIDS) sem as cláusulas da assinatura, que agora têm Termos próprios
 // (`termos-comunidade-kids.ts`). A compra e o aceite são SEMPRE feitos por um adulto
 // responsável; a criança é a aluna (a oferta comunica 9 a 17 anos e, desde 21/10/2026, também
@@ -14,7 +14,7 @@ const PRODUTO = 'Desafio do Primeiro Jogo'
 export const TERMOS_DESAFIO: LegalDoc = {
   titulo: 'Termos de Uso do Desafio do Primeiro Jogo',
   descricao: `Condições para a contratação e o uso do ${PRODUTO}, da ${EMPRESA.razaoSocial}. A compra e o aceite são feitos por um adulto responsável.`,
-  atualizadoEm: '21 de outubro de 2026',
+  atualizadoEm: '27 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -32,8 +32,8 @@ export const TERMOS_DESAFIO: LegalDoc = {
       titulo: '2. O que é e como funciona o Desafio',
       paragrafos: [
         `O ${PRODUTO} é um material digital de caráter educacional: uma trilha recomendada de etapas curtas em que a criança monta o primeiro jogo jogável, com passo a passo e um estúdio feito para crianças, sem instalar programas. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito.`,
-        'Após a aprovação do pagamento, o acesso às aulas do Desafio, ao Estúdio das atividades e ao Mural completo é liberado na área de membros por 30 (trinta) dias corridos, contados em períodos exatos de 24 horas. As instruções de primeiro acesso e a data final são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
-        'As etapas do Desafio representam a sequência recomendada do projeto, não dias corridos obrigatórios. Cada família pode distribuí-las dentro dos 30 dias de acesso.',
+        'Após a aprovação do pagamento, o acesso às aulas do Desafio, ao Estúdio das atividades e ao Mural completo é liberado na área de membros por 6 (seis) meses, contados da data e da hora da aprovação. As instruções de primeiro acesso e a data final são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'As etapas do Desafio representam a sequência recomendada do projeto, não dias corridos obrigatórios. Cada família pode distribuí-las dentro dos 6 meses de acesso.',
         'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento da compra.',
       ],
     },
@@ -72,10 +72,10 @@ export const TERMOS_DESAFIO: LegalDoc = {
     {
       titulo: '7. Prazo de acesso, Mural e compras anteriores',
       paragrafos: [
-        'O prazo de 30 (trinta) dias começa somente com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não inicia a contagem. A data e a hora finais são calculadas a partir da aprovação e exibidas na página de confirmação e na área de membros.',
+        'O prazo de 6 (seis) meses começa somente com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não inicia a contagem. A data e a hora finais são calculadas a partir da aprovação e exibidas na página de confirmação e na área de membros.',
         'Depois do prazo, o acesso às aulas do Desafio termina. Permanece o acesso de visitante ao Mural, para ver e jogar os jogos disponíveis, sem novas publicações, comentários ou reações por esse acesso. O link do jogo já publicado continua funcionando enquanto a publicação estiver disponível.',
         'O progresso e os projetos permanecem armazenados conforme a Política de Privacidade e podem voltar a ficar disponíveis caso o Responsável adquira uma nova condição de acesso válida, inclusive uma assinatura da Comunidade dos Criadores Kids que inclua o Desafio.',
-        'Compras vitalícias realizadas sob ofertas anteriores permanecem vitalícias nos termos contratados na época. A condição de 30 dias do Desafio não reduz nem substitui direitos de acesso já adquiridos.',
+        'Compras vitalícias realizadas sob ofertas anteriores permanecem vitalícias nos termos contratados na época. A condição de 6 meses do Desafio não reduz nem substitui direitos de acesso já adquiridos.',
       ],
     },
     {
@@ -83,7 +83,7 @@ export const TERMOS_DESAFIO: LegalDoc = {
       paragrafos: [
         `O Responsável pode solicitar o reembolso integral em até 7 (sete) dias corridos a contar da compra, conforme o art. 49 do Código de Defesa do Consumidor, por qualquer motivo. Basta enviar a solicitação para ${EMPRESA.email} informando o e-mail usado na compra.`,
         'Confirmada a solicitação dentro do prazo, o valor é estornado pelo mesmo meio de pagamento e o acesso à área de membros é encerrado.',
-        'O prazo de garantia não aumenta, pausa nem reinicia o período de 30 dias de acesso do Desafio.',
+        'O prazo de garantia não aumenta, pausa nem reinicia o período de 6 meses de acesso do Desafio.',
       ],
     },
     {

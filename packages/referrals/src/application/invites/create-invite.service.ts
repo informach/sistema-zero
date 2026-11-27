@@ -149,8 +149,10 @@ export class CreateInviteService {
               nome: splitName(name).firstName,
               indicador,
               oferta: offer.name,
+              // O tipo vai no link: a oferta única de um curso pode ser venda e presente.
               link: referralLinkUrl(this.opts.funnelPublicUrl, codeRecord.code, {
                 offerSlug: offer.offerSlug,
+                kind,
               }),
             },
           }
@@ -163,6 +165,7 @@ export class CreateInviteService {
               link: offer
                 ? referralLinkUrl(this.opts.funnelPublicUrl, codeRecord.code, {
                     offerSlug: offer.offerSlug,
+                    kind,
                   })
                 : scholarshipShareUrl(this.opts.funnelPublicUrl, codeRecord.code),
             },
