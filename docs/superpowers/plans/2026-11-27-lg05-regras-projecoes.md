@@ -1,5 +1,20 @@
 # LG05 — regras e projeções do Pinta
 
+**Estado vigente — 2026-11-27T23:15:18.058Z**
+
+- Produção comercial preservada: PR 300, `5400ea1d1`; comparação dos 121 arquivos sem divergências. A retomada está autorizada.
+- Leitores/oficina para produção: [PR 299](https://github.com/informach/sistema-zero/pull/299), fonte `52988d34cd3c9a6da33c4c0f2480cddbd6a8268d`, CI `46079975021` em execução. Configuração Railway e equivalência Classic aprovadas.
+- Gravador único para produção: [PR 301](https://github.com/informach/sistema-zero/pull/301), fonte `e873194ffa32c05f3de0c38e980d2c42a9e320db`, CI `46080179831` em execução. Ativação local 8/9; produção ainda usa 7/8. Tipos e 2.829 testes do member-shell aprovados, quatro condicionais; 17 testes de linguagem aprovados.
+- Homologação única: fonte `38a74e92a91127b0ab8edb54426048ba78b2f999`, CI e onda canônica `46080979879`. A validação anterior foi substituída antes de iniciar qualquer implantação/carga. Não alterar a fonte durante a onda.
+- Imagem Linux oficial: run `46077493200`, artefato `15234974061`, fonte `771fbf017`, perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`. Arquivo, configuração e camadas conferidos; sete testes repetidos no arquivo baixado, zero falhas. Registro `sha256:1be7f3ecfb61503144a88b5c5ebff252256a3508665b63fe4aef34e5789fa78f`. Entradas idênticas nas fontes finais. Workers simulados em ambos os ambientes; nova publicação pendente.
+
+A promoção de produção mantém duas etapas de implantação: todos os leitores compatíveis primeiro, depois a ativação do único gravador novo. As duas etapas não criam alternativas públicas. O aceite deve preservar o mapa nativo 8 já guardado, importar/editar/guardar e reabrir nativo 9 em contexto frio, e usar o jogo criado pelo botão Jogar no Estúdio. Publicação/atualização foi provada pelo BFF real com Hub/R2 controlados; não criar posts de QA no Mural real. Python e seus catálogos permanecem na LG08.
+
+<details>
+<summary>Histórico de qualificação e coordenação; estados anteriores</summary>
+
+**Homologação única preparada em 2026-11-27T23:10:10.162Z:** a staging reúne os leitores/oficina e a ativação final da PR 301, gravador causal 8 e teto nativo 9. A validação da fonte anterior `1c401e7b3` foi cancelada antes de qualquer job de implantação; nenhuma carga de catálogo/dados foi interrompida. Esta fonte precisa de CI completo, onda canônica e aceite de conta fria antes de publicar. Em produção, a ordem continua: PR 299 instala todos os leitores compatíveis; somente após sua onda completa promover a PR 301.
+
 **Estado vigente — 2026-11-27T23:02:17.435Z:** a liberação das campanhas PR 300, fonte `5400ea1d105390390a376444c2aecf9adc7ffa99`, foi integrada e seus 121 arquivos permanecem idênticos nas candidatas. A retomada está autorizada. Candidata de leitores/oficina `52988d34cd3c9a6da33c4c0f2480cddbd6a8268d` (PR 299), staging `1c401e7b3a345c8056b27e187e86ae9085c437cf`. CI completo novo: `46079975021` e onda canônica de staging `46080040007`, ainda pendentes. A imagem Linux oficial `46077493200`, artefato `15234974061`, passou os sete casos reais e foi carregada com hashes e camadas conferidos; perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`. O transporte ao registro está em andamento, sem nova publicação do Worker. Falha de importação JSON no Node corrigida e os dois testes reais de conversão no Chromium passaram; teste de cenários atualizado para a Patrulha já existente, suíte aprovada. Gravador final preparado, 2.829 testes do member-shell (quatro condicionais), tipos do member-shell e Studio, e 17 testes de linguagem aprovados. Sua ativação depende dos leitores completos em produção e do aceite em staging; público continua gravador causal 7/teto nativo 8.
 
 Os registros datados abaixo são históricos; os estados antigos de imagens, candidatos e suspensões não substituem este quadro vigente.
@@ -49,6 +64,8 @@ Os registros datados abaixo preservam a sequência e hipóteses substituídas; e
 **Escopo aprovado:** [plano gradual](../../plans/2026-11-23-plano-de-liberacao-gradual.md), LG05; autorização da responsável em 27/11/2026. Execução nesta sessão, na staging compartilhada, preservando alterações concorrentes.
 
 **Orientação adicional da responsável em 27/11:** continuar até o funcionamento integral da versão nova e não manter duas implementações ao final. A separação leitor A/gravador é somente uma transição de implantação. O fechamento deve retirar gravadores, seletores e caminhos executáveis substituídos, preservando a leitura/importação e a migração dos projetos anteriores pela autoridade canônica. Contextos de aula conservam seu isolamento e suas permissões, usando os mecanismos comuns aplicáveis.
+
+</details>
 
 ## Restrições
 
@@ -158,3 +175,15 @@ Candidata corrigida 5bd72c1d68e9d2b8c4780988d9e00efdf8b0885f; staging seletiva 2
 Qualificação Linux oficial aprovada: run 46022790347, artefato 15211180834, fonte 234b9eb09c49ed73b94e7105cf76be8ed04c726e e perfil a27f45d08088a57e72f2283d7965c3a0493d4ef3eded8a78dd2b8a3bbe2723e7. Arquivo conferido por SHA-256 f5c42b106b6f2638973f96a3d36c0739f05e69b326bd7f246bea754ec4acbdcb. A cadeia OCI vincula o ID de configuração aprovado 8b1984a8…b11c78 ao manifesto local 0c784db5…edec5 e às mesmas camadas; perfil interno conferido. Não houve reconstrução local. A imagem ainda não foi implantada.
 
 A rodada CI do PR nessa fonte encontrou timeouts de 40 s em duas provas do navegador do agent-runtime Windows, cujos arquivos não mudaram nesta entrega. Na reprodução isolada, a transferência passou; o worker parou com EUNKNOWN ao iniciar o helper nativo, sem reproduzir o mesmo timeout. Nenhuma política de segurança foi alterada e nenhum teste foi removido. A nova rodada completa precisa qualificar os nove jobs exigidos na mesma tentativa antes da promoção. A ativação do gravador foi preparada e provada na fila causal com as capacidades públicas 8/9; o patch permanece separado, e a fonte pública continua 7/8 enquanto os leitores não forem implantados.
+
+## Correção visual solicitada na homologação — 27/11
+
+A responsável identificou cards encostados uns nos outros e nas bordas na janela focal do mapa de controle. A coluna já tinha padding zero antes da integração LG05; a mesma montagem aparece no editor regional completo. A direção é aplicar a identidade existente do Pinta e recuperar o respiro.
+
+Intenção: quem desenha precisa distinguir camadas, peças, pincel e regras sem disputar espaço com o palco. Vocabulário: mapa, peças, camadas, pincel, autorregras. Paleta: usar os tokens existentes de fundo, superfície, tinta, borda e azul de ação; tipografia já definida em `.pin-bar-name__text`; sem nova paleta. Assinatura: palco de pintura com as peças e camadas do próprio desenho ao lado. Base de espaçamento 4 px, com 12 px entre grupos e em volta. Preservar os alvos de toque existentes.
+
+Abordagens consideradas: acrescentar margens isoladas nos dois arquivos (repete o problema), aplicar uma coluna compartilhada com espaçamento (escolhida), ou refazer toda a interface (amplia o escopo sem necessidade). Os cartões continuam usando o `Panel` existente; a janela focal reaproveita a barra e o selo de salvamento atuais.
+
+- [ ] Coluna compartilhada em `components/editor/TilemapPanels.tsx`: `MapSidePanels({ children: ReactNode })` com a superfície/borda da coluna, `gap-3 p-3`, largura 17 rem em desktop e rolagem própria em tela estreita. Reusar em `RegionMapWorkspace.tsx`, `FocalRegionMapStage.tsx` e `ProjectedMapWorkspace.tsx`, sem alterar armazenamento ou gestos.
+- [ ] Extrair o `SaveBadge` existente para `components/editor/EditorSaveBadge.tsx`; o editor comum e `FocalEditorScreen.tsx` passam a usar a mesma apresentação, mantendo `role=status`, textos e tratamento de falha. Aplicar `.pin-bar` e `.pin-bar-name` na janela focal.
+- [ ] Verificar Biome, `bun test src/components/editor/editorBarUi.test.tsx src/components/editor/editorAreaUi.test.tsx src/components/workshopRegionsUi.test.tsx` e `bun run typecheck` no pacote Pinta. Conferir renderização real em desktop e 390 px, medir padding e distância dos painéis, abrir o editor completo e conferir os mapas projetados. Requalificar fonte final em CI/staging antes de promover o gravador.
