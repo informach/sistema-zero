@@ -36,6 +36,12 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
    teste agora consulta o compositor nesse caso, removendo fundos CSS, borda e sombra da
    prova. O canvas vazio continua sendo rejeitado. A regressão isolada e o jogo real passaram
    no Chromium local, sem alterar o motor nem aumentar o timeout.
+8. **Média, unidade no painel interno de presente:** o painel compartilhado dos apps ainda
+   imprimia somente `accessDays`, mostrando 181 dias em um presente de seis meses. Agora usa
+   a mesma função de prazo do core, com prioridade para meses. A regressão reproduziu a falha
+   antes da correção; o painel real passou nos cinco casos de meses, Cadê com sete dias, prazo
+   histórico de trinta dias, singular e ausência de prazo. Publicar os apps Kids e adulto para
+   receber esse componente do member-shell.
 
 ## Compatibilidade e ordem
 
@@ -73,6 +79,8 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 - Mensageria: 183 testes passaram, onze opcionais de banco não executados; typecheck passou.
 - Core: 3357 testes passaram.
 - Checkout interno compartilhado: 38 testes direcionados passaram.
+- Complemento do painel de presente: 47 testes de comércio passaram, incluindo as cinco
+  renderizações isoladas do painel real. Os sete dias anunciados do Cadê permanecem sete.
 - Confirmação de compra: a regressão falhou com a condição antiga; os nove casos passaram com
   a correção, incluindo guia e Cadê antigos de doze meses, Desafio antigo de trinta dias, compra
   nova de seis meses e pagamento pendente. O teste usa somente Postgres descartável e navegador local.
