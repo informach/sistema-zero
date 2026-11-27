@@ -316,7 +316,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -354,7 +354,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -392,7 +392,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -430,7 +430,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -466,7 +466,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -502,11 +502,11 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
-Sua rotina está apertada. Confira se consegue reservar momentos para construir e testar dentro dos 30 dias de acesso. As aulas gravadas permitem organizar os horários.
+Sua rotina está apertada. Confira se consegue reservar momentos para construir e testar dentro dos 6 meses de acesso. As aulas gravadas permitem organizar os horários.
 
 Esse caminho pode dar espaço ao interesse que você quer cultivar nas horas livres, com pequenas realizações para aproveitar durante a construção.
 
@@ -544,7 +544,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 A conquista que você procura ganha uma forma concreta: olhar para uma criação, entender uma parte e perceber que consegue escolher o que fazer com ela.
 
@@ -582,7 +582,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 A conquista que você procura ganha uma forma concreta: olhar para uma criação, entender uma parte e perceber que consegue escolher o que fazer com ela.
 
@@ -616,7 +616,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Como o computador é compartilhado, combine os momentos em que poderá usá-lo. Para construir, ele precisa ter internet, mouse e teclado; o projeto fica associado à sua conta pessoal.
 
@@ -658,7 +658,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 A conquista que você procura ganha uma forma concreta: olhar para uma criação, entender uma parte e perceber que consegue escolher o que fazer com ela.
 
@@ -696,7 +696,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 A conquista que você procura ganha uma forma concreta: olhar para uma criação, entender uma parte e perceber que consegue escolher o que fazer com ela.
 
@@ -734,7 +734,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 A conquista que você procura ganha uma forma concreta: olhar para uma criação, entender uma parte e perceber que consegue escolher o que fazer com ela.
 
@@ -768,7 +768,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -796,7 +796,7 @@ Para você, uma pessoa acompanhando ao vivo é indispensável. Aqui, as aulas s�
 
 Você quer começar diretamente em uma ideia sua. O Desafio usa um projeto preparado, com escolhas dentro dessa construção. A ferramenta fica disponível nas atividades do curso; não há um espaço livre para qualquer projeto.
 
-Sua rotina está apertada. Confira se consegue reservar momentos para construir e testar dentro dos 30 dias de acesso. As aulas gravadas permitem organizar os horários.
+Sua rotina está apertada. Confira se consegue reservar momentos para construir e testar dentro dos 6 meses de acesso. As aulas gravadas permitem organizar os horários.
 
 Para fazer uma mudança sua, ajuda ligar cada instrução ao efeito que ela produz. Trocar uma posição e observar onde a imagem aparece torna essa relação concreta. Ao repetir uma explicação, confira o resultado de cada etapa. Assim, a repetição também ajuda a descobrir em que ponto apareceu a diferença.
 
@@ -812,7 +812,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 A conquista que você procura ganha uma forma concreta: olhar para uma criação, entender uma parte e perceber que consegue escolher o que fazer com ela.
 
@@ -846,7 +846,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Você já tem o computador necessário. A construção acontece no navegador, com internet, mouse e teclado, em uma conta adulta própria.
 
@@ -886,7 +886,7 @@ O jogo torna uma escolha visível: a instrução que você monta muda o que acon
 
 Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.
 
-É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
+É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.
 
 Esse caminho pode dar espaço ao interesse que você quer cultivar nas horas livres, com pequenas realizações para aproveitar durante a construção.
 

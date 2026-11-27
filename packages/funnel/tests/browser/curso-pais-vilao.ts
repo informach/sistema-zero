@@ -95,9 +95,9 @@ const gateway = createServer((req, res) => {
         guaranteeDays: 7,
         pricingMode: 'one_time',
         billingIntervalMonths: null,
-        // A venda do guia é por 1 ano (decisão de 25/11/2026): o contrato da página recusa vitalícia.
+        // A venda do guia é por 6 meses (decisão de 27/11/2026): o contrato da página recusa vitalícia.
         accessMode: 'fixed',
-        accessDurationValue: 12,
+        accessDurationValue: 6,
         accessDurationUnit: 'months',
         product: { name: 'Transformando o vilão em aliado' },
         content: { allowsCoupon: true },

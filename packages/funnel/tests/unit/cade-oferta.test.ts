@@ -74,13 +74,18 @@ describe('contrato do Cadê: o prazo e a garantia vêm da oferta', () => {
 
   test('o contrato do Desafio continua rígido', () => {
     const desafio = getFunnelByKey('kids/desafio-primeiro-jogo')?.offerContract
-    const dias = { accessDurationUnit: 'days' as const }
-    expect(checkOfferContract(desafio, politica({ ...dias, accessDurationValue: 30 })).ok).toBe(
+    // 6 meses desde 27/11/2026: outro número de meses ou os 30 dias de antes não passam.
+    const meses = { accessDurationUnit: 'months' as const }
+    expect(checkOfferContract(desafio, politica({ ...meses, accessDurationValue: 6 })).ok).toBe(
       true,
     )
-    expect(checkOfferContract(desafio, politica({ ...dias, accessDurationValue: 7 })).ok).toBe(
+    expect(checkOfferContract(desafio, politica({ ...meses, accessDurationValue: 12 })).ok).toBe(
       false,
     )
+    expect(
+      checkOfferContract(desafio, politica({ accessDurationUnit: 'days', accessDurationValue: 30 }))
+        .ok,
+    ).toBe(false)
   })
 })
 
@@ -209,7 +214,7 @@ describe('Termos das ofertas novas', () => {
     for (const termos of [TERMOS_CADE_KIDS, TERMOS_CADE_ADULTO, TERMOS_GUIA_PAIS]) {
       const texto = JSON.stringify(termos)
       expect(texto).not.toMatch(/Desafio do Primeiro Jogo\b(?! Kids)|30 \(trinta\)|30 dias/)
-      expect(termos.atualizadoEm).toBe('25 de novembro de 2026')
+      expect(termos.atualizadoEm).toMatch(/^2[57] de novembro de 2026$/)
     }
     expect(TERMOS_CADE_KIDS.titulo).toBe('Termos de Uso do curso Cadê Todo Mundo')
     expect(JSON.stringify(TERMOS_GUIA_PAIS)).not.toMatch(/Mural|Estúdio/)

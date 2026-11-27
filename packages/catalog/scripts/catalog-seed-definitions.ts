@@ -426,6 +426,10 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
+    // 6 meses desde 27/11/2026 (prazo único das compras avulsas; antes, vitalícia).
+    accessMode: 'fixed',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     installmentsMax: 12,
     guaranteeDays: 7,
     status: 'active',
@@ -442,6 +446,10 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
+    // 6 meses desde 27/11/2026 (prazo único das compras avulsas; antes, vitalícia).
+    accessMode: 'fixed',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     installmentsMax: 12,
     guaranteeDays: 7,
     status: 'active',
@@ -458,6 +466,10 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
+    // 6 meses desde 27/11/2026 (prazo único das compras avulsas; antes, vitalícia).
+    accessMode: 'fixed',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     installmentsMax: 12,
     guaranteeDays: 7,
     status: 'active',
@@ -474,6 +486,10 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
+    // 6 meses desde 27/11/2026 (prazo único das compras avulsas; antes, vitalícia).
+    accessMode: 'fixed',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     installmentsMax: 12,
     guaranteeDays: 7,
     status: 'active',
@@ -493,7 +509,8 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     accessMode: 'lifetime',
     installmentsMax: 12,
     guaranteeDays: 7,
-    status: 'active',
+    // Pausada desde 27/11/2026: o Desafio tem uma oferta só (`desafio-primeiro-jogo-30-dias`).
+    status: 'paused',
     content: {
       badge: 'Crie seu primeiro jogo',
       ctaLabel: 'Topar o desafio',
@@ -508,13 +525,14 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
   {
     code: 'desafio-30-dias',
     slug: 'desafio-primeiro-jogo-30-dias',
-    name: 'Desafio do Primeiro Jogo — 30 dias',
+    name: 'Desafio do Primeiro Jogo · 6 meses',
     priceCents: 6700,
     currency: 'BRL',
     pricingMode: 'one_time',
+    // 6 meses desde 27/11/2026 (antes, 30 dias); o slug fica, links e pagamentos o citam.
     accessMode: 'fixed',
-    accessDurationValue: 30,
-    accessDurationUnit: 'days',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     guaranteeDays: 7,
     status: 'draft',
     content: {
@@ -620,13 +638,14 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
   {
     code: 'desafio-adulto-30-dias',
     slug: 'desafio-primeiro-jogo-adulto-30-dias',
-    name: 'Desafio do Primeiro Jogo (adultos) · 30 dias',
+    name: 'Desafio do Primeiro Jogo (adultos) · 6 meses',
     priceCents: 6700,
     currency: 'BRL',
     pricingMode: 'one_time',
+    // 6 meses desde 27/11/2026 (antes, 30 dias); o slug fica, links e pagamentos o citam.
     accessMode: 'fixed',
-    accessDurationValue: 30,
-    accessDurationUnit: 'days',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     guaranteeDays: 7,
     status: 'active',
     content: {

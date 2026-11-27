@@ -260,7 +260,7 @@
 
 **sections[9].cards[3][1]**: Até dois perfis Kids, com progresso separado. Pela área do responsável, você acompanha atividades e administra acesso e permissões.
 
-**sections[9].paras[0]**: O Desafio avulso dá acesso a um primeiro projeto guiado por 30 dias. A Comunidade é a assinatura para continuar pelos cursos e recursos incluídos. Como o Desafio faz parte dela, você pode começar diretamente pela Comunidade.
+**sections[9].paras[0]**: O Desafio avulso dá acesso a um primeiro projeto guiado por 6 meses. A Comunidade é a assinatura para continuar pelos cursos e recursos incluídos. Como o Desafio faz parte dela, você pode começar diretamente pela Comunidade.
 
 **planos.title**: Escolha o plano que cabe no momento da sua família.
 

@@ -1,4 +1,5 @@
 import type { GiftAudience } from '@sistemazero/core/referrals'
+import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import type { GatewayResult } from './ports/gateway.port'
 import type { GiftOffer } from './ports/gift-offer-catalog.port'
 
@@ -29,11 +30,45 @@ export function scholarshipExpiresAt(createdAt: Date, durationDays: number | nul
 }
 
 /**
- * Dias do presente gravados no resgate (`access_duration_days`): o prazo fixo da oferta, que é
- * sempre em DIAS (`giftOfferProblem` recusa meses); vitalícia = null (sem prazo).
+ * Dias do presente gravados no resgate (`access_duration_days`): o prazo fixo da oferta em dias;
+ * vitalícia = null (sem prazo). Desde 27/11/2026 o presente aceita prazo em MESES (a oferta única
+ * de 6 meses de cada curso também é o presente): os meses viram os dias do calendário contados de
+ * `from` (o instante do resgate), a mesma conta do members (`addUtcCalendarMonths`), que concede
+ * com a política da própria oferta. O fim mostrado pode diferir em um dia só se o resgate cruzar a
+ * meia-noite UTC entre a conta e a gravação.
  */
-export function giftAccessDays(offer: GiftOffer): number | null {
-  return offer.accessMode === 'fixed' ? offer.accessDurationValue : null
+export function giftAccessDays(offer: GiftOffer, from: Date = new Date()): number | null {
+  if (offer.accessMode !== 'fixed' || offer.accessDurationValue === null) return null
+  return offer.accessDurationUnit === 'months'
+    ? monthsSpanDays(from, offer.accessDurationValue)
+    : offer.accessDurationValue
+}
+
+/** Os meses do presente quando a oferta é por meses (o que as pessoas leem: "6 meses"). */
+export function giftAccessMonths(
+  offer: Pick<GiftOffer, 'accessMode' | 'accessDurationValue' | 'accessDurationUnit'>,
+): number | null {
+  return offer.accessMode === 'fixed' && offer.accessDurationUnit === 'months'
+    ? offer.accessDurationValue
+    : null
+}
+
+/** Dias corridos entre `from` e o mesmo instante `months` meses-calendário depois (UTC). */
+export function monthsSpanDays(from: Date, months: number): number {
+  return Math.round((addUtcCalendarMonths(from, months).getTime() - from.getTime()) / DAY_MS)
+}
+
+/**
+ * Os meses de um resgate gravado em dias (e-mails e retomadas): o número de meses cujo calendário,
+ * contado do resgate, dá esses dias (tolerância de um dia, ver `giftAccessDays`). Null = prazo em
+ * dias (presente do Cadê) ou sem prazo.
+ */
+export function monthsOfRedemption(createdAt: Date, days: number | null): number | null {
+  if (days === null || days < 28) return null
+  for (let months = 1; months <= 36; months++) {
+    if (Math.abs(monthsSpanDays(createdAt, months) - days) <= 1) return months
+  }
+  return null
 }
 
 /**
@@ -41,16 +76,21 @@ export function giftAccessDays(offer: GiftOffer): number | null {
  * a mais chegam de surpresa, avisados pelo members); senão, o prazo real. Nunca decide acesso.
  */
 export function giftAdvertisedDays(
-  offer: Pick<GiftOffer, 'accessMode' | 'accessDurationValue' | 'advertisedAccessDays'>,
+  offer: Pick<
+    GiftOffer,
+    'accessMode' | 'accessDurationValue' | 'accessDurationUnit' | 'advertisedAccessDays'
+  >,
 ): number | null {
   if (offer.accessMode !== 'fixed') return null
+  if (offer.accessDurationUnit === 'months' && offer.accessDurationValue !== null)
+    return monthsSpanDays(new Date(), offer.accessDurationValue)
   return offer.advertisedAccessDays ?? offer.accessDurationValue
 }
 
 /**
  * Motivo para recusar a oferta como presente, ou null se serve. O presente concede sem cobrar,
  * então a oferta precisa ser de pagamento único (assinatura não vira presente), sem prazo ou com
- * prazo fixo em DIAS (o resgate grava os dias e o fim é contado deles), não arquivada (pausada
+ * prazo fixo (dias ou, desde 27/11/2026, meses: o resgate grava os dias do calendário), não arquivada (pausada
  * serve: a oferta pode existir só como presente) e do MESMO público da campanha (o público vem do
  * produto principal da oferta). As mensagens aparecem para quem edita a campanha no Admin.
  */
@@ -61,8 +101,6 @@ export function giftOfferProblem(offer: GiftOffer, audience: GiftAudience): stri
     return 'A oferta do presente precisa ser de pagamento único (prazo fixo ou sem prazo). Assinatura não vira presente.'
   if (offer.accessMode === 'fixed' && (!offer.accessDurationValue || !offer.accessDurationUnit))
     return 'A oferta de prazo fixo precisa ter a duração cadastrada no Catálogo.'
-  if (offer.accessMode === 'fixed' && offer.accessDurationUnit !== 'days')
-    return 'O prazo do presente precisa ser em dias. Esta oferta tem prazo em meses: escolha uma oferta com prazo em dias ou sem prazo.'
   if (offer.audience !== audience)
     return audience === 'adult'
       ? 'Escolha uma oferta do público adulto, o mesmo da campanha.'

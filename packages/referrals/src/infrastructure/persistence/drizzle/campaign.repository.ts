@@ -150,9 +150,10 @@ export class DrizzleCampaignRepository implements CampaignRepository {
     input: CampaignInput,
     actor: string,
     expectedUpdatedAt: string,
+    options: { giftOfferSameCourse?: boolean } = {},
   ): Promise<CampaignRecord | null> {
     try {
-      return await this.updateInTransaction(id, input, actor, expectedUpdatedAt)
+      return await this.updateInTransaction(id, input, actor, expectedUpdatedAt, options)
     } catch (error) {
       if (redirectTaken(error)) throw new CampaignRedirectTakenError()
       throw error
@@ -164,6 +165,7 @@ export class DrizzleCampaignRepository implements CampaignRepository {
     input: CampaignInput,
     actor: string,
     expectedUpdatedAt: string,
+    options: { giftOfferSameCourse?: boolean },
   ): Promise<CampaignRecord | null> {
     return this.db.transaction(async (tx) => {
       const [previous] = await tx.select().from(campaigns).where(eq(campaigns.id, id)).for('update')
@@ -185,7 +187,11 @@ export class DrizzleCampaignRepository implements CampaignRepository {
         throw new CampaignAudienceLockedError()
       // Oferta: omitida conserva a gravada; trocar uma oferta já ligada segue a régua do público.
       const giftOfferId = input.giftOfferId === undefined ? previous.giftOfferId : input.giftOfferId
-      const giftOfferChanged = previous.giftOfferId !== null && giftOfferId !== previous.giftOfferId
+      // Troca para outra oferta do MESMO curso (conferida pelo serviço no catálogo) não trava.
+      const giftOfferChanged =
+        previous.giftOfferId !== null &&
+        giftOfferId !== previous.giftOfferId &&
+        !options.giftOfferSameCourse
       if (previous.status !== 'draft' && giftOfferChanged) throw new CampaignGiftOfferLockedError()
       const kind = input.kind ?? previous.kind
       const kindChanged = kind !== previous.kind

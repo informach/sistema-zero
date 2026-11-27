@@ -2,7 +2,7 @@
 
 **seoTitle**: Desafio do Primeiro Jogo para adultos | Sistema Zero
 
-**description**: Ganhe autonomia para criar com tecnologia. Construa A Chave do Farol com aulas guiadas, programação em blocos e 30 dias de acesso.
+**description**: Ganhe autonomia para criar com tecnologia. Construa A Chave do Farol com aulas guiadas, programação em blocos e 6 meses de acesso.
 
 **pularParaConteudo**: Ir para o conteúdo
 
@@ -38,13 +38,13 @@
 
 **hero.rotulos[5]**: 1P
 
-**hero.rotulos[6]**: 30 DIAS DE ACESSO
+**hero.rotulos[6]**: 6 MESES DE ACESSO
 
 **hero.acoes[0]**: Quero começar meu Desafio
 
 **hero.acoes[1]**: Ver como esse começo acontece
 
-**hero.paragrafos[0]**: {{preco}} · pagamento único · 30 dias de acesso · 7 dias de garantia
+**hero.paragrafos[0]**: {{preco}} · pagamento único · 6 meses de acesso · 7 dias de garantia
 
 **hero.legendas[0]**: O projeto do Desafio: você constrói as regras que fazem essa aventura funcionar.
 
@@ -142,7 +142,7 @@
 
 **jogo.subtitulos[2]**: Conecte a regra ao final da aventura.
 
-**jogo.destaques[0]**: Você distribui as etapas dentro dos 30 dias de acesso.
+**jogo.destaques[0]**: Você distribui as etapas dentro dos 6 meses de acesso.
 
 **aula.titulo**: Você acompanha a explicação e coloca a mão no projeto, na mesma aula.
 
@@ -248,7 +248,7 @@
 
 **paraQuem.rotulos[4]**: Navegador para assistir e construir. As ferramentas ficam na plataforma.
 
-**paraQuem.rotulos[5]**: Tempo para praticar e retomar as três etapas dentro dos 30 dias.
+**paraQuem.rotulos[5]**: Tempo para praticar e retomar as três etapas dentro dos 6 meses.
 
 **paraQuem.itens[0]**: <span class="cda-rotulo">01</span><span>Nunca programou e quer um primeiro caminho explicado.</span>
 
@@ -296,7 +296,7 @@
 
 **oferta.paragrafos[1]**: pagamento único
 
-**oferta.paragrafos[2]**: 30 dias de acesso. Sem renovação automática.
+**oferta.paragrafos[2]**: 6 meses de acesso. Sem renovação automática.
 
 **oferta.paragrafos[3]**: <span>7 dias corridos a partir da compra para pedir o reembolso integral.</span>
 
@@ -308,7 +308,7 @@
 
 **oferta.itens[1]**: <span class="cda-depois__numero">02</span><span>Você acessa sua conta e abre a primeira aula.</span>
 
-**oferta.itens[2]**: <span class="cda-depois__numero">03</span><span>Organiza a prática dentro dos 30 dias contados da aprovação do pagamento.</span>
+**oferta.itens[2]**: <span class="cda-depois__numero">03</span><span>Organiza a prática dentro dos 6 meses contados da aprovação do pagamento.</span>
 
 **oferta.acoes[0]**: Quero começar meu Desafio
 
@@ -338,7 +338,7 @@
 
 **duvidas.itens[3].pergunta**: Quanto tempo preciso reservar?
 
-**duvidas.itens[3].resposta**: Você tem 30 dias de acesso a partir da aprovação do pagamento. As aulas são gravadas e divididas em partes, e seu projeto fica salvo para continuar depois. Reserve momentos para assistir, experimentar e rever o que precisar; o ritmo de conclusão varia de pessoa para pessoa.
+**duvidas.itens[3].resposta**: Você tem 6 meses de acesso a partir da aprovação do pagamento. As aulas são gravadas e divididas em partes, e seu projeto fica salvo para continuar depois. Reserve momentos para assistir, experimentar e rever o que precisar; o ritmo de conclusão varia de pessoa para pessoa.
 
 **duvidas.itens[4].pergunta**: Posso fazer pelo celular?
 
@@ -354,9 +354,9 @@
 
 **duvidas.itens[7].pergunta**: Essa compra cria uma assinatura?
 
-**duvidas.itens[7].resposta**: Não. Você paga {{preco}} uma vez e recebe 30 dias de acesso ao Desafio. A Comunidade dos Criadores é uma assinatura separada, que você escolhe contratar se quiser continuar.
+**duvidas.itens[7].resposta**: Não. Você paga {{preco}} uma vez e recebe 6 meses de acesso ao Desafio. A Comunidade dos Criadores é uma assinatura separada, que você escolhe contratar se quiser continuar.
 
-**duvidas.itens[8].pergunta**: O que acontece depois dos 30 dias?
+**duvidas.itens[8].pergunta**: O que acontece depois dos 6 meses?
 
 **duvidas.itens[8].resposta**: O acesso às aulas e ao Estúdio das atividades termina. Você continua podendo visitar o Mural para ver e jogar, mas esse acesso de visitante não permite novas publicações, comentários ou reações. O link do seu jogo continua funcionando enquanto a publicação estiver disponível. Seus projetos e progresso ficam guardados conforme a Política de Privacidade e podem ser retomados com uma nova contratação que inclua esse acesso.
 
@@ -370,6 +370,6 @@
 
 **fechamento.paragrafos[0]**: Comece com a Chave do Farol: monte as regras, experimente suas escolhas e compartilhe o resultado. Um primeiro jogo para praticar o que você veio buscar: entender, criar e realizar.
 
-**fechamento.paragrafos[1]**: {{preco}} · pagamento único · 30 dias de acesso · 7 dias de garantia
+**fechamento.paragrafos[1]**: {{preco}} · pagamento único · 6 meses de acesso · 7 dias de garantia
 
 **fechamento.acoes[0]**: Quero começar meu Desafio

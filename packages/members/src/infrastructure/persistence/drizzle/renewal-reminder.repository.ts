@@ -68,11 +68,11 @@ export class DrizzleRenewalReminderRepository
             eq(entitlements.status, 'active'),
             eq(entitlements.sourceKind, 'payment'),
             isNull(entitlements.subscriptionId),
-            // Somente o Desafio fixed/days possui a cadência própria abaixo.
-            // Outros produtos por dias continuam no lembrete genérico.
+            // Somente o Desafio de prazo fixo (dias ou, desde 27/11/2026, meses) possui a cadência
+            // própria abaixo. Outros produtos de prazo fixo continuam no lembrete genérico.
             sql`not coalesce((
               ${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'
-              and ${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'
+              and ${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' in ('days', 'months')
               and ${entitlements.snapshot} ->> 'offerSlug' like 'desafio-primeiro-jogo%'
             ), false)`,
             gte(entitlements.expiresAt, from),
@@ -174,7 +174,7 @@ export class DrizzleRenewalReminderRepository
           eq(entitlements.accessType, 'course'),
           inArray(entitlements.courseRef, CHALLENGE_COURSE_REFS),
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'`,
-          sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'`,
+          sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' in ('days', 'months')`,
           lte(entitlements.expiresAt, sevenDaysFromNow),
           // Só a mensagem da faixa ATUAL participa do anti-join. Quem entrou
           // direto na faixa de 3 dias não recebe o aviso atrasado de 7 dias.

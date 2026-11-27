@@ -119,8 +119,8 @@ describe('POST /api/checkout/pix', () => {
       priceCents: 6700,
       pricingMode: 'one_time',
       accessMode: 'fixed',
-      accessDurationValue: 30,
-      accessDurationUnit: 'days',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
     })
     expect(await getActiveOffer(gw.gateway, slug)).toMatchObject({ accessMode: 'fixed' })
     const baseGateway = gw.gateway
@@ -213,14 +213,14 @@ describe('POST /api/checkout/pix', () => {
     } satisfies Partial<PurchasedOfferSnapshotV1>)
   })
 
-  test('oferta fixa congela os 30 dias antes de criar a cobrança', async () => {
+  test('oferta fixa congela os 6 meses antes de criar a cobrança', async () => {
     const { repo, payments } = createFakeRepo()
     const gw = createFakeGateway()
     gw.setOfferConfig('curso-qa', {
       priceCents: 6700,
       accessMode: 'fixed',
-      accessDurationValue: 30,
-      accessDurationUnit: 'days',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
     })
     const { id } = await repo.createLead('kids/desafio-primeiro-jogo')
 
@@ -230,12 +230,12 @@ describe('POST /api/checkout/pix', () => {
     expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
       version: 1,
       accessMode: 'fixed',
-      accessDurationValue: 30,
-      accessDurationUnit: 'days',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
       listPriceCents: 6700,
       discountCents: 0,
       chargedPriceCents: 6700,
-      termsVersion: 'desafio-2026-10-21',
+      termsVersion: 'desafio-2026-11-27',
     } satisfies Partial<PurchasedOfferSnapshotV1>)
 
     gw.setStatus('PAID')
@@ -243,7 +243,7 @@ describe('POST /api/checkout/pix', () => {
     expect(paid.status).toBe(200)
     expect(gw.calls.grant[0]?.input).toMatchObject({
       offerRef: 'curso-qa',
-      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+      accessPolicy: { mode: 'fixed', durationValue: 6, durationUnit: 'months' },
     })
   })
 

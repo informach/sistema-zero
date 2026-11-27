@@ -73,9 +73,20 @@ describe('explicit, non-destructive Catalog seed', () => {
       priceCents: 6700,
       status: 'active',
       accessMode: 'fixed',
-      accessDurationValue: 30,
+      // 6 meses desde 27/11/2026 (prazo único das compras avulsas; antes, 30 dias).
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
       items: [{ productSku: 'adult-mural-dos-criadores' }],
     })
+    for (const slug of ['estudio-completo', 'pensa', 'pinta', 'molda'])
+      expect(CATALOG_SEED_OFFERS.find((o) => o.slug === slug)).toMatchObject({
+        accessMode: 'fixed',
+        accessDurationValue: 6,
+        accessDurationUnit: 'months',
+      })
+    expect(CATALOG_SEED_OFFERS.find((o) => o.slug === 'desafio-primeiro-jogo')?.status).toBe(
+      'paused',
+    )
   })
   test('applies real domain validation, resolves seven bundle deliveries and is idempotent', async () => {
     const ports = fixture()

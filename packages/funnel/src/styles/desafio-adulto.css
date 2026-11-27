@@ -33,7 +33,7 @@
   color: var(--cda-amarelo);
 }
 
-/* ── Herói: a tela do jogo e a faixa dos 30 dias ────────────────────────────── */
+/* ── Herói: a tela do jogo e a faixa dos 6 meses ────────────────────────────── */
 .cda .da-hero__visual {
   flex: 1 1 27.5rem;
   min-width: 0;

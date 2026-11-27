@@ -15,7 +15,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "4f10d3d1959875149475241a93546d5bfd6359e338a46d904f0d0542d6b29f6d"
+    "sha256": "80ba651c448b896bfe1161d0e8ae178e29267f3ca55d3a6ab024f742b06674ed"
   },
   {
     "mode": "desafio",
@@ -33,7 +33,7 @@
       "apoio": "junto",
       "condicao": "ritmo"
     },
-    "sha256": "87826bc3b0f3d55f10453ae2c864f004ac207150ff2f14040d5b224e271c028e"
+    "sha256": "7c36c1441318d07a493c7e02ddfcdc5cfa3e18b8e99fab9576ab5754ef4f8f37"
   },
   {
     "mode": "desafio",
@@ -51,7 +51,7 @@
       "apoio": "junto",
       "condicao": "preco"
     },
-    "sha256": "2885708348cef8b4ab7f07b9037178fb67e0fb411d24f3f9f5a2f8cb244adc52"
+    "sha256": "50ecf19f224ef1c737aa67a32eac8cf62ab4861cdfbff17e7f0c13902f4e38a5"
   },
   {
     "mode": "desafio",
@@ -69,7 +69,7 @@
       "apoio": "junto",
       "condicao": "geral"
     },
-    "sha256": "5431ee99b682cf33388f3a8eb7863b49badd619083c53c594e4a5851c3e0b897"
+    "sha256": "cf882d6579add0cefa7a163e351c70a7141d6a8e201009ac58e67a68eb358d80"
   },
   {
     "mode": "desafio",
@@ -87,7 +87,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "dd2fbb66a753acfc670994c9f7f149cfd7abeca07552e574f8c1372bb0c8669a"
+    "sha256": "2a058340a2e2c847f0b8a3b8b31a57ef9ef9a1113acde3dd1dcd12bfeda18056"
   },
   {
     "mode": "desafio",
@@ -105,7 +105,7 @@
       "apoio": "junto",
       "condicao": "interesse"
     },
-    "sha256": "62a17c1e3f7a4f0e183be0c7fcba123b5ed968f1953dc3eb9bed76b31c2a7752"
+    "sha256": "07bf0fe4d82442826c4ce805e3f278c48e570ee6953a30fa9cfca8aca2aeb5bf"
   },
   {
     "mode": "desafio",
@@ -123,7 +123,7 @@
       "apoio": "perto",
       "condicao": "conduzir"
     },
-    "sha256": "92a6693c306d43c138386c8062e5ab2c34e4321f8dcb805ca4f2127a4416b22a"
+    "sha256": "5a09ae01aa62a89c75bf7cebdf5b3ce21215b9830c82d71bf98b3dbf263a8991"
   },
   {
     "mode": "desafio",
@@ -141,7 +141,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "dc47b2b77022ca1fa701782bf3cf31989f5c93fbdec0983babb3c74c6f35a87c"
+    "sha256": "aa3f665e74a4a1a27525ae32ad81907938dc89a3617c3178748c8e7ea4130925"
   },
   {
     "mode": "desafio",
@@ -159,7 +159,7 @@
       "apoio": "perto",
       "condicao": "preco"
     },
-    "sha256": "bf98eb957682a4d21b19b9ce3d18ce982c521905a94041f1e00fd08ca31c715a"
+    "sha256": "5ba3453842a854ae4516bcb8da8f4c4d176a78385de1f69067a52a126b699583"
   },
   {
     "mode": "desafio",
@@ -177,7 +177,7 @@
       "apoio": "perto",
       "condicao": "geral"
     },
-    "sha256": "c35277ed919e0799597211870ec761bbf6f0b0e18077565cab1db80f0f4e9085"
+    "sha256": "ecc4cf33b190393707c50953e4696addf5706b853529e16071d09ed190590a78"
   },
   {
     "mode": "desafio",
@@ -195,7 +195,7 @@
       "apoio": "perto",
       "condicao": "conduzir"
     },
-    "sha256": "6b97c7cbe11ae4e4e701fa826f489b444cfce200fcced8d824d07af75615e850"
+    "sha256": "0f7b8a66ae7aa2d21931bf787e7b7eea05b868a9c81ba7538cc83d7d524e5005"
   },
   {
     "mode": "desafio",
@@ -213,7 +213,7 @@
       "apoio": "perto",
       "condicao": "interesse"
     },
-    "sha256": "658465f36cbf9021f90b88c073c704bfa8806dabae3c9b0e009553ab017cf50b"
+    "sha256": "46b85673a80dea920d2402d12ae4e2069f169995e9bfce3ca5c6d3c5435e046c"
   },
   {
     "mode": "desafio",
@@ -231,7 +231,7 @@
       "apoio": "perto",
       "condicao": "conduzir"
     },
-    "sha256": "dbd217acf2b08f732d7c1d2e7f98d17db115f2c0529aaeaf130634df7081223d"
+    "sha256": "943200491a8d0dbdddb91b5a5c347e13999f70c533cd505f9e3a14632c3cbf94"
   },
   {
     "mode": "desafio",
@@ -249,7 +249,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "5638eabf434b0d5aaaf09d430ca92a493a3920299bc01cc5e36663f29d601b93"
+    "sha256": "ab8dd85e78d543fd41c8363c2e0ab4a70101c85cdf86f685615a7a7170875f82"
   },
   {
     "mode": "desafio",
@@ -267,7 +267,7 @@
       "apoio": "perto",
       "condicao": "preco"
     },
-    "sha256": "de87db1adf1d2504af9c4b14286b20dfaf81eb091d7d04af027a1b7ac91ae065"
+    "sha256": "b532cbeccd4feaf7beaa5f48cb637def305bcf5740dbed9545f1efd33513f6e6"
   },
   {
     "mode": "desafio",
@@ -285,7 +285,7 @@
       "apoio": "perto",
       "condicao": "geral"
     },
-    "sha256": "61fecae1373878cded2ee20d3feef09b123c3790344f9a5b0e806f1111b27cf5"
+    "sha256": "6afd24c34b75a0c8f2d12c05bb50df9fd3d9f2691a0e102ab64343939303569e"
   },
   {
     "mode": "desafio",
@@ -303,7 +303,7 @@
       "apoio": "perto",
       "condicao": "conduzir"
     },
-    "sha256": "91935fba032841e56d75ca33d1c844302aacd0370c0e23022dc9f8878afc9d7c"
+    "sha256": "750a492cf7642c05e418f2a26fb6d58680f8eba329a6569e89b1d47a8f765bd7"
   },
   {
     "mode": "desafio",
@@ -321,7 +321,7 @@
       "apoio": "perto",
       "condicao": "interesse"
     },
-    "sha256": "6877453925f03bce3876b1af335ffe6aa867671ebbdb9e67266559c1a524c2d1"
+    "sha256": "9b376e77c3e87b622e2164b7f7c19fdc8828e323b4b8b732a3f0a344d0db02fe"
   },
   {
     "mode": "desafio",
@@ -339,7 +339,7 @@
       "apoio": "perto",
       "condicao": "geral"
     },
-    "sha256": "237b95c33ad6993bb217b40130302e2179876cf987ca74e1e5d1bdb970f3dda0"
+    "sha256": "891685da9d7cea3407bd7f435f97d3da7d56cc66af36385b5f869eb6d842c532"
   },
   {
     "mode": "desafio",
@@ -357,7 +357,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "dbc3059e6ec1bbc945a297440cdac01b221430ddf5c3ce9165df5e5e4031dfbc"
+    "sha256": "34fc5562318ec251ee29afe18bab7469c680051544ce4a78e3ecfb56229cdae4"
   },
   {
     "mode": "desafio",
@@ -375,7 +375,7 @@
       "apoio": "perto",
       "condicao": "conduzir"
     },
-    "sha256": "6e6ba8236513c517ee768091c2746a4a7017b2bb55233a6a70ef1cb4f82d9275"
+    "sha256": "22573899b737594586b7b13ccac1bf6a82eed0afa2fd35086d0d6c2bc76c3578"
   },
   {
     "mode": "desafio",
@@ -393,7 +393,7 @@
       "apoio": "perto",
       "condicao": "geral"
     },
-    "sha256": "36fc99836f2677aaf28386149492e86141e783df61f85a1e90d5db0aec37ce98"
+    "sha256": "f251477b8c445b2a4b97abde679f5788a700bd224ce8c39a2c4c68b49bb38f7a"
   },
   {
     "mode": "desafio",
@@ -411,7 +411,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "0a063de8cb55d74560c81787cabfdd67d355100d2c4fc1e23f8786f7d131db9d"
+    "sha256": "5bfeeb375080f8f2fd811dcd583781596c85f4b85e5693710cdd03b6f64f9364"
   },
   {
     "mode": "desafio",
@@ -429,7 +429,7 @@
       "apoio": "sozinho",
       "condicao": "conduzir"
     },
-    "sha256": "94e5aaa2e5f9958edfd91c97ce6389ab2d5bbd719e19343368487b9c785cb470"
+    "sha256": "548f8b6e8c0d771a057fe2084f446732cb59e16d751d11d73fa7dbff15d1dc34"
   },
   {
     "mode": "desafio",
@@ -447,7 +447,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "c6ccc3b2ebc34962abe7f0d73060eca17ec9df64f2876ea4405968423fca3746"
+    "sha256": "38f1cc859b8546147296caf9d7a5b20e030cae522c86c7be7ee0e09e8f5161e7"
   },
   {
     "mode": "desafio",
@@ -465,7 +465,7 @@
       "apoio": "perto",
       "condicao": "ao_vivo"
     },
-    "sha256": "b906d776fd71c10bd98bec63beab775fa5b994135fac204e81ecfa06ca8ee59d"
+    "sha256": "9eb6402cc72e75e5ae2b9fd004a62517d4d3388d82af1665878376f090d1d059"
   },
   {
     "mode": "desafio",
@@ -483,7 +483,7 @@
       "apoio": "perto",
       "condicao": "escola"
     },
-    "sha256": "a6f75c85d84300ca1d6dfc00fd607bd7b7c58d371c77ad6b2fa2861694e9011a"
+    "sha256": "64389a078a75091d87e1de7da6fda2930953dd568865731a6206a2e170ee80ac"
   },
   {
     "mode": "desafio",
@@ -501,7 +501,7 @@
       "apoio": "organizar",
       "condicao": "conduzir"
     },
-    "sha256": "cb4d199542e41727751db0f1749807fb9f2c5c391a40c0ef0674e40edeee370e"
+    "sha256": "7bf9ebc5efe7bc8106520cbeeedcb0fd02c02073b4947c97c0ce33f15281a51d"
   },
   {
     "mode": "desafio",
@@ -519,7 +519,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "0d65b011c87551c7a3ae331e106d9955e217de04cf29436ff924ebd5b0f069a4"
+    "sha256": "ee804fee96561818fc0db96a396b8989d5a542d1764ff825262fc540a87f0c50"
   },
   {
     "mode": "comunidade",

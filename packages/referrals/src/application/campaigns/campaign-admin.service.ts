@@ -441,19 +441,28 @@ export class CampaignAdminService {
       throw new CampaignValidationError(
         'Escolha a oferta do catálogo que a campanha dá de presente.',
       )
-    if (previousOffer && validated.giftOfferId !== previousOffer) {
-      // Mesma régua do público: só em rascunho sem cadastros (o repo confere sob o lock).
-      if (previous.status !== 'draft') throw new CampaignGiftOfferLockedError()
-      const stats = await this.repo.stats(id)
-      if (stats.redemptions + stats.pending + stats.failed > 0)
-        throw new CampaignGiftOfferLockedError()
+    let giftOfferSameCourse = false
+    if (previousOffer && validated.giftOfferId && validated.giftOfferId !== previousOffer) {
+      // Outra oferta do MESMO curso (27/11/2026: o presente do guia passa da oferta de presente à
+      // oferta única de 6 meses) vale com a campanha no ar e com resgates: cada resgate guarda a
+      // própria oferta e a vaga sai do curso. Troca de curso segue a régua do público: só em
+      // rascunho sem cadastros (o repo confere sob o lock).
+      giftOfferSameCourse = await this.sameGiftCourse(previousOffer, validated.giftOfferId)
+      if (!giftOfferSameCourse) {
+        if (previous.status !== 'draft') throw new CampaignGiftOfferLockedError()
+        const stats = await this.repo.stats(id)
+        if (stats.redemptions + stats.pending + stats.failed > 0)
+          throw new CampaignGiftOfferLockedError()
+      }
     }
     if (
       validated.giftOfferId &&
       (validated.giftOfferId !== previousOffer || validated.audience !== previous.audience)
     )
       await this.validateGiftOffer(validated.giftOfferId, validated.audience)
-    const updated = await this.repo.update(id, validated, actor, input.expectedUpdatedAt)
+    const updated = await this.repo.update(id, validated, actor, input.expectedUpdatedAt, {
+      giftOfferSameCourse,
+    })
     return updated ? this.view(updated) : null
   }
 
@@ -545,8 +554,28 @@ export class CampaignAdminService {
 
   /**
    * A oferta do presente precisa existir no catálogo e servir de presente (`giftOfferProblem`:
-   * pagamento único, sem prazo ou com prazo em dias, não arquivada, do público da campanha).
+   * pagamento único, sem prazo ou com prazo fixo em dias ou meses, não arquivada, do público da campanha).
    */
+  /** As duas ofertas resolvem no catálogo e entregam o mesmo curso principal (e o mesmo produto). */
+  private async sameGiftCourse(previousOfferId: string, nextOfferId: string): Promise<boolean> {
+    if (!this.giftOffers) throw new GiftCatalogUnavailableError()
+    let before: Awaited<ReturnType<GiftOfferCatalog['resolve']>>
+    let after: Awaited<ReturnType<GiftOfferCatalog['resolve']>>
+    try {
+      ;[before, after] = await Promise.all([
+        this.giftOffers.resolve(previousOfferId),
+        this.giftOffers.resolve(nextOfferId),
+      ])
+    } catch {
+      throw new GiftCatalogUnavailableError()
+    }
+    if (!before || !after || !before.courseSlug || before.courseSlug !== after.courseSlug)
+      return false
+    if (before.productSku && after.productSku && before.productSku !== after.productSku)
+      return false
+    return before.audience === after.audience
+  }
+
   private async validateGiftOffer(offerId: string, audience: GiftAudience) {
     if (!this.giftOffers) throw new GiftCatalogUnavailableError()
     let offer: Awaited<ReturnType<GiftOfferCatalog['resolve']>>

@@ -25,7 +25,7 @@ import PresenteJanela from './PresenteJanela.astro'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon, presente, access } = Astro.props
-// O prazo é o da oferta de venda (1 ano); o do presente vai só no cartão (`cartaoDoPresente`).
+// O prazo é o da oferta de venda (6 meses); o do presente vai só no cartão (`cartaoDoPresente`).
 const prazo = prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeKidsVenda(prazo, access?.guaranteeDays ?? null)
 const preco = precoDoDesafio(priceReais, coupon)
@@ -39,14 +39,14 @@ const cartao = presente
   : null
 const origem = cartao?.etiqueta ?? null
 // No presente, as seções falam do presente (a copy aprovada da página do presente, com o prazo dele):
-// nada de preço, pagamento ou "1 ano" da venda contradizendo um presente gratuito.
+// nada de preço, pagamento ou "6 meses" da venda contradizendo um presente gratuito.
 const P = presente
   ? isCadeGift(presente.gift.gift)
     ? presenteKidsDaOferta(presente.gift.gift)
     : // Presente sem prazo em dias: os marcadores "sem prazo", nunca o "7 dias" do texto aprovado.
       presenteKids(prazoDaOferta(null))
   : venda
-// No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
+// No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "6 meses" da venda).
 const cabeca = cartao ? { ...venda.oferta, texto: cartao.frase } : venda.oferta
 const barra = cartao
   ? { titulo: cartao.etiqueta, texto: cartao.precoFinal, cta: cartao.cta, presente: cartao.aberto }

@@ -1,6 +1,6 @@
 // A copy de VENDA no modo presente (26/11/2026), para as páginas que não têm uma copy própria de
 // presente (as do Desafio): o que só vale para quem paga não pode contradizer um presente gratuito.
-// A linha de condições da venda ("{{preco}} · pagamento único · 30 dias · garantia") vira a frase do
+// A linha de condições da venda ("{{preco}} · pagamento único · 6 meses · garantia") vira a frase do
 // presente; "contados da aprovação do pagamento" vira "contados do cadastro"; e as dúvidas sobre
 // pagamento, garantia, assinatura ou compra saem. O resto da página continua igual.
 import { giftDurationLabel } from '@sistemazero/core/referrals'
@@ -23,10 +23,11 @@ const TROCAS: readonly [RegExp, string][] = [
 function trocar(texto: string, cartao: CartaoDoPresente): string {
   if (CONDICOES_DA_VENDA.test(texto)) return cartao.frase
   const trocado = TROCAS.reduce((atual, [de, para]) => atual.replace(de, para), texto)
-  // O prazo da venda (30 dias) vira o do presente: o cartão e a página dizem o mesmo prazo.
+  // O prazo da venda (6 meses desde 27/11/2026; antes, 30 dias) vira o do presente: o cartão e a
+  // página dizem o mesmo prazo.
   return cartao.dias === null
     ? trocado
-    : trocado.replace(/\b30 dias\b/g, giftDurationLabel(cartao.dias))
+    : trocado.replace(/\b(?:30 dias|6 meses)\b/g, giftDurationLabel(cartao.dias, cartao.meses))
 }
 
 function ehDuvida(valor: unknown): boolean {
