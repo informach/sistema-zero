@@ -100,8 +100,9 @@ export function isPintaVersionedKind(kind: string): boolean {
 
 /** Earliest format with cross-item dependencies that an older writer cannot safely update. */
 export const PINTA_MIN_INVENTORY_FORMAT_VERSION = 7
-/** Highest explicit reader capability negotiated by this service, independent of the floor. */
-export const PINTA_INVENTORY_READER_VERSION = 7
+/** LG05 reader A: admit native 9/cloud 8 before enabling the public workshop writer.
+ * The legacy writer and its reader remain separate; neither can upload these documents. */
+export const PINTA_INVENTORY_READER_VERSION = 8
 
 export function pintaInventoryFloor(tool: string, kind: string, formatVersion: number): number {
   return tool === 'pinta' &&

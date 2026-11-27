@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-Registrado em 23/11/2026 para execução aos poucos. LG01 e LG02 foram concluídas em produção em 24/11; as demais etapas seguem os estados do quadro. Este registro permite retomar cada frente separadamente.
+Registrado em 23/11/2026 para execução aos poucos. Atualizado em 27/11 após conferir GitHub, deployments Railway e os cursos pela API de produção, somente de leitura. LG01 e LG02 foram concluídas em produção em 24/11; LG04, em 25/11. LG03 está parcial e LG05 está em execução local. Este registro permite retomar cada frente separadamente.
 
 A prioridade é entregar à criança fluxos completos: criar, guardar, voltar depois e continuar usando o projeto nos destinos oferecidos. As melhorias prontas e a publicação de aulas podem avançar enquanto as integrações maiores são concluídas.
 
@@ -11,7 +11,7 @@ A prioridade é entregar à criança fluxos completos: criar, guardar, voltar de
 - [Consulta de publicação dos cursos em produção](../../.audits/review-7-dias-2026-11-23/production-course-status.json).
 - [Proposta de auditoria dos tetos e dos aparelhos reais](2026-11-23-auditoria-dos-tetos-proposta.md), para coordenar os jogos de referência e as medições sem duplicar o trabalho.
 
-Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar uma etapa, conferir o código e a configuração vigentes antes de decidir o que ainda falta.
+O levantamento de 23/11 é histórico; o quadro e os registros datados abaixo distinguem as entregas posteriores. Ao retomar uma etapa, conferir o código e a configuração vigentes antes de decidir o que ainda falta. Implementação local, qualificação em staging e liberação em produção são estados distintos.
 
 ## Ordem e acompanhamento
 
@@ -19,9 +19,9 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 | --- | --- | --- | --- | --- |
 | LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Concluída em produção em 24/11: sete serviços saudáveis, runtime/imagem qualificados, CI e provas finais aprovados. Aquecimento excluído |
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Concluída em produção em 24/11: sete serviços em `0180e39fd`, Worker/imagem qualificados, CI, staging e aceite infantil aprovados. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
-| LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
-| LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Em qualificação: conta, abertura fria e primeira publicação aprovadas em staging; correção R2 da atualização do mesmo link em validação. Produção pendente. [Plano](2026-11-24-lg04-pinta-estudio-conta-mural.md) |
-| LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Pendente |
+| LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial, conferida em produção em 27/11: Ilha do Farol 3/3 e Jardim Secreto 2/2 em Kids e Adultos; Pinta e Moedas em rascunho, 0/1 em cada público |
+| LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Entregue em produção em 25/11, PR #289, fonte `fed288d8e`; atualização R2 corrigida e mesmo post/link aprovado em staging. A versão de produção conferida em 27/11 inclui a entrega. [Fechamento](https://github.com/informach/sistema-zero/pull/289) |
+| LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Em execução desde 27/11: leitor A implementado e qualificado localmente; gravador público 7/teto 8 preservados. Autoria projetada, destinos e implantação hospedada pendentes. [Provas e limites](../qa/2026-11-27-lg05-leitor-compativel.md) |
 | LG06 | Abertura gradual do Molda Cenários | 3 | Oficina implantada, produto e faixas da Jornada conferidos | Pendente |
 | LG07 | Habilitação da prévia isolada do Studio | 3 | Runtime e origens permitidas configurados | Pendente |
 | LG08 | Promoção da nova distribuição Python | 3 | Qualificação e configuração coerentes em todas as pontas | Pendente |
@@ -50,33 +50,40 @@ Resultado: `538ae843b7534239a715a1d0a6c2a9d32d54604d`, sete serviços saudáveis
 
 Resultado: PR #286, fonte `0180e39fd`, onda `45409371184`, sete serviços saudáveis e Worker `99386c58`. A imagem exata passou 66 cenários; a matriz hospedada cobriu falhas entre abas, capacidade, suspensão, Pro e navegação 3D. Duas abas autenticadas aprovaram 6/6 e 5/5 objetivos, sem prêmio duplicado. Main foi integrado normalmente em staging, preservando Jardim, vozes, apelido e quarto. Permanecem os limites de capacidade, cache de cinco minutos e duração dos objetivos; Python fica fora do aquecimento. [Fechamento e provas](../qa/2026-11-24-lg02-aquecimento-seguro.md).
 
-Entradas posteriores ao plano: o apelido infantil editável e a correção de rolagem do quarto estão em staging, com revisão, tipos e aceite visual aprovados. A promoção será feita em versão própria, preservando os limites de identidade e as permissões do responsável; esses itens não entraram na LG02 de produção.
+Entradas posteriores ao plano: o apelido infantil editável e a correção de rolagem do quarto não entraram na LG02 de produção. O quarto recebeu publicações posteriores pela frente de construção, registradas no [fechamento de 26/11](../reviews/2026-11-25-campanhas-embaixadores-origens/funcionamento-apos-publicacao.md); não reabrir como pendência da LG02. A promoção específica do apelido não foi confirmada nesta conferência e conserva seu acompanhamento próprio, com os limites de identidade e as permissões do responsável.
 
 ## Publicação das aulas
 
 **LG03** começa por **Meu primeiro desenho no Pinta** e **Moedas no caminho**, assim que seus materiais estiverem finais. Depois seguem os demais cursos conforme a sequência pedagógica e sua prontidão.
 
 - [ ] Conferir vídeo, instruções, atividade e material de cada aula contra a interface atual.
-- [ ] Promover separadamente os materiais/cadastro do Jardim e o ajuste de concorrência da geração de voz já presentes em staging, conferindo retomada e respostas 429 do provedor.
+- [x] Promover materiais/cadastro do Jardim: publicado nos dois públicos, com vídeos finais e caderno; recibo e consulta de 27/11 abaixo.
+- [ ] Registrar a qualificação própria do ajuste de concorrência da geração de voz, incluindo retomada e respostas 429 do provedor; publicação do curso não substitui essa prova operacional.
 - [ ] Conferir o papel do curso, o acesso e a apresentação na Jornada.
 - [ ] Publicar individualmente e percorrer a aula com um perfil elegível.
 - [ ] Reconciliar os títulos dos materiais com os registros do Admin antes de criar ou importar cursos.
 
-Na primeira consulta de 23/11, **A Ilha do Farol** estava em rascunho com 0/3 aulas publicadas; **O Jardim Secreto**, com 0/2; **Meu primeiro desenho no Pinta** e **Moedas no caminho**, com 0/1 cada. Uma nova leitura de produção às 00:08 UTC de 24/11 (21:08 de 23/11 em São Paulo) confirmou **A Ilha do Farol publicada com 3/3 aulas em Kids e Adultos**, por outra frente. Members, Admin e Kids receberam o ajuste de 32 falas em `8d87bbff8`, já incorporado à LG01. Jardim, Pinta e Moedas continuam em rascunho. **Transformando o vilão em aliado** já estava publicado com 7/7 aulas e não é uma publicação nova desta etapa.
+Na primeira consulta de 23/11, **A Ilha do Farol** estava em rascunho com 0/3 aulas publicadas; **O Jardim Secreto**, com 0/2; **Meu primeiro desenho no Pinta** e **Moedas no caminho**, com 0/1 cada. Uma nova leitura de produção às 00:08 UTC de 24/11 (21:08 de 23/11 em São Paulo) confirmou **A Ilha do Farol publicada com 3/3 aulas em Kids e Adultos**, por outra frente. Members, Admin e Kids receberam o ajuste de 32 falas em `8d87bbff8`, já incorporado à LG01. **Transformando o vilão em aliado** já estava publicado com 7/7 aulas e não é uma publicação nova desta etapa.
+
+**Conferência de 27/11, 11:11 UTC (08:11 em São Paulo):** consulta GET ao Members de produção confirmou Ilha do Farol 3/3 e **Jardim Secreto 2/2 publicados nos dois públicos**. [Recibo de publicação do Jardim](../aulas-interativas/faisca/o-jardim-secreto/publicacao-production.json). Pinta e Moedas permanecem em rascunho, com 0/1 aula em cada público. Moedas tem duas aulas cadastradas em staging; seu [recibo](../aulas-interativas/faisca/poder-moedas-no-caminho/publicacao-staging.json) ainda registra vídeos provisórios, que não autorizam publicação em produção. Materiais e roteiros seguem o trabalho da LG03.
 
 A proposta posterior do Construtor está no PR #287, em rascunho, com seis protótipos nativos e apoio de telas/reinício preparado. Sua receita Windows foi corrigida em `61de040ee`, preservando os projetos. Esse currículo segue revisão própria: importar e avaliar na interface/WebGL, concluir artes 3D e avaliação de aparelhos, fechar a matriz pedagógica e só então reescrever/publicar roteiros, manifestos e materiais. A prioridade dos cursos já listados na LG03 permanece. [Revisão e limites dos protótipos](../qa/2026-11-24-lg02-aquecimento-seguro.md).
 
 ## Integrações regionais do Pinta
 
-**LG04** é a principal pendência técnica para oferecer materiais regionais no Studio com salvamento na conta e publicação.
+**LG04 foi entregue em produção em 25/11**, com o percurso regional compatível no Estúdio livre. O [PR #289](https://github.com/informach/sistema-zero/pull/289) registra o fechamento posterior aos documentos de qualificação: CI com 13 jobs, onda de produção `45587390047`, sete serviços em `fed288d8e`, Worker e imagem qualificados. A correção de ETag do R2 passou na atualização do mesmo post/link em staging. A fonte `61ba772a6`, ativa em Members e Kids na conferência de 27/11, descende dessa entrega. Os registros intermediários do [plano](2026-11-24-lg04-pinta-estudio-conta-mural.md) e do [QA](../qa/2026-11-24-lg04-pinta-estudio-conta-mural.md) são históricos e não substituem esse fechamento.
 
-- [ ] Integrar a captura e a biblioteca regional aos caminhos públicos do Studio.
-- [ ] Concluir o uso do escritor compatível no cliente, incluindo adoção e leitura dos projetos anteriores.
-- [ ] Comprovar o percurso: criar → importar → editar → salvar na conta → fechar → reabrir em outro aparelho → publicar → atualizar a publicação → jogar.
-- [ ] Exercitar interrupção, trabalho offline, conflito entre abas e recuperação sem perda de referências.
-- [ ] Conferir separadamente a compatibilidade dos blocos de aula legados.
+- [x] Integrar a captura e a biblioteca regional aos caminhos públicos do Studio.
+- [x] Concluir o uso do escritor compatível no cliente, incluindo adoção e leitura dos projetos anteriores.
+- [x] Comprovar criar → importar → editar → salvar na conta → fechar → reabrir em contexto vazio → publicar → atualizar a publicação → jogar. Aceite infantil em staging; produção teve conferência de fontes, build/check e interface pública. Dois contextos no mesmo computador, sem segundo aparelho físico (LG09).
+- [x] Exercitar interrupção, conflito entre escritores e recuperação sem perda de referências nas provas da LG04, com os limites discriminados no fechamento do PR.
+- [x] Conferir separadamente os blocos de aula legados: checkpoints preservados e importação regional explicitamente recusada nesses blocos.
 
 **LG05** libera regras e projeções novas apenas quando o gravador, a fila, os leitores e os destinos preservarem os novos documentos. Elevar o teto anunciado do formato depende dessa integração.
+
+Retomada autorizada em 27/11: conferir autoria e edição do nativo 9, persistência local/causal, leitura e escrita de nuvem 8, recuperação e exportação, incluindo a admissão do corpo pelo BFF. Preservar os originais, recusar leitores incompatíveis e qualificar os destinos antes de elevar capacidades públicas. A distribuição Python permanece na LG08; Cenários, prévia isolada e Arquipélago V2 conservam suas etapas próprias.
+
+[Plano de execução LG05](../superpowers/plans/2026-11-27-lg05-regras-projecoes.md): entrega A prepara leitor causal 8, prova do BFF e instalação integral da cópia da conta, conservando gravador 7/teto público 8. A entrega B integra autoria projetada e destinos antes de ativar gravador 8/teto 9. Não confundir a leitura preparada localmente com liberação pública ou produção.
 
 O download regional já existe. A janela focal oferece edição leve; Avançado abre o editor completo. Esses caminhos devem ser preservados durante a evolução da integração.
 
@@ -119,6 +126,10 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
+| 27/11/2026 | LG05 A | Leitor causal 8/BFF e instalação canônica separados da escrita pública 7/teto 8. Três variantes nativas 9 preservadas; offline, ACK perdido, leitores antigos e formatos inválidos conferidos. Core 3.371, Pinta 3.010 e Member Shell 2.832 aprovados; 893 guardas, cinco aulas em Chrome e sete objetivos do Farol aprovados. Tipos, Biome e gerados conferidos. Sem deploy; [qualificação e condicionais](../qa/2026-11-27-lg05-leitor-compativel.md) |
+| 27/11/2026 | LG05 | Responsável autorizou seguir com a etapa e manter este plano atualizado. Levantamento e implementação locais em andamento; produção ainda sem a liberação dos formatos novos |
+| 27/11/2026 | Conferência | API de produção confirmou LG03 parcial: Ilha 3/3 e Jardim 2/2 nos dois públicos, Pinta e Moedas 0/1. Railway: Members/Kids saudáveis em `61ba772a6`, incluindo LG04; sem operação pendente. `CENARIOS_MODO` e `CENARIOS_REGIOES` ausentes; prévia isolada e origem da galeria ausentes nos dois apps; política anterior preservada. Nenhuma mutação remota |
+| 25/11/2026 | LG04 | Entregue pelo [PR #289](https://github.com/informach/sistema-zero/pull/289), fonte `fed288d8e`, onda `45587390047`. Conta, reabertura fria e publicação/atualização no mesmo link aceitas em staging; produção conferida sem posts de QA. Nativo 8/nuvem 7 e PNG 5/cena 4 preservados. Reabertura em dois contextos, sem segundo aparelho físico |
 | 24/11/2026 | LG02 | Concluída: PR #286, CI com 13 jobs, plano zero e onda canônica `45409371184` aprovados. Sete serviços em `0180e39fd`, Worker `99386c58`, duas aplicações saudáveis na imagem qualificada. Staging teve 20 serviços e aceite infantil aprovados; main integrado sem mudar seu conteúdo concorrente. Runtime, rotas públicas, catálogo, cursos e controles conferidos após o deploy. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | 24/11/2026 | LG01 | Concluída: PRs #283/#285 integrados, CI com 13 jobs e plano aprovados, onda canônica `45315948453` concluída. Sete serviços em `538ae843b`, dois contêineres ready, HTTP 200 nas rotas públicas e no executor após o deploy. Cursos preservados; aquecimento permanece na LG02 |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |

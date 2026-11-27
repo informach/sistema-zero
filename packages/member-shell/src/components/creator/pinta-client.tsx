@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  PINTA_INVENTORY_READER_VERSION,
-  PINTA_MAX_READ_FORMAT_VERSION,
-} from '@sistemazero/core/creations'
+import { PINTA_MAX_READ_FORMAT_VERSION } from '@sistemazero/core/creations'
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
@@ -27,6 +24,7 @@ import {
   type PintaPersistenceLike,
 } from '../../lib/pinta-cloud-persistence'
 import { pintaRecoveryHelpFor } from '../../lib/pinta-recovery-help'
+import { PINTA_WORKSHOP_CAPABILITIES } from '../../lib/pinta-workshop-capabilities'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
@@ -46,13 +44,10 @@ import {
 type PintaModule = typeof import('@sistemazero/pinta')
 
 /**
- * Regiões do Pinta (23/11/2026, etapa 1): o leitor e o escritor da conta que a oficina anuncia.
- * Nuvem 7 = nativo 8 (regiões). Nuvem 8 (autorregras e projeções) ainda não está pronta e não é
- * anunciada; por isso a oficina deste host grava no máximo o nativo 8.
+ * Compatibility export for regional consumers. LG05 reader A separates the account reader
+ * from the writer: native 9/cloud 8 is readable; public editing still stops at native 8/cloud 7.
  */
-export const PINTA_REGIONS_CLOUD_FORMAT = 7 as const
-if (PINTA_REGIONS_CLOUD_FORMAT > PINTA_INVENTORY_READER_VERSION)
-  throw new Error('O leitor regional do Pinta passa do leitor negociado pelo serviço.')
+export const PINTA_REGIONS_CLOUD_FORMAT = PINTA_WORKSHOP_CAPABILITIES.writer
 
 type PintaLoad =
   | {
@@ -179,7 +174,7 @@ export function PintaClient({
           if (retired) return
           persistence = workshop.createWorkshopPintaPersistence({
             namespace: localNamespace,
-            nativeCeiling: 8,
+            nativeCeiling: PINTA_WORKSHOP_CAPABILITIES.nativeCeiling,
           })
         } else {
           cloud = createCreationsCloud({
@@ -189,17 +184,16 @@ export function PintaClient({
             audience,
             pintaPaletteWriteEnabled: !!account,
             pintaCausalEnabled: !!account,
-            pintaCausalReader: PINTA_REGIONS_CLOUD_FORMAT,
+            pintaCausalReader: PINTA_WORKSHOP_CAPABILITIES.reader,
           })
           if (cloud.pintaCausal) {
-            // A oficina regional: o mesmo IndexedDB do perfil e a mesma fila V4, com o teto
-            // nativo 8 (o nativo 9 ainda não está pronto e não é anunciado).
+            // The account reads native 9 whole, without enabling its public editor/writer yet.
             const workshop = await import('@sistemazero/pinta/workshop-reader')
             if (retired) return
             const regional = workshop.createWorkshopPintaPersistence({
               namespace: localNamespace,
               guardCausalWrites: true,
-              nativeCeiling: 8,
+              nativeCeiling: PINTA_WORKSHOP_CAPABILITIES.nativeCeiling,
             })
             persistence = createCloudMirroredPintaPersistence({
               local: regional,
@@ -210,8 +204,8 @@ export function PintaClient({
               subscribeAssetOpenState: m.subscribePintaAssetOpenState,
               causal: {
                 local: regional.causal,
-                reader: PINTA_REGIONS_CLOUD_FORMAT,
-                writer: PINTA_REGIONS_CLOUD_FORMAT,
+                reader: PINTA_WORKSHOP_CAPABILITIES.reader,
+                writer: PINTA_WORKSHOP_CAPABILITIES.writer,
                 holdOpen: (id) => m.holdPintaEditorLock(localNamespace, id),
                 withClosed: (ids, apply) => m.withClosedPintaEditors(localNamespace, ids, apply),
               },
