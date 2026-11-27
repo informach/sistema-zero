@@ -1,0 +1,7 @@
+# Intermediários gerados por prepare.mjs e generate-sources.py (veja o README)
+2d/*.source.json
+2d/artes/
+2d/catalogo-aparencias-2d.svg
+3d/*.source.js
+3d/sources.json
+export-report.json

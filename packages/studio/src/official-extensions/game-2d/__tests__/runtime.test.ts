@@ -2727,6 +2727,32 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.everySeconds('k', 2)).toBe(true) // 2s passaram → dispara
   })
 
+  it('everySeconds conta pelo período e não escorrega um quadro a cada disparo', () => {
+    const api = load()
+    clock = 0
+    api.everySeconds('ritmo', 1.5)
+    const disparos: number[] = []
+    // quadros de 16,7 ms: o disparo cai sempre no primeiro quadro depois de cada 1,5 s
+    for (let quadro = 1; quadro <= 600; quadro++) {
+      clock = quadro * (1000 / 60)
+      if (api.everySeconds('ritmo', 1.5)) disparos.push(clock)
+    }
+    expect(disparos.length).toBe(6)
+    disparos.forEach((t, i) => expect(t - (i + 1) * 1500).toBeLessThan(1000 / 60 + 1e-6))
+  })
+
+  it('everySeconds recomeça do agora depois de um travamento longo (sem rajada)', () => {
+    const api = load()
+    clock = 0
+    api.everySeconds('trava', 1)
+    clock = 5000
+    expect(api.everySeconds('trava', 1)).toBe(true)
+    clock = 5016
+    expect(api.everySeconds('trava', 1)).toBe(false)
+    clock = 6000
+    expect(api.everySeconds('trava', 1)).toBe(true)
+  })
+
   it('everySeconds desconta todo o tempo em que o jogo ficou pausado', () => {
     const api = load()
     clock = 1000

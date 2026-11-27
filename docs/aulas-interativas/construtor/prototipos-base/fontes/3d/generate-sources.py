@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Generate two native Jogo 3D projects with existing gallery GLB placeholders.
+"""Gera os dois projetos nativos do Jogo 3D da Patrulha Espacial (completo e inicial).
 
-The user will create the definitive art and its variants in Blender.
-No procedural art configuration or appearance-choice variables are shipped.
+A arte vem do Blender (docs/design/construtor-espaco-blender): cada objeto é carregado por um
+bloco "Criar o objeto … com o modelo …", e a criança troca a variação no seletor do bloco. As
+quatro opções de cada categoria têm a mesma caixa, então trocar não muda as regras.
+Os modelos chegam como referências da biblioteca dos cursos (assets.json, gravado por
+docs/aulas-interativas-tecnico/qa/patrulha-espacial-assets.ts).
 """
 from pathlib import Path
 import json
@@ -17,14 +20,15 @@ const cena = SZGame3D.createFullscreenScene("#020617");
 SZGame3D.setSky(cena, "#020617", "#312e81");
 SZGame3D.setFog(cena, "#0b1030", 30, 75);
 SZGame3D.setCameraPosition(cena, 0, 8, 12);
+const cenario = SZGame3D.createModelFile(cena, "cenario-orbita", 180);
 const alvoCamera = SZGame3D.createModel(cena);
 SZGame3D.setPosition(alvoCamera, 0, 1, -12);
 SZGame3D.cameraLookAt(cena, alvoCamera);
-const nave = SZGame3D.createModelFile(cena, "patrulha-nave-provisoria", 3);
+const nave = SZGame3D.createModelFile(cena, "nave-falcao-azul", 3);
 SZGame3D.setPosition(nave, 0, 1, 0);
-const moldeAsteroide = SZGame3D.createModelFile(cena, "patrulha-asteroide-provisorio", 1.8);
+const moldeAsteroide = SZGame3D.createModelFile(cena, "asteroide-rocha-lunar", 1.8);
 SZGame3D.setVisible(moldeAsteroide, "hide");
-const moldeTiro = SZGame3D.createModelFile(cena, "patrulha-laser-provisorio", 0.9);
+const moldeTiro = SZGame3D.createModelFile(cena, "laser-ciano", 0.9);
 SZGame3D.setVisible(moldeTiro, "hide");
 const tiros = SZGame3D.createGroup();
 const asteroides = SZGame3D.createGroup();
@@ -169,14 +173,14 @@ SZGame3D.everySecondsLoop(1.5, () => {
 def main():
     manifest = []
     for initial, stem, title in [
-        (False, 'patrulha-espacial-3d-completo', 'Patrulha Espacial 3D | Jogo completo'),
-        (True, 'patrulha-espacial-3d-inicial', 'Patrulha Espacial 3D | Projeto inicial'),
+        (False, 'patrulha-espacial-3d-completo', 'Patrulha Espacial | Jogo completo'),
+        (True, 'patrulha-espacial-3d-inicial', 'Patrulha Espacial | Projeto inicial'),
     ]:
         path = OUT / f'{stem}.source.js'
         path.write_text(source(initial), encoding='utf-8')
         manifest.append(dict(stem=stem, source=path.name, name=title, initial=initial, assetsFile='assets.json'))
     (OUT / 'sources.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(json.dumps({'files': [x['source'] for x in manifest], 'embeddedModels': 3, 'source': 'Existing Patrulha Espacial gallery models; definitive art and variants by Helena in Blender'}, ensure_ascii=False))
+    print(json.dumps({'files': [x['source'] for x in manifest], 'models': 16, 'source': 'docs/design/construtor-espaco-blender'}, ensure_ascii=False))
 
 
 if __name__ == '__main__':

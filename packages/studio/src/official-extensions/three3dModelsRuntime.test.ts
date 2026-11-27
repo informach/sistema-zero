@@ -620,6 +620,41 @@ describe('createSzModels — cópias com ossos', () => {
     }
   })
 
+  it('o material marcado szSemNevoa (o céu de um cenário) não some na névoa, nem nas cópias', async () => {
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])
+    const gltf = {
+      asset: { version: '2.0' },
+      scene: 0,
+      scenes: [{ nodes: [0, 1] }],
+      nodes: [
+        { name: 'ceu', mesh: 0 },
+        { name: 'nave', mesh: 1 },
+      ],
+      materials: [{ name: 'ceu', extras: { szSemNevoa: true } }, { name: 'casco' }],
+      meshes: [
+        { primitives: [{ attributes: { POSITION: 0 }, material: 0 }] },
+        { primitives: [{ attributes: { POSITION: 0 }, material: 1 }] },
+      ],
+      bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }],
+      accessors: [
+        { bufferView: 0, componentType: 5126, count: 3, type: 'VEC3', min: [0, 0, 0], max: [1, 1, 0] },
+      ],
+    }
+    const b = bench({
+      cenario: { kind: 'model3d', dataUrl: encodeGlb(gltf, new Uint8Array(positions.buffer)) },
+    })
+    const hit = await loaded(b, 'cenario')
+    for (const copy of [b.models.instantiate(hit), b.models.instantiate(hit, { ownMaterials: true })]) {
+      const fog = new Map<string, boolean>()
+      copy.traverse((node) => {
+        const mesh = node as RealTHREE.Mesh
+        if (mesh.isMesh) fog.set(node.name, (mesh.material as RealTHREE.Material).fog)
+      })
+      expect(fog.get('ceu')).toBe(false)
+      expect(fog.get('nave')).toBe(true)
+    }
+  })
+
   it('sem o SkeletonUtils carregado, uma skin NUNCA cai no clone comum', async () => {
     const donor = await loaded(
       bench({ boneco: { kind: 'model3d', dataUrl: skinFixture.dataUrl } }),

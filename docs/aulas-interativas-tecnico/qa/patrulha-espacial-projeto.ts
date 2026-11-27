@@ -2,7 +2,8 @@
  * Projetos progressivos do curso Patrulha Espacial, no Construtor.
  * Os extremos são os arquivos aprovados em 3a7fb2c2edda8d461e1d8fdc64bfd80bc6138795.
  * As etapas intermediárias retiram somente regras ainda não ensinadas; a preparação,
- * os três GLBs, o começo e as telas finais permanecem presentes em toda a cadeia.
+ * as 16 peças do Blender (referências da biblioteca), o começo e as telas finais permanecem
+ * presentes em toda a cadeia.
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -183,7 +184,7 @@ export function montarProjetoPatrulha(etapa: string): StudioAuthoringProject {
         stage,
         exportFromSource({
           projectId: `construtor-patrulha-espacial-${stage}`,
-          name: `Patrulha Espacial 3D | ${stage}`,
+          name: `Patrulha Espacial | ${stage}`,
           extensionId: 'game-3d',
           source: fontePatrulha(stage),
           assets: readApproved('completo').assets,

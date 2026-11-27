@@ -5,15 +5,15 @@ import { criterios2D } from './construtor-2d-criterios'
 import { projeto2D } from './construtor-2d-projetos'
 import { fixtureBlock, fixtureBlocks, setFixtureLiteral } from './project-block-test-helpers'
 
-test('as 81 combinações de aparência conservam os critérios e todos os valores do jogo', () => {
+test('as 256 combinações de aparência (4 de cada) conservam os critérios e todos os valores do jogo', () => {
   const original = projeto2D('final')
   const sets = ['nave-', 'cenario-', 'asteroide-', 'laser-'].map((prefix) =>
     original.assets
       .filter((asset: { name: string }) => asset.name.startsWith(prefix))
       .map((asset: { name: string }) => asset.name),
   )
-  expect(original.assets).toHaveLength(12)
-  for (const choices of sets) expect(choices).toHaveLength(3)
+  expect(original.assets).toHaveLength(16)
+  for (const choices of sets) expect(choices).toHaveLength(4)
   let combinations = 0
   for (const ship of sets[0]!)
     for (const background of sets[1]!)
@@ -33,7 +33,7 @@ test('as 81 combinações de aparência conservam os critérios e todos os valor
           expect(neutral(project.blocksState)).toBe(neutral(original.blocksState))
           combinations++
         }
-  expect(combinations).toBe(81)
+  expect(combinations).toBe(256)
 })
 
 test.each([

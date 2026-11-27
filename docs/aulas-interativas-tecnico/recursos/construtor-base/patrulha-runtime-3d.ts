@@ -11,6 +11,7 @@ import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import vm from 'node:vm'
+import { resolveCourseModels } from '../../../../packages/studio/src/core/courseModels'
 import { gameThreeDRuntimeForVariant } from '../../../../packages/studio/src/official-extensions/game-3d/runtime'
 
 const sharedRequire = createRequire(
@@ -44,8 +45,11 @@ export async function bootPatrulha(project) {
     url: 'https://studio.test/',
   })
   const { window } = dom
+  // As peças da Patrulha vêm como referências da biblioteca dos cursos: o Estúdio as resolve
+  // antes de rodar (preloadCourseModels); aqui também, para o motor ler os GLB de verdade.
+  const assets = await resolveCourseModels(project.assets)
   window.__SZGAME_ASSETS_3D = Object.fromEntries(
-    project.assets.map((asset) => [asset.name, { kind: asset.kind, dataUrl: asset.dataUrl }]),
+    assets.map((asset) => [asset.name, { kind: asset.kind, dataUrl: asset.dataUrl }]),
   )
   window.HTMLCanvasElement.prototype.getContext = function (kind) {
     if (kind !== '2d') return null

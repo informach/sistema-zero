@@ -5,6 +5,7 @@ import { patrulhaAula2 } from './patrulha-espacial-aula-2'
 import { patrulhaAula3 } from './patrulha-espacial-aula-3'
 import { patrulhaAula4 } from './patrulha-espacial-aula-4'
 import { patrulhaAula5 } from './patrulha-espacial-aula-5'
+import { patrulhaAssetsPortateis } from './patrulha-espacial-assets'
 import { patrulhaChecks } from './patrulha-espacial-criterios'
 import { montarProjetoPatrulha, PATRULHA_CURSO, PATRULHA_ETAPAS } from './patrulha-espacial-projeto'
 
@@ -18,6 +19,7 @@ export const config3D: ConstrutorBaseConfig = {
   etapas: PATRULHA_ETAPAS,
   etapaFinal: 'completo',
   montarProjeto: montarProjetoPatrulha,
+  portatil: (projeto) => ({ ...projeto, assets: patrulhaAssetsPortateis() }),
   checks: patrulhaChecks,
   aulas: [patrulhaAula1, patrulhaAula2, patrulhaAula3, patrulhaAula4, patrulhaAula5],
   jogoPronto: {

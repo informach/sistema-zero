@@ -10,8 +10,8 @@
       "finalStage": "limite-tiro",
       "sections": 7,
       "plannedVideos": 7,
-      "importBytes": 534022,
-      "exampleBytes": 357029,
+      "importBytes": 239189,
+      "exampleBytes": 146434,
       "examples": 5,
       "parts": [
         {
@@ -64,8 +64,8 @@
       "finalStage": "limite-asteroide",
       "sections": 4,
       "plannedVideos": 4,
-      "importBytes": 467641,
-      "exampleBytes": 367051,
+      "importBytes": 214927,
+      "exampleBytes": 156456,
       "examples": 5,
       "parts": [
         {
@@ -137,8 +137,8 @@
       "finalStage": "placar",
       "sections": 6,
       "plannedVideos": 5,
-      "importBytes": 492724,
-      "exampleBytes": 377984,
+      "importBytes": 240010,
+      "exampleBytes": 167389,
       "examples": 5,
       "parts": [
         {
@@ -210,8 +210,8 @@
       "finalStage": "retirada-batida",
       "sections": 3,
       "plannedVideos": 3,
-      "importBytes": 419836,
-      "exampleBytes": 311311,
+      "importBytes": 209241,
+      "exampleBytes": 142835,
       "examples": 4,
       "parts": [
         {
@@ -268,8 +268,8 @@
       "finalStage": "completo",
       "sections": 5,
       "plannedVideos": 4,
-      "importBytes": 443185,
-      "exampleBytes": 322636,
+      "importBytes": 232590,
+      "exampleBytes": 154160,
       "examples": 4,
       "parts": [
         {
@@ -327,97 +327,97 @@
     {
       "stage": "inicio",
       "file": "projetos/inicio.szproject.json",
-      "sha256": "8efa3b7eb7266151782dc600a0914030416c243da01460916c97ad1fd6498ff5"
+      "sha256": "01f65217ace4ed639374f6baaccc220235d8ad8c4fef1b2d52163cecdeb5f377"
     },
     {
       "stage": "disparo",
       "file": "projetos/disparo.szproject.json",
-      "sha256": "b9485bddea89b566d3d96029cd729cc82c553555255fecb19a020554f008bd9a"
+      "sha256": "12c3272054c8d001d6011bb76aabc0f7b5dd59490a3f35879160e0deddfcd06f"
     },
     {
       "stage": "origem",
       "file": "projetos/origem.szproject.json",
-      "sha256": "6ba791c16dbb7bd1faba4a8f20c08a29926a7cb6d28a55ef60b212108687fbaa"
+      "sha256": "acc006b37d759db4daef75b96bb4b41d817808c03f30904fbb5156cea8009e9d"
     },
     {
       "stage": "trajeto-tiro",
       "file": "projetos/trajeto-tiro.szproject.json",
-      "sha256": "692bceacd136421ca85886ba17923a416d7f2721f7f0a3d5c6cccbe04bb4b6e9"
+      "sha256": "a1d3ac562ae318967016a8f88380363a9599125709dace3c0c43847104495453"
     },
     {
       "stage": "limite-tiro",
       "file": "projetos/limite-tiro.szproject.json",
-      "sha256": "4811829bbf18cddc3f02fdef2de5e191c4adb54e886065e624cbe0c8469821aa"
+      "sha256": "11ec408c434a3f6544cf8bc5679a720643a41bcb44c3bd5de0195e7487cfd06f"
     },
     {
       "stage": "relogio",
       "file": "projetos/relogio.szproject.json",
-      "sha256": "8f941c73ac4a5c3133b25506c2b1ff1b4bec00c50e8b2beecfe0eedc3cccaf46"
+      "sha256": "27e47f8a5fe51c159b54a60ca4a17b3c6e4c4cdaff6424b81f81ab55c9aee0a7"
     },
     {
       "stage": "entrada",
       "file": "projetos/entrada.szproject.json",
-      "sha256": "b1a55b79ed5b5dff3a396210e5c0a8b9d211fe4c7ad152ee845ec67226d7ab2a"
+      "sha256": "72e0868a8b476c11963552c70ca6486230dbffb26323954364ae0c30a868ff2d"
     },
     {
       "stage": "trajeto-asteroide",
       "file": "projetos/trajeto-asteroide.szproject.json",
-      "sha256": "a4165e2e7da2ad2062aec562a49404f786f8caf3868176fd409b9e6aef4c3475"
+      "sha256": "58f55127a8278333a461d176e602a22084baec43468299e00b25d5383e0a054a"
     },
     {
       "stage": "limite-asteroide",
       "file": "projetos/limite-asteroide.szproject.json",
-      "sha256": "29a82e89d5ce4d7bf487832a1c52aba08279ada05b9da84571aa82adcdfef7c2"
+      "sha256": "904c7623127e66432452842a2389ca226e0b32dad8c1a04715c56730d69aca7a"
     },
     {
       "stage": "contato",
       "file": "projetos/contato.szproject.json",
-      "sha256": "107e50a19f1dcc2c206542e586b7711186d86c010b912f7b6993522fcb86348b"
+      "sha256": "6668b8851619cc95ae0060705bf6835f9f146e430fe0d783bea48affcf9a51b9"
     },
     {
       "stage": "contador",
       "file": "projetos/contador.szproject.json",
-      "sha256": "6daca576456688b372b020c59d3a450cd38cf9b421f9b0e89d7a289b27fc724f"
+      "sha256": "87a79780eb71ee3f9e85528b9258125df65736f18bf9e0a91e6bb46b70364a2c"
     },
     {
       "stage": "soma",
       "file": "projetos/soma.szproject.json",
-      "sha256": "332f6b85d55052e7905995d9e4cebe475165f540fd94c45cbfd24acef6f0ebf8"
+      "sha256": "379c03ca385540d75619fa2287e985d9319639e6b22ce3d61aee9fa8ea233a65"
     },
     {
       "stage": "placar",
       "file": "projetos/placar.szproject.json",
-      "sha256": "72bd323a72fb16df5947a05fc2af4b7bfce5eded271701ce933a34fe142aadac"
+      "sha256": "811d226211073a0aa731d78e82106c9016ef4424c69516c5d0dc8589ce591fa6"
     },
     {
       "stage": "vidas",
       "file": "projetos/vidas.szproject.json",
-      "sha256": "ad17e991f124ce273b7db9d26b42bdac622f0acdff5e2c2300980956cf945ce6"
+      "sha256": "d85a5ab854df03107d06449bf9eb19815c9e2e67b0ae7c8c9d2588693eca5e06"
     },
     {
       "stage": "dano",
       "file": "projetos/dano.szproject.json",
-      "sha256": "783205440ede1a429bb60c39d3072934ba602ed176e3f87d7ed55996ce7836e9"
+      "sha256": "11c8b6a54182597c61287075fa3249813da2aa260e3ed9ad32cdfcea1d6c7bc8"
     },
     {
       "stage": "retirada-batida",
       "file": "projetos/retirada-batida.szproject.json",
-      "sha256": "646a83d5d4acfc43b17f929fd84e73486c9686ec2f4030973d2c1ad7ad2136eb"
+      "sha256": "13a5edeedc72521ce4580dc4c6ca44362fac3f8d8e1b47309e99d3a393c77c70"
     },
     {
       "stage": "derrota",
       "file": "projetos/derrota.szproject.json",
-      "sha256": "f503ca8bda4ed4f7bf6f562a7f7f901f010cce1176295a64c13b8a2bd7e78385"
+      "sha256": "db13de579b7d8bd38dfe52f08fd566d094c0d1033b925a74909aa74053242ca2"
     },
     {
       "stage": "vitoria",
       "file": "projetos/vitoria.szproject.json",
-      "sha256": "63c228ca4f0a0c0528f9ee3ae183871eda9c2a1aee1b5786ed2c97b70e6ef881"
+      "sha256": "abe0dbb56b480c709f8aaf764f7414fc9ec378a92ff6e269d0052ffbb6fe010a"
     },
     {
       "stage": "completo",
       "file": "projetos/completo.szproject.json",
-      "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2"
+      "sha256": "a4e5a01391f1ae7d8911ff8a8afd7bd7a6097d5d20c33ab2ba08c0009b20bf80"
     }
   ],
   "limits": {

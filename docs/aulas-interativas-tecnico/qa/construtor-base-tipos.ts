@@ -60,6 +60,9 @@ export interface ConstrutorBaseConfig {
   etapas: readonly string[]
   etapaFinal: string
   montarProjeto: (etapa: string) => StudioAuthoringProject
+  /** Os arquivos portáteis do curso (`projeto-inicial`/`projeto-final`) podem embutir o que as
+   * aulas só referenciam (as malhas da biblioteca de modelos dos cursos). */
+  portatil?: (projeto: StudioAuthoringProject) => StudioAuthoringProject
   checks: (etapa: string) => SectionProjectCheck[]
   aulas: ConstrutorAula[]
   jogoPronto: {

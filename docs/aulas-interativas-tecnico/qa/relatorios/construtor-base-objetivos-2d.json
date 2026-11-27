@@ -4,7 +4,7 @@
     {
       "stage": "movimento",
       "id": "voar-direita",
-      "sha256": "d6cf5cd9cc1583ecee72f87f39526278640a2eabfc6934b085522697ccb70394",
+      "sha256": "86063d4185449bea1a0de260574c91afb996193c59a6c19ee619c475ab484008",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -31,7 +31,7 @@
     {
       "stage": "movimento",
       "id": "voar-esquerda",
-      "sha256": "d6cf5cd9cc1583ecee72f87f39526278640a2eabfc6934b085522697ccb70394",
+      "sha256": "86063d4185449bea1a0de260574c91afb996193c59a6c19ee619c475ab484008",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -58,7 +58,7 @@
     {
       "stage": "limite",
       "id": "voar-direita",
-      "sha256": "f34970804247568cd4e68a5ec26b83e7407b11393f9bafa707f6d60a9f3d4b8b",
+      "sha256": "6f48884f66cdc636bddc372bccbe989727c233196590e8dc3fde6f14d0ce7ae8",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -85,7 +85,7 @@
     {
       "stage": "limite",
       "id": "voar-esquerda",
-      "sha256": "f34970804247568cd4e68a5ec26b83e7407b11393f9bafa707f6d60a9f3d4b8b",
+      "sha256": "6f48884f66cdc636bddc372bccbe989727c233196590e8dc3fde6f14d0ce7ae8",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -112,7 +112,7 @@
     {
       "stage": "instrucoes",
       "id": "voar-direita",
-      "sha256": "1a1a0eeb28bf3dedecbe600af18e28289f2331d9f30a7377685f49257e333a15",
+      "sha256": "21b2ee70dcd2ea42fd7d80b34319c858c9da28015e33020c6a54f1621e117d8d",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -139,7 +139,7 @@
     {
       "stage": "instrucoes",
       "id": "voar-esquerda",
-      "sha256": "1a1a0eeb28bf3dedecbe600af18e28289f2331d9f30a7377685f49257e333a15",
+      "sha256": "21b2ee70dcd2ea42fd7d80b34319c858c9da28015e33020c6a54f1621e117d8d",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -166,7 +166,7 @@
     {
       "stage": "evento-tiro",
       "id": "voar-direita",
-      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed",
+      "sha256": "f25ebc9ff93e21a45ea2ea6f47e5d41a5e2f1bc778bb864f9045a74e62834ed0",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -193,7 +193,7 @@
     {
       "stage": "evento-tiro",
       "id": "voar-esquerda",
-      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed",
+      "sha256": "f25ebc9ff93e21a45ea2ea6f47e5d41a5e2f1bc778bb864f9045a74e62834ed0",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -220,7 +220,7 @@
     {
       "stage": "evento-tiro",
       "id": "abertura-protegida",
-      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed",
+      "sha256": "f25ebc9ff93e21a45ea2ea6f47e5d41a5e2f1bc778bb864f9045a74e62834ed0",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -247,7 +247,7 @@
     {
       "stage": "grupo-tiros",
       "id": "voar-direita",
-      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "sha256": "116278663973d46a55a330b581772cdda0d512f2e50c39d0d2f56b0f3ece6575",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -274,7 +274,7 @@
     {
       "stage": "grupo-tiros",
       "id": "voar-esquerda",
-      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "sha256": "116278663973d46a55a330b581772cdda0d512f2e50c39d0d2f56b0f3ece6575",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -301,7 +301,7 @@
     {
       "stage": "grupo-tiros",
       "id": "um-tiro-por-toque",
-      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "sha256": "116278663973d46a55a330b581772cdda0d512f2e50c39d0d2f56b0f3ece6575",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -328,7 +328,7 @@
     {
       "stage": "grupo-tiros",
       "id": "abertura-protegida",
-      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "sha256": "116278663973d46a55a330b581772cdda0d512f2e50c39d0d2f56b0f3ece6575",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -373,7 +373,7 @@
     {
       "stage": "origem-tiro",
       "id": "voar-direita",
-      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "sha256": "5c1c7d4cf1287396cc6c910e65186f70e4649c0ace64c42a92669a17ffcb2b34",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -400,7 +400,7 @@
     {
       "stage": "origem-tiro",
       "id": "voar-esquerda",
-      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "sha256": "5c1c7d4cf1287396cc6c910e65186f70e4649c0ace64c42a92669a17ffcb2b34",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -427,7 +427,7 @@
     {
       "stage": "origem-tiro",
       "id": "um-tiro-por-toque",
-      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "sha256": "5c1c7d4cf1287396cc6c910e65186f70e4649c0ace64c42a92669a17ffcb2b34",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -454,7 +454,7 @@
     {
       "stage": "origem-tiro",
       "id": "abertura-protegida",
-      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "sha256": "5c1c7d4cf1287396cc6c910e65186f70e4649c0ace64c42a92669a17ffcb2b34",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -499,7 +499,7 @@
     {
       "stage": "voo-tiros",
       "id": "voar-direita",
-      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "sha256": "b0f1871a875d7881c3d28be7511e2794b75148b026ff87377242dd805a37e084",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -526,7 +526,7 @@
     {
       "stage": "voo-tiros",
       "id": "voar-esquerda",
-      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "sha256": "b0f1871a875d7881c3d28be7511e2794b75148b026ff87377242dd805a37e084",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -553,7 +553,7 @@
     {
       "stage": "voo-tiros",
       "id": "um-tiro-por-toque",
-      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "sha256": "b0f1871a875d7881c3d28be7511e2794b75148b026ff87377242dd805a37e084",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -580,7 +580,7 @@
     {
       "stage": "voo-tiros",
       "id": "abertura-protegida",
-      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "sha256": "b0f1871a875d7881c3d28be7511e2794b75148b026ff87377242dd805a37e084",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -625,7 +625,7 @@
     {
       "stage": "limpeza-tiros",
       "id": "voar-direita",
-      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "sha256": "43e05b79523438467cbe1527eb5a6310d941725d33cce9905c550cfcf989c4ea",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -652,7 +652,7 @@
     {
       "stage": "limpeza-tiros",
       "id": "voar-esquerda",
-      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "sha256": "43e05b79523438467cbe1527eb5a6310d941725d33cce9905c550cfcf989c4ea",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -679,7 +679,7 @@
     {
       "stage": "limpeza-tiros",
       "id": "um-tiro-por-toque",
-      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "sha256": "43e05b79523438467cbe1527eb5a6310d941725d33cce9905c550cfcf989c4ea",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -706,7 +706,7 @@
     {
       "stage": "limpeza-tiros",
       "id": "tiro-retirado",
-      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "sha256": "43e05b79523438467cbe1527eb5a6310d941725d33cce9905c550cfcf989c4ea",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -751,7 +751,7 @@
     {
       "stage": "limpeza-tiros",
       "id": "abertura-protegida",
-      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "sha256": "43e05b79523438467cbe1527eb5a6310d941725d33cce9905c550cfcf989c4ea",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -796,7 +796,7 @@
     {
       "stage": "relogio-asteroides",
       "id": "voar-direita",
-      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "sha256": "0e516b222b63dce4bf57bf3edfb1333f35ce5930a224ad8f4d95e01ef9356377",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -823,7 +823,7 @@
     {
       "stage": "relogio-asteroides",
       "id": "voar-esquerda",
-      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "sha256": "0e516b222b63dce4bf57bf3edfb1333f35ce5930a224ad8f4d95e01ef9356377",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -850,7 +850,7 @@
     {
       "stage": "relogio-asteroides",
       "id": "um-tiro-por-toque",
-      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "sha256": "0e516b222b63dce4bf57bf3edfb1333f35ce5930a224ad8f4d95e01ef9356377",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -877,7 +877,7 @@
     {
       "stage": "relogio-asteroides",
       "id": "tiro-retirado",
-      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "sha256": "0e516b222b63dce4bf57bf3edfb1333f35ce5930a224ad8f4d95e01ef9356377",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -922,7 +922,7 @@
     {
       "stage": "relogio-asteroides",
       "id": "abertura-protegida",
-      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "sha256": "0e516b222b63dce4bf57bf3edfb1333f35ce5930a224ad8f4d95e01ef9356377",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -967,7 +967,7 @@
     {
       "stage": "asteroides",
       "id": "voar-direita",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -994,7 +994,7 @@
     {
       "stage": "asteroides",
       "id": "voar-esquerda",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -1021,7 +1021,7 @@
     {
       "stage": "asteroides",
       "id": "um-tiro-por-toque",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -1048,7 +1048,7 @@
     {
       "stage": "asteroides",
       "id": "tiro-retirado",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -1093,7 +1093,7 @@
     {
       "stage": "asteroides",
       "id": "pedra-criada",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -1120,7 +1120,7 @@
     {
       "stage": "asteroides",
       "id": "abertura-protegida",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -1165,7 +1165,7 @@
     {
       "stage": "asteroides",
       "id": "abertura-sem-pedras",
-      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "sha256": "31705e8c989005de50de7daad5c2e311d5775c996d85ce18078480915674ea8c",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -1192,7 +1192,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "voar-direita",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -1219,7 +1219,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "voar-esquerda",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -1246,7 +1246,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "um-tiro-por-toque",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -1273,7 +1273,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "tiro-retirado",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -1318,7 +1318,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "pedra-criada",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -1345,7 +1345,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "abertura-protegida",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -1390,7 +1390,7 @@
     {
       "stage": "limpeza-asteroides",
       "id": "abertura-sem-pedras",
-      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "sha256": "70609b9696ec86208b2d50dbcdcd2f4472241afaf975e356d4777db4ac6584d2",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -1417,7 +1417,7 @@
     {
       "stage": "colisao-tiros",
       "id": "voar-direita",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -1444,7 +1444,7 @@
     {
       "stage": "colisao-tiros",
       "id": "voar-esquerda",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -1471,7 +1471,7 @@
     {
       "stage": "colisao-tiros",
       "id": "um-tiro-por-toque",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -1498,7 +1498,7 @@
     {
       "stage": "colisao-tiros",
       "id": "tiro-retirado",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -1543,7 +1543,7 @@
     {
       "stage": "colisao-tiros",
       "id": "pedra-criada",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -1570,7 +1570,7 @@
     {
       "stage": "colisao-tiros",
       "id": "abertura-protegida",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -1615,7 +1615,7 @@
     {
       "stage": "colisao-tiros",
       "id": "abertura-sem-pedras",
-      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "sha256": "99968fb3662068379dff75317b30339b0d31480613c0dc9390648c3871c425ba",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -1642,7 +1642,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "voar-direita",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -1669,7 +1669,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "voar-esquerda",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -1696,7 +1696,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "um-tiro-por-toque",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -1723,7 +1723,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "tiro-retirado",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -1768,7 +1768,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "pedra-criada",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -1795,7 +1795,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "abertura-protegida",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -1840,7 +1840,7 @@
     {
       "stage": "efeitos-acerto",
       "id": "abertura-sem-pedras",
-      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "sha256": "93ff0c6b17984802a048400eb11a0c0a6138e7cc65631e2a37ccf56e3116b46b",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -1867,7 +1867,7 @@
     {
       "stage": "placar",
       "id": "voar-direita",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -1894,7 +1894,7 @@
     {
       "stage": "placar",
       "id": "voar-esquerda",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -1921,7 +1921,7 @@
     {
       "stage": "placar",
       "id": "um-tiro-por-toque",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -1948,7 +1948,7 @@
     {
       "stage": "placar",
       "id": "tiro-retirado",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -1993,7 +1993,7 @@
     {
       "stage": "placar",
       "id": "pedra-criada",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -2020,7 +2020,7 @@
     {
       "stage": "placar",
       "id": "abertura-protegida",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -2065,7 +2065,7 @@
     {
       "stage": "placar",
       "id": "valores-iniciais",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -2092,7 +2092,7 @@
     {
       "stage": "placar",
       "id": "abertura-sem-pedras",
-      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "sha256": "c0fb4fa4089ab10050892b487490a09180c62f5046aeba7b173566c2f6a387d9",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -2119,7 +2119,7 @@
     {
       "stage": "pontos",
       "id": "voar-direita",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -2146,7 +2146,7 @@
     {
       "stage": "pontos",
       "id": "voar-esquerda",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -2173,7 +2173,7 @@
     {
       "stage": "pontos",
       "id": "um-tiro-por-toque",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -2200,7 +2200,7 @@
     {
       "stage": "pontos",
       "id": "tiro-retirado",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -2245,7 +2245,7 @@
     {
       "stage": "pontos",
       "id": "pedra-criada",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -2272,7 +2272,7 @@
     {
       "stage": "pontos",
       "id": "abertura-protegida",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -2317,7 +2317,7 @@
     {
       "stage": "pontos",
       "id": "valores-iniciais",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -2344,7 +2344,7 @@
     {
       "stage": "pontos",
       "id": "abertura-sem-pedras",
-      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "sha256": "d7598767e740afdc9d21fe330c3b892b9dac1a54fdb8bd9c9f657881745d8ca4",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -2371,7 +2371,7 @@
     {
       "stage": "vidas",
       "id": "voar-direita",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -2398,7 +2398,7 @@
     {
       "stage": "vidas",
       "id": "voar-esquerda",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -2425,7 +2425,7 @@
     {
       "stage": "vidas",
       "id": "um-tiro-por-toque",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -2452,7 +2452,7 @@
     {
       "stage": "vidas",
       "id": "tiro-retirado",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -2497,7 +2497,7 @@
     {
       "stage": "vidas",
       "id": "pedra-criada",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -2524,7 +2524,7 @@
     {
       "stage": "vidas",
       "id": "abertura-protegida",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -2569,277 +2569,7 @@
     {
       "stage": "vidas",
       "id": "valores-iniciais",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
-      "observation": {
-        "id": "valores-iniciais",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "checkpoints": [
-          {
-            "initial": {
-              "found": true,
-              "value": {
-                "format": "sz-observed-v1",
-                "value": [0, 3]
-              }
-            },
-            "final": {
-              "found": true,
-              "value": {
-                "format": "sz-observed-v1",
-                "value": [0, 3]
-              }
-            }
-          }
-        ],
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "vidas",
-      "id": "abertura-sem-pedras",
-      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
-      "observation": {
-        "id": "abertura-sem-pedras",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "voar-direita",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
-      "observation": {
-        "id": "voar-direita",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 372]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 744]
-          }
-        },
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "voar-esquerda",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
-      "observation": {
-        "id": "voar-esquerda",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 372]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "um-tiro-por-toque",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
-      "observation": {
-        "id": "um-tiro-por-toque",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 1]
-          }
-        },
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "tiro-retirado",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
-      "observation": {
-        "id": "tiro-retirado",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "checkpoints": [
-          {
-            "initial": {
-              "found": true,
-              "value": {
-                "format": "sz-observed-v1",
-                "value": [0, 0]
-              }
-            },
-            "final": {
-              "found": true,
-              "value": {
-                "format": "sz-observed-v1",
-                "value": [0, 1]
-              }
-            }
-          }
-        ],
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "pedra-criada",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
-      "observation": {
-        "id": "pedra-criada",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 0]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 1]
-          }
-        },
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "abertura-protegida",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
-      "observation": {
-        "id": "abertura-protegida",
-        "type": "behavior",
-        "initial": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 372]
-          }
-        },
-        "final": {
-          "found": true,
-          "value": {
-            "format": "sz-observed-v1",
-            "value": [0, 372]
-          }
-        },
-        "checkpoints": [
-          {
-            "initial": {
-              "found": true,
-              "value": {
-                "format": "sz-observed-v1",
-                "value": [0, 0]
-              }
-            },
-            "final": {
-              "found": true,
-              "value": {
-                "format": "sz-observed-v1",
-                "value": [0, 0]
-              }
-            }
-          }
-        ],
-        "errors": []
-      },
-      "verdict": {
-        "passed": true
-      }
-    },
-    {
-      "stage": "colisao-nave",
-      "id": "valores-iniciais",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -2882,9 +2612,279 @@
       }
     },
     {
+      "stage": "vidas",
+      "id": "abertura-sem-pedras",
+      "sha256": "e3544b4601bad08d280e9e92dabddf5f576b9c1f5dd0ab7c5a17a10c6a8783c9",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "voar-direita",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "voar-esquerda",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "um-tiro-por-toque",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "tiro-retirado",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "pedra-criada",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "abertura-protegida",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "valores-iniciais",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
       "stage": "colisao-nave",
       "id": "abertura-sem-pedras",
-      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "sha256": "ce96a069633a04a928f283e5ff4819d78d7526e09b9de4271ec84d3d0f004eca",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -2911,7 +2911,7 @@
     {
       "stage": "dano",
       "id": "voar-direita",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -2938,7 +2938,7 @@
     {
       "stage": "dano",
       "id": "voar-esquerda",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -2965,7 +2965,7 @@
     {
       "stage": "dano",
       "id": "um-tiro-por-toque",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -2992,7 +2992,7 @@
     {
       "stage": "dano",
       "id": "tiro-retirado",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -3037,7 +3037,7 @@
     {
       "stage": "dano",
       "id": "pedra-criada",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -3064,7 +3064,7 @@
     {
       "stage": "dano",
       "id": "abertura-protegida",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -3109,7 +3109,7 @@
     {
       "stage": "dano",
       "id": "valores-iniciais",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -3154,7 +3154,7 @@
     {
       "stage": "dano",
       "id": "abertura-sem-pedras",
-      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "sha256": "0d3ebfc0e45827a7b9ffe8a50390c7a5c061cd3d424b6507a9ecd5f4aee64425",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -3181,7 +3181,7 @@
     {
       "stage": "inicio-conferido",
       "id": "voar-direita",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -3208,7 +3208,7 @@
     {
       "stage": "inicio-conferido",
       "id": "voar-esquerda",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -3235,7 +3235,7 @@
     {
       "stage": "inicio-conferido",
       "id": "um-tiro-por-toque",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -3262,7 +3262,7 @@
     {
       "stage": "inicio-conferido",
       "id": "tiro-retirado",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -3307,7 +3307,7 @@
     {
       "stage": "inicio-conferido",
       "id": "pedra-criada",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -3334,7 +3334,7 @@
     {
       "stage": "inicio-conferido",
       "id": "abertura-protegida",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -3379,7 +3379,7 @@
     {
       "stage": "inicio-conferido",
       "id": "valores-iniciais",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -3424,7 +3424,7 @@
     {
       "stage": "inicio-conferido",
       "id": "abertura-sem-pedras",
-      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "sha256": "13daec6b45dafd29b6ef8451e44d7f1fc9035e466675110517c98ad2c970a6f4",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -3451,7 +3451,7 @@
     {
       "stage": "aparencias",
       "id": "voar-direita",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -3478,7 +3478,7 @@
     {
       "stage": "aparencias",
       "id": "voar-esquerda",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -3505,7 +3505,7 @@
     {
       "stage": "aparencias",
       "id": "um-tiro-por-toque",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -3532,7 +3532,7 @@
     {
       "stage": "aparencias",
       "id": "tiro-retirado",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -3577,7 +3577,7 @@
     {
       "stage": "aparencias",
       "id": "pedra-criada",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -3604,7 +3604,7 @@
     {
       "stage": "aparencias",
       "id": "abertura-protegida",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -3649,7 +3649,7 @@
     {
       "stage": "aparencias",
       "id": "valores-iniciais",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -3694,7 +3694,7 @@
     {
       "stage": "aparencias",
       "id": "abertura-sem-pedras",
-      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "sha256": "4bec63b97bf310674d3b9e61f5fe553e2d9566cf43a817d085c8db796c45f95b",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -3721,7 +3721,7 @@
     {
       "stage": "meta",
       "id": "voar-direita",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -3748,7 +3748,7 @@
     {
       "stage": "meta",
       "id": "voar-esquerda",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -3775,7 +3775,7 @@
     {
       "stage": "meta",
       "id": "um-tiro-por-toque",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -3802,7 +3802,7 @@
     {
       "stage": "meta",
       "id": "tiro-retirado",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -3847,7 +3847,7 @@
     {
       "stage": "meta",
       "id": "pedra-criada",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -3874,7 +3874,7 @@
     {
       "stage": "meta",
       "id": "abertura-protegida",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -3919,7 +3919,7 @@
     {
       "stage": "meta",
       "id": "valores-iniciais",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -3980,7 +3980,7 @@
     {
       "stage": "meta",
       "id": "abertura-sem-pedras",
-      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "sha256": "d87476406ae856c7dcb856ac1f4df25b7bd91be841abab9f2ff709be6011dc54",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -4007,7 +4007,7 @@
     {
       "stage": "vitoria",
       "id": "voar-direita",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -4034,7 +4034,7 @@
     {
       "stage": "vitoria",
       "id": "voar-esquerda",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -4061,7 +4061,7 @@
     {
       "stage": "vitoria",
       "id": "um-tiro-por-toque",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -4088,7 +4088,7 @@
     {
       "stage": "vitoria",
       "id": "tiro-retirado",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -4133,7 +4133,7 @@
     {
       "stage": "vitoria",
       "id": "pedra-criada",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -4160,7 +4160,7 @@
     {
       "stage": "vitoria",
       "id": "abertura-protegida",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -4205,7 +4205,7 @@
     {
       "stage": "vitoria",
       "id": "valores-iniciais",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -4266,7 +4266,7 @@
     {
       "stage": "vitoria",
       "id": "abertura-sem-pedras",
-      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "sha256": "f0d902930f859a25e8c71610b12381b8cb105311e10236d8306b09b89c27700f",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -4293,7 +4293,7 @@
     {
       "stage": "derrota",
       "id": "voar-direita",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -4320,7 +4320,7 @@
     {
       "stage": "derrota",
       "id": "voar-esquerda",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -4347,7 +4347,7 @@
     {
       "stage": "derrota",
       "id": "um-tiro-por-toque",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -4374,7 +4374,7 @@
     {
       "stage": "derrota",
       "id": "tiro-retirado",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -4419,7 +4419,7 @@
     {
       "stage": "derrota",
       "id": "pedra-criada",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -4446,7 +4446,7 @@
     {
       "stage": "derrota",
       "id": "abertura-protegida",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -4491,7 +4491,7 @@
     {
       "stage": "derrota",
       "id": "valores-iniciais",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -4552,7 +4552,7 @@
     {
       "stage": "derrota",
       "id": "abertura-sem-pedras",
-      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "sha256": "843953f44bc0832a68a29ec31fab2774275a0a19ebd30231b71da87d0dd70847",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
@@ -4579,7 +4579,7 @@
     {
       "stage": "final",
       "id": "voar-direita",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "voar-direita",
         "type": "behavior",
@@ -4606,7 +4606,7 @@
     {
       "stage": "final",
       "id": "voar-esquerda",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "voar-esquerda",
         "type": "behavior",
@@ -4633,7 +4633,7 @@
     {
       "stage": "final",
       "id": "um-tiro-por-toque",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "um-tiro-por-toque",
         "type": "behavior",
@@ -4660,7 +4660,7 @@
     {
       "stage": "final",
       "id": "tiro-retirado",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "tiro-retirado",
         "type": "behavior",
@@ -4705,7 +4705,7 @@
     {
       "stage": "final",
       "id": "pedra-criada",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "pedra-criada",
         "type": "behavior",
@@ -4732,7 +4732,7 @@
     {
       "stage": "final",
       "id": "abertura-protegida",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "abertura-protegida",
         "type": "behavior",
@@ -4777,7 +4777,7 @@
     {
       "stage": "final",
       "id": "valores-iniciais",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "valores-iniciais",
         "type": "behavior",
@@ -4838,7 +4838,7 @@
     {
       "stage": "final",
       "id": "abertura-sem-pedras",
-      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "sha256": "c52a45f8bbc70c0e6f0011fba207664121355274ec7583f56b4005e590b80d72",
       "observation": {
         "id": "abertura-sem-pedras",
         "type": "behavior",
