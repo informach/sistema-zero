@@ -40,6 +40,29 @@ test('link /i de benefício preservado não grava origem comercial nem libera pr
   expect(response.headers.get('set-cookie')).toBeNull()
 })
 
+test('link por slug leva o tipo pedido (?tipo=) ao referrals; valor desconhecido vai sem tipo', async () => {
+  const pedidos: unknown[][] = []
+  const gateway = {
+    ...createFakeGateway().gateway,
+    resolveReferralLink: async (...args: unknown[]) => {
+      pedidos.push(args)
+      return { status: 404, body: null }
+    },
+  }
+  for (const tipo of ['indicacao', 'presente', 'outro']) {
+    await referralLinkRedirect(
+      new URL(`https://funnel.test/i/mari-x7k2/curso-qa?tipo=${tipo}`),
+      { code: 'mari-x7k2', offer: 'curso-qa' },
+      { secureCookie: true, gateway },
+    )
+  }
+  expect(pedidos).toEqual([
+    ['mari-x7k2', 'curso-qa', false, 'referral'],
+    ['mari-x7k2', 'curso-qa', false, 'gift'],
+    ['mari-x7k2', 'curso-qa', false, undefined],
+  ])
+})
+
 const CONTACT = {
   nome: 'Ana Souza',
   email: 'ana@example.com',
@@ -54,8 +77,8 @@ function pagesGateway() {
   gw.setOfferConfig('desafio-primeiro-jogo-30-dias', {
     productSku: 'desafio-primeiro-jogo',
     accessMode: 'fixed',
-    accessDurationValue: 30,
-    accessDurationUnit: 'days',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
   })
   gw.setProductPrimary('comunidade-dos-criadores', 'comunidade-dos-criadores-mensal')
   return gw

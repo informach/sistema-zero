@@ -21,6 +21,18 @@ régua antiga (409 `CAMPAIGN_GIFT_OFFER_LOCKED`). É o caminho do guia dos pais:
 `vilao-em-aliado` passa de `transformando-o-vilao-em-aliado-presente` para a oferta de 6 meses. O
 Admin abre o seletor só com as ofertas do mesmo produto (`GIFT_OFFER_SAME_COURSE_MESSAGE`).
 
+Links já enviados continuam abrindo:
+- **A mesma oferta nas duas listas** (a oferta única é venda e presente): o link por slug
+  `/i/<código>/<oferta>` agora pode dizer o tipo (`?tipo=presente|indicacao`, `referralLinkUrl`
+  com `kind`; os convites por oferta mandam). O funil repassa como `?kind=` a
+  `GET /referrals/internal/links/:code/:offer` (fora do pathname assinado). Sem tipo, presente
+  primeiro, como antes. Os links curtos do painel (`/i/<código>/<apelido>[/presente]`) já dizem o tipo.
+- **A oferta que saiu da lista** (o `-presente` do guia, citado em convites e em
+  `?oferta-presente=`): `AmbassadorOffersService.allowed(..., { sameCourse: true })` devolve a
+  ligada do MESMO curso (`courseSlug` igual e `productSku` igual quando os dois vêm). O link tenta
+  primeiro as correspondências exatas (presente, indicação) e só depois as do mesmo curso; o
+  resgate (`giftRefFor`) usa o mesmo curso. O convite novo continua exigindo a oferta exata.
+
 ## Origem por aquisição, ofertas dos embaixadores e campanha de venda (25/11/2026, em andamento)
 
 **Uma oferta por curso em cada lista e o link curto por curso (25/11/2026, depois do Lote 4).**
