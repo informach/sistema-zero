@@ -14,8 +14,8 @@
       "clipe": "video-estado-do-jogo",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "em andamento é outro. Uma pergunta confere em que momento o jogo está antes de liberar movimento, tiros e novas pedras.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraAntes": "regra nova que você montou ganhou um Se jogando, que confere a placa antes de liberar movimento, tiros e novas pedras.",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "O jogo pode desenhar a nave mesmo quando ela ainda não pode se mover?",
       "falaPersonagem": "O jogo pode desenhar a nave mesmo quando ela ainda não pode se mover?",
       "tags": ["[curious]"]

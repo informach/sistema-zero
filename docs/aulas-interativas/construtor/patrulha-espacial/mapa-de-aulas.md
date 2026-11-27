@@ -22,10 +22,11 @@ Base 3D do Construtor, em 5 aulas. As telas, estado e reinício vêm preparados.
 
 **Conquista:** Asteroides surgem a cada 1,5 segundo dentro da faixa lateral fornecida, aproximam-se pelo Z positivo e saem do grupo depois de passar pela nave.
 
-1. Um asteroide a cada intervalo (build).
-2. Uma faixa para as entradas (build).
-3. Os asteroides vêm até a nave (build).
-4. A pedra sai depois de passar (delivery).
+1. O ritmo dos asteroides (experience).
+2. Um asteroide a cada intervalo (build).
+3. Uma faixa para as entradas (build).
+4. Os asteroides vêm até a nave (build).
+5. A pedra sai depois de passar (delivery).
 
 ## Aula 3. Acertar no espaço
 
@@ -47,8 +48,9 @@ Base 3D do Construtor, em 5 aulas. As telas, estado e reinício vêm preparados.
 **Conquista:** A nave começa com três vidas. No contato com uma pedra, o jogo retira apenas essa pedra e desconta uma vida, respeitando a breve proteção nativa.
 
 1. Três chances para a nave (build).
-2. A batida tira uma vida (build).
-3. Só a pedra da batida sai (delivery).
+2. Um respiro depois da batida (experience).
+3. A batida tira uma vida (build).
+4. Só a pedra da batida sai (delivery).
 
 ## Aula 5. Uma patrulha completa
 

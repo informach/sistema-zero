@@ -104,7 +104,7 @@ export const patrulhaAula1: ConstrutorAula = {
       etapa: 'disparo',
       objective: 'Criar uma cópia do laser ao apertar Espaço, somente durante a partida.',
       ponte:
-        'Programe o acontecimento do disparo. Nesta parte, o laser nasce parado no centro; o caminho vem logo depois. Teste antes e depois de Enter e clique em Verificar projeto.',
+        'Programe o disparo: cada aperto de Espaço cria um laser. Nesta parte ele nasce parado no meio; o caminho vem logo depois.',
       falas: [
         [
           'teste',
@@ -135,7 +135,7 @@ export const patrulhaAula1: ConstrutorAula = {
           'No campo da tecla, escolha espaço, que aparece com pular entre parênteses. O que ele vai fazer aqui depende dos blocos que você colocar dentro.',
           '[trocar "W (frente)" por "espaço (pular)" em "Quando apertar a tecla W (frente)"]',
         ],
-        ...guardaPatrulha('Quando apertar a tecla espaço', 'o acontecimento de Espaço'),
+        ...guardaPatrulha('Quando apertar a tecla espaço', 'o acontecimento de Espaço', true),
         [
           'conversa',
           'Essa pergunta usa o começo que já está no seu jogo: Enter muda o estado para jogando. Assim, Espaço só dispara depois que a partida começou.',
@@ -215,7 +215,7 @@ export const patrulhaAula1: ConstrutorAula = {
       etapa: 'origem',
       objective: 'Usar a posição X atual da nave como origem lateral de cada disparo.',
       ponte:
-        'Troque o X fixo pela posição X da nave. Mova para um lado, dispare e compare. Depois, clique em Verificar projeto.',
+        'Faça o laser sair da nave: troque o x fixo pela posição x da nave. Mova a nave para um lado e dispare para comparar.',
       falas: [
         [
           'conversa',
@@ -282,7 +282,7 @@ export const patrulhaAula1: ConstrutorAula = {
       etapa: 'trajeto-tiro',
       objective: 'Escolher a velocidade negativa em Z para o grupo de tiros.',
       ponte:
-        'Mude a velocidade preparada dos tiros para -22. Teste um disparo depois de mover a nave e observe o caminho pelo fundo da cena.',
+        'Dê velocidade ao laser. O número negativo faz ele voar para longe, na direção dos asteroides.',
       falas: [
         [
           'conversa',
@@ -333,7 +333,7 @@ export const patrulhaAula1: ConstrutorAula = {
       etapa: 'limite-tiro',
       objective: 'Retirar do grupo os lasers que ultrapassaram os limites de profundidade.',
       ponte:
-        'Defina o intervalo de profundidade do grupo tiros. Teste a sequência de disparo e envie a primeira versão da sua patrulha.',
+        'Tire do jogo os lasers que já foram longe demais. Teste vários disparos e envie a primeira versão da sua patrulha.',
       falas: [
         [
           'conversa',

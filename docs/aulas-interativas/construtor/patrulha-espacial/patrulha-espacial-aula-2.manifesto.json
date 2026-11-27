@@ -5,6 +5,68 @@
   "title": "Asteroides na rota",
   "blocks": [
     {
+      "key": "video-ritmo-das-pedras",
+      "plannedVideo": "Título: O ritmo dos asteroides\n\nMaster integral da professora. Roteiro: patrulha-espacial-aula-2.roteiro.md, clipe video-ritmo-das-pedras. Substituições kids: [{\"id\":\"video-ritmo-das-pedras-K1\",\"clipe\":\"video-ritmo-das-pedras\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E se nascer um asteroide em cada quadro do jogo?\",\"falaPersonagem\":\"E se nascer um asteroide em cada quadro do jogo?\",\"ancoraAntes\":\"uma pedra de tempos em tempos. Na patrulha vai ser igual, só que as pedras nascem lá no fundo e vêm na sua direção.\",\"ancoraDepois\":\"Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+    },
+    {
+      "key": "ponte-ritmo-das-pedras",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Compare quantas pedras nascem com intervalos diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-ritmo-das-pedras",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O ritmo dos asteroides",
+        "instructions": "Compare quantas pedras nascem com intervalos diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+        "hints": [
+          "Observe quantas pedras nascem e o espaço entre elas.",
+          "Compare nascer em todo quadro com esperar um intervalo. Em seguida, compare A cada 1 segundo com A cada 2 segundos, deixando passar o mesmo tempo em cada teste.",
+          "Escolha Em todo quadro e clique em Passar 1 segundo. Depois escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Para comparar intervalos, escolha A cada 1 segundo e passe quatro segundos; anote quantas pedras novas nasceram. Escolha A cada 2 segundos, passe outros quatro segundos e compare quantas novas nasceram."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "spawn",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "freeExploration": true,
+            "preset": {
+              "id": "pedra-segundos",
+              "unit": "seconds",
+              "intervals": [0.5, 1, 1.5, 2],
+              "falling": true
+            },
+            "goals": ["every-frame", "with-timer"],
+            "goalCopy": {
+              "every-frame": {
+                "label": "Em todo quadro, as pedras nasceram coladas",
+                "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+              },
+              "with-timer": {
+                "label": "Com uma espera, sobrou espaço entre as pedras",
+                "pedido": "Escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas."
+              }
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
       "key": "video-relogio-dos-asteroides",
       "plannedVideo": "Título: Um asteroide a cada intervalo\n\nMaster integral da professora. Roteiro: patrulha-espacial-aula-2.roteiro.md, clipe video-relogio-dos-asteroides. Substituições kids: [{\"id\":\"video-relogio-dos-asteroides-K1\",\"clipe\":\"video-relogio-dos-asteroides\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Se eu colocar a cópia em cada quadro, não aparece mais rápido?\",\"falaPersonagem\":\"Se eu colocar a cópia em cada quadro, não aparece mais rápido?\",\"ancoraAntes\":\"Você já usou um intervalo para isso no jogo em duas dimensões. Aqui o relógio também vai criar uma cópia de cada vez.\",\"ancoraDepois\":\"Aparece muitas vezes em um segundo, e a rota fica cheia de uma vez. Nosso intervalo deixa um tempo entre uma pedra e\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
@@ -13,7 +75,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte o relógio dos asteroides. Primeiro a pedra vai nascer parada lá no fundo. Confira que o relógio espera o começo da partida."
+        "text": "Sua vez! Monte o relógio que cria um asteroide a cada um segundo e meio, só durante a partida. Por enquanto ele nasce parado lá no fundo. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -25,7 +87,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Use a receita de posição: número aleatório × 10.4 − 5.2. Ela escolhe o X das novas pedras dentro da rota. Conserve Y = 1 e Z = -28."
+        "text": "Sua vez! Sorteie de onde vem cada asteroide: a receita de número aleatório escolhe um lugar diferente dentro da rota. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -37,7 +99,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Defina velocidadeAsteroides como 7. Compare o caminho das pedras com o caminho dos lasers e confira o que muda."
+        "text": "Sua vez! Faça os asteroides virem na direção da nave e compare com o caminho dos lasers. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -49,7 +111,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Defina o limite dos asteroides no eixo Z. Teste as duas direções e envie sua rota com lasers e pedras em movimento."
+        "text": "Hora de conferir e enviar! Tire do jogo os asteroides que já passaram pela nave. Teste e envie sua rota com lasers e asteroides em movimento. Clique em Verificar projeto, envie o projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -156,7 +218,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Patrulha Espacial | limite-tiro</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Projeto inicial\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Conheça a nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n});\n"
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover | ESPAÇO: atirar\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"Abra a rota: acerte 20 asteroides e proteja sua nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | ESPAÇO: atirar\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n});\n"
           },
           "extraFiles": [],
           "assets": [
@@ -510,7 +572,7 @@
                   "corner": "top-center",
                   "text": {
                     "type": "str",
-                    "value": "PATRULHA ESPACIAL | Projeto inicial"
+                    "value": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                   }
                 },
                 {
@@ -518,7 +580,7 @@
                   "corner": "bottom-center",
                   "text": {
                     "type": "str",
-                    "value": "ENTER: começar | SETAS: mover"
+                    "value": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                   }
                 }
               ],
@@ -556,7 +618,7 @@
                           "corner": "top-center",
                           "text": {
                             "type": "str",
-                            "value": "PATRULHA ESPACIAL | Conheça a nave"
+                            "value": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                           }
                         },
                         {
@@ -564,7 +626,7 @@
                           "corner": "bottom-center",
                           "text": {
                             "type": "str",
-                            "value": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                            "value": "SETAS: mover | ESPAÇO: atirar"
                           }
                         }
                       ]
@@ -1250,7 +1312,7 @@
                                                                                                                         "shadow": {
                                                                                                                           "type": "sz_val_text",
                                                                                                                           "fields": {
-                                                                                                                            "TEXT": "PATRULHA ESPACIAL | Projeto inicial"
+                                                                                                                            "TEXT": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                                                                                                                           }
                                                                                                                         }
                                                                                                                       }
@@ -1266,7 +1328,7 @@
                                                                                                                             "shadow": {
                                                                                                                               "type": "sz_val_text",
                                                                                                                               "fields": {
-                                                                                                                                "TEXT": "ENTER: começar | SETAS: mover"
+                                                                                                                                "TEXT": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }
@@ -1366,7 +1428,7 @@
                                             "shadow": {
                                               "type": "sz_val_text",
                                               "fields": {
-                                                "TEXT": "PATRULHA ESPACIAL | Conheça a nave"
+                                                "TEXT": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                                               }
                                             }
                                           }
@@ -1382,7 +1444,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_text",
                                                   "fields": {
-                                                    "TEXT": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                                    "TEXT": "SETAS: mover | ESPAÇO: atirar"
                                                   }
                                                 }
                                               }
@@ -2105,7 +2167,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Patrulha Espacial | limite-tiro</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Projeto inicial\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Conheça a nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover | ESPAÇO: atirar\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"Abra a rota: acerte 20 asteroides e proteja sua nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | ESPAÇO: atirar\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -2459,7 +2521,7 @@
                       "corner": "top-center",
                       "text": {
                         "type": "str",
-                        "value": "PATRULHA ESPACIAL | Projeto inicial"
+                        "value": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                       }
                     },
                     {
@@ -2467,7 +2529,7 @@
                       "corner": "bottom-center",
                       "text": {
                         "type": "str",
-                        "value": "ENTER: começar | SETAS: mover"
+                        "value": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                       }
                     }
                   ],
@@ -2505,7 +2567,7 @@
                               "corner": "top-center",
                               "text": {
                                 "type": "str",
-                                "value": "PATRULHA ESPACIAL | Conheça a nave"
+                                "value": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                               }
                             },
                             {
@@ -2513,7 +2575,7 @@
                               "corner": "bottom-center",
                               "text": {
                                 "type": "str",
-                                "value": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                "value": "SETAS: mover | ESPAÇO: atirar"
                               }
                             }
                           ]
@@ -3199,7 +3261,7 @@
                                                                                                                             "shadow": {
                                                                                                                               "type": "sz_val_text",
                                                                                                                               "fields": {
-                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Projeto inicial"
+                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }
@@ -3215,7 +3277,7 @@
                                                                                                                                 "shadow": {
                                                                                                                                   "type": "sz_val_text",
                                                                                                                                   "fields": {
-                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover"
+                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                                                                                                                                   }
                                                                                                                                 }
                                                                                                                               }
@@ -3315,7 +3377,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_text",
                                                   "fields": {
-                                                    "TEXT": "PATRULHA ESPACIAL | Conheça a nave"
+                                                    "TEXT": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                                                   }
                                                 }
                                               }
@@ -3331,7 +3393,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_text",
                                                       "fields": {
-                                                        "TEXT": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                                        "TEXT": "SETAS: mover | ESPAÇO: atirar"
                                                       }
                                                     }
                                                   }
@@ -4052,7 +4114,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Patrulha Espacial | relogio</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Projeto inicial\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Conheça a nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, 0, 1, -28);\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover | ESPAÇO: atirar\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"Abra a rota: acerte 20 asteroides e proteja sua nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | ESPAÇO: atirar\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, 0, 1, -28);\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -4406,7 +4468,7 @@
                       "corner": "top-center",
                       "text": {
                         "type": "str",
-                        "value": "PATRULHA ESPACIAL | Projeto inicial"
+                        "value": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                       }
                     },
                     {
@@ -4414,7 +4476,7 @@
                       "corner": "bottom-center",
                       "text": {
                         "type": "str",
-                        "value": "ENTER: começar | SETAS: mover"
+                        "value": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                       }
                     }
                   ],
@@ -4452,7 +4514,7 @@
                               "corner": "top-center",
                               "text": {
                                 "type": "str",
-                                "value": "PATRULHA ESPACIAL | Conheça a nave"
+                                "value": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                               }
                             },
                             {
@@ -4460,7 +4522,7 @@
                               "corner": "bottom-center",
                               "text": {
                                 "type": "str",
-                                "value": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                "value": "SETAS: mover | ESPAÇO: atirar"
                               }
                             }
                           ]
@@ -5189,7 +5251,7 @@
                                                                                                                             "shadow": {
                                                                                                                               "type": "sz_val_text",
                                                                                                                               "fields": {
-                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Projeto inicial"
+                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }
@@ -5205,7 +5267,7 @@
                                                                                                                                 "shadow": {
                                                                                                                                   "type": "sz_val_text",
                                                                                                                                   "fields": {
-                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover"
+                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                                                                                                                                   }
                                                                                                                                 }
                                                                                                                               }
@@ -5305,7 +5367,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_text",
                                                   "fields": {
-                                                    "TEXT": "PATRULHA ESPACIAL | Conheça a nave"
+                                                    "TEXT": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                                                   }
                                                 }
                                               }
@@ -5321,7 +5383,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_text",
                                                       "fields": {
-                                                        "TEXT": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                                        "TEXT": "SETAS: mover | ESPAÇO: atirar"
                                                       }
                                                     }
                                                   }
@@ -6126,7 +6188,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Patrulha Espacial | entrada</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Projeto inicial\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Conheça a nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, Math.random() * 10.4 - 5.2, 1, -28);\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 0;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover | ESPAÇO: atirar\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"Abra a rota: acerte 20 asteroides e proteja sua nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | ESPAÇO: atirar\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, Math.random() * 10.4 - 5.2, 1, -28);\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -6480,7 +6542,7 @@
                       "corner": "top-center",
                       "text": {
                         "type": "str",
-                        "value": "PATRULHA ESPACIAL | Projeto inicial"
+                        "value": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                       }
                     },
                     {
@@ -6488,7 +6550,7 @@
                       "corner": "bottom-center",
                       "text": {
                         "type": "str",
-                        "value": "ENTER: começar | SETAS: mover"
+                        "value": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                       }
                     }
                   ],
@@ -6526,7 +6588,7 @@
                               "corner": "top-center",
                               "text": {
                                 "type": "str",
-                                "value": "PATRULHA ESPACIAL | Conheça a nave"
+                                "value": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                               }
                             },
                             {
@@ -6534,7 +6596,7 @@
                               "corner": "bottom-center",
                               "text": {
                                 "type": "str",
-                                "value": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                "value": "SETAS: mover | ESPAÇO: atirar"
                               }
                             }
                           ]
@@ -7278,7 +7340,7 @@
                                                                                                                             "shadow": {
                                                                                                                               "type": "sz_val_text",
                                                                                                                               "fields": {
-                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Projeto inicial"
+                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }
@@ -7294,7 +7356,7 @@
                                                                                                                                 "shadow": {
                                                                                                                                   "type": "sz_val_text",
                                                                                                                                   "fields": {
-                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover"
+                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                                                                                                                                   }
                                                                                                                                 }
                                                                                                                               }
@@ -7394,7 +7456,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_text",
                                                   "fields": {
-                                                    "TEXT": "PATRULHA ESPACIAL | Conheça a nave"
+                                                    "TEXT": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                                                   }
                                                 }
                                               }
@@ -7410,7 +7472,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_text",
                                                       "fields": {
-                                                        "TEXT": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                                        "TEXT": "SETAS: mover | ESPAÇO: atirar"
                                                       }
                                                     }
                                                   }
@@ -8248,7 +8310,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Patrulha Espacial | trajeto-asteroide</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 7;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Projeto inicial\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Conheça a nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, Math.random() * 10.4 - 5.2, 1, -28);\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 7;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover | ESPAÇO: atirar\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"Abra a rota: acerte 20 asteroides e proteja sua nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | ESPAÇO: atirar\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, Math.random() * 10.4 - 5.2, 1, -28);\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -8602,7 +8664,7 @@
                       "corner": "top-center",
                       "text": {
                         "type": "str",
-                        "value": "PATRULHA ESPACIAL | Projeto inicial"
+                        "value": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                       }
                     },
                     {
@@ -8610,7 +8672,7 @@
                       "corner": "bottom-center",
                       "text": {
                         "type": "str",
-                        "value": "ENTER: começar | SETAS: mover"
+                        "value": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                       }
                     }
                   ],
@@ -8648,7 +8710,7 @@
                               "corner": "top-center",
                               "text": {
                                 "type": "str",
-                                "value": "PATRULHA ESPACIAL | Conheça a nave"
+                                "value": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                               }
                             },
                             {
@@ -8656,7 +8718,7 @@
                               "corner": "bottom-center",
                               "text": {
                                 "type": "str",
-                                "value": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                "value": "SETAS: mover | ESPAÇO: atirar"
                               }
                             }
                           ]
@@ -9400,7 +9462,7 @@
                                                                                                                             "shadow": {
                                                                                                                               "type": "sz_val_text",
                                                                                                                               "fields": {
-                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Projeto inicial"
+                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }
@@ -9416,7 +9478,7 @@
                                                                                                                                 "shadow": {
                                                                                                                                   "type": "sz_val_text",
                                                                                                                                   "fields": {
-                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover"
+                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                                                                                                                                   }
                                                                                                                                 }
                                                                                                                               }
@@ -9516,7 +9578,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_text",
                                                   "fields": {
-                                                    "TEXT": "PATRULHA ESPACIAL | Conheça a nave"
+                                                    "TEXT": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                                                   }
                                                 }
                                               }
@@ -9532,7 +9594,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_text",
                                                       "fields": {
-                                                        "TEXT": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                                        "TEXT": "SETAS: mover | ESPAÇO: atirar"
                                                       }
                                                     }
                                                   }
@@ -10370,7 +10432,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Patrulha Espacial | limite-asteroide</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 7;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Projeto inicial\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Conheça a nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n      SZGame3D.pruneArea(asteroides, \"z\", -36, 6);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, Math.random() * 10.4 - 5.2, 1, -28);\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#020617\");\n  SZGame3D.setSky(cena, \"#020617\", \"#312e81\");\n  SZGame3D.setFog(cena, \"#0b1030\", 30, 75);\n  SZGame3D.setCameraPosition(cena, 0, 8, 12);\n  const cenario = SZGame3D.createModelFile(cena, \"cenario-orbita\", 180);\n  const alvoCamera = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(alvoCamera, 0, 1, -12);\n  SZGame3D.cameraLookAt(cena, alvoCamera);\n  const nave = SZGame3D.createModelFile(cena, \"nave-falcao-azul\", 3);\n  SZGame3D.setPosition(nave, 0, 1, 0);\n  const moldeAsteroide = SZGame3D.createModelFile(cena, \"asteroide-rocha-lunar\", 1.8);\n  SZGame3D.setVisible(moldeAsteroide, \"hide\");\n  const moldeTiro = SZGame3D.createModelFile(cena, \"laser-ciano\", 0.9);\n  SZGame3D.setVisible(moldeTiro, \"hide\");\n  const tiros = SZGame3D.createGroup();\n  const asteroides = SZGame3D.createGroup();\n  let naveX = 0;\n  let alvoAtivo = true;\n  let velocidadeTiros = -22;\n  let velocidadeAsteroides = 7;\n  let estado = \"inicio\";\n  SZGame3D.setScreenText(\"fim\", \"Vamos tentar outra vez?\", \"Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.\", \"Voltar ao início\");\n  SZGame3D.setScreenText(\"vitoria\", \"Rota liberada!\", \"Você abriu passagem por 20 asteroides. A patrulha pode continuar!\", \"Voltar ao início\");\n  SZGame3D.hudText(\"top-center\", \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\");\n  SZGame3D.hudText(\"bottom-center\", \"ENTER: começar | SETAS: mover | ESPAÇO: atirar\");\n  // Quando acontecer\n  SZGame3D.onKey(\"Enter\", () => {\n    if (estado === \"inicio\") {\n      estado = \"jogando\";\n      SZGame3D.hudText(\"top-center\", \"Abra a rota: acerte 20 asteroides e proteja sua nave\");\n      SZGame3D.hudText(\"bottom-center\", \"SETAS: mover | ESPAÇO: atirar\");\n    }\n  });\n  SZGame3D.onKey(\"Space\", () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(tiros, moldeTiro, SZGame3D.getPos(nave, \"x\"), 1, -1.6);\n      SZGame3D.playNote(880, 60);\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    if (estado === \"jogando\") {\n      if (SZGame3D.keyDown(\"ArrowLeft\")) {\n        naveX = naveX - 7 * SZGame3D.dt(cena);\n      }\n      if (SZGame3D.keyDown(\"ArrowRight\")) {\n        naveX = naveX + 7 * SZGame3D.dt(cena);\n      }\n      if (naveX < -5.2) {\n        naveX = -5.2;\n      }\n      if (naveX > 5.2) {\n        naveX = 5.2;\n      }\n      SZGame3D.setPosition(nave, naveX, 1, 0);\n      SZGame3D.forEachInGroup(tiros, (tiro) => {\n        SZGame3D.setVelocity(tiro, 0, 0, velocidadeTiros);\n      });\n      SZGame3D.updateGroupNoGravity(tiros);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        SZGame3D.setVelocity(asteroide, 0, 0, velocidadeAsteroides);\n      });\n      SZGame3D.updateGroupNoGravity(asteroides);\n      SZGame3D.forEachInGroup(asteroides, (asteroide) => {\n        alvoAtivo = true;\n        SZGame3D.forEachInGroup(tiros, (tiro) => {\n          if (alvoAtivo) {\n\n          }\n        });\n      });\n      SZGame3D.pruneArea(tiros, \"z\", -36, 3);\n      SZGame3D.pruneArea(asteroides, \"z\", -36, 6);\n    }\n  });\n  SZGame3D.everySecondsLoop(1.5, () => {\n    if (estado === \"jogando\") {\n      SZGame3D.spawnCopy(asteroides, moldeAsteroide, Math.random() * 10.4 - 5.2, 1, -28);\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -10724,7 +10786,7 @@
                       "corner": "top-center",
                       "text": {
                         "type": "str",
-                        "value": "PATRULHA ESPACIAL | Projeto inicial"
+                        "value": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                       }
                     },
                     {
@@ -10732,7 +10794,7 @@
                       "corner": "bottom-center",
                       "text": {
                         "type": "str",
-                        "value": "ENTER: começar | SETAS: mover"
+                        "value": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                       }
                     }
                   ],
@@ -10770,7 +10832,7 @@
                               "corner": "top-center",
                               "text": {
                                 "type": "str",
-                                "value": "PATRULHA ESPACIAL | Conheça a nave"
+                                "value": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                               }
                             },
                             {
@@ -10778,7 +10840,7 @@
                               "corner": "bottom-center",
                               "text": {
                                 "type": "str",
-                                "value": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                "value": "SETAS: mover | ESPAÇO: atirar"
                               }
                             }
                           ]
@@ -11535,7 +11597,7 @@
                                                                                                                             "shadow": {
                                                                                                                               "type": "sz_val_text",
                                                                                                                               "fields": {
-                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Projeto inicial"
+                                                                                                                                "TEXT": "PATRULHA ESPACIAL | Abra uma rota entre os asteroides"
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }
@@ -11551,7 +11613,7 @@
                                                                                                                                 "shadow": {
                                                                                                                                   "type": "sz_val_text",
                                                                                                                                   "fields": {
-                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover"
+                                                                                                                                    "TEXT": "ENTER: começar | SETAS: mover | ESPAÇO: atirar"
                                                                                                                                   }
                                                                                                                                 }
                                                                                                                               }
@@ -11651,7 +11713,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_text",
                                                   "fields": {
-                                                    "TEXT": "PATRULHA ESPACIAL | Conheça a nave"
+                                                    "TEXT": "Abra a rota: acerte 20 asteroides e proteja sua nave"
                                                   }
                                                 }
                                               }
@@ -11667,7 +11729,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_text",
                                                       "fields": {
-                                                        "TEXT": "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas."
+                                                        "TEXT": "SETAS: mover | ESPAÇO: atirar"
                                                       }
                                                     }
                                                   }
@@ -12507,6 +12569,24 @@
     }
   ],
   "sections": [
+    {
+      "key": "ritmo-das-pedras",
+      "title": "O ritmo dos asteroides",
+      "intent": "exploration",
+      "objective": "Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.",
+      "blockKeys": [
+        "video-ritmo-das-pedras",
+        "ponte-ritmo-das-pedras",
+        "experiencia-ritmo-das-pedras"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ritmo-das-pedras", "experiencia-ritmo-das-pedras"]
+      }
+    },
     {
       "key": "relogio-dos-asteroides",
       "title": "Um asteroide a cada intervalo",

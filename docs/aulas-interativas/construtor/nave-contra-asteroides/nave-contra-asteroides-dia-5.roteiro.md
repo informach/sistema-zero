@@ -10,7 +10,7 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 **Clipe:** `video-meta-do-jogo`
 
-**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -21,16 +21,16 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [curious] Se a contagem passar de vinte, a missão deixa de estar completa?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-meta-do-jogo-K1 | Debinha | 1 | que você quer alcançar. A pergunta de vitória compara esses dois valores, para reconhecer que a missão foi completada. | Se a contagem passar de vinte, a missão deixa de estar completa? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
+| video-meta-do-jogo-K1 | Debinha | 1 | que você quer alcançar. A pergunta de vitória compara esses dois valores, para reconhecer que a missão foi completada. | Se a contagem passar de vinte, a missão deixa de estar completa? | Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -42,7 +42,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-meta`
 
-**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Seu placar já conta os acertos. Agora prepare a meta de vinte e mostre quanto falta para a missão.", [apontar prévia 60 32]. No "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Ao iniciar"]. No "Encontre Criar variável pontos. Deixe à vista o encaixe depois dela e antes de dar vidas à nave.", [apontar abaixo de "Criar variável pontos"]. No "Abra Programação e depois Variáveis. Pegue Criar variável e solte nesse encaixe. Troque contador por meta e o valor 0 por 20.", [abrir categoria Programação > Variáveis] [encaixar "Criar variável" abaixo de "Criar variável pontos"] [trocar "contador" por "meta" em "Criar variável contador"] [trocar "0" por "20" em "Criar variável meta"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Encontre o placar Acertos. Deixe o encaixe depois dele à vista. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela.", [apontar abaixo de "Mostrar placar Acertos:"] [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela]. No "Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y,32; e no tamanho,21.", [encaixar "Mostrar placar" abaixo de "Mostrar placar Acertos:"] [trocar "Pontos:" por "Meta:" em "Mostrar placar Pontos:"] [trocar "12" por "650" em "Mostrar placar Meta:"] [trocar "30" por "32" em "Mostrar placar Meta:"] [trocar "24" por "21" em "Mostrar placar Meta:"]. No "Clique no quadradinho de cor do placar Meta. Na janelinha, apague o código de Cor em hexadecimal, digite o azul claro #c9eaff e clique em OK.", [apontar bloco "Mostrar placar Meta:"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#c9eaff" em "Cor em hexadecimal"] [clicar "OK"]. No "Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor.", [abrir categoria Programação > Valores] [soltar "valor da variável" em cima do "0" em "Mostrar placar Meta:"] [trocar "x" por "meta" em "valor da variável dentro de Mostrar placar Meta:"]. No "Deixe à vista o encaixe depois de Desenhar as vidas e antes da legenda. Volte a Jogo 2D, Vida e placar, Indicadores e texto na tela. Pegue Barra de e solte nesse encaixe.", [apontar abaixo de "Desenhar as vidas"] [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Barra de" abaixo de "Desenhar as vidas"]. No "Na barra, coloque x 280, y 23, largura 240 e altura 11.", [trocar "12" por "280" em "Barra de"] [trocar "48" por "23" em "Barra de"] [trocar "160" por "240" em "Barra de"] [trocar "14" por "11" em "Barra de"]. No "Clique no quadradinho de cor da barra. Na janelinha, apague o código de Cor em hexadecimal, digite o verde-água #65dfcf e clique em OK.", [apontar bloco "Barra de"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#65dfcf" em "Cor em hexadecimal"] [clicar "OK"]. No "Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa.", [abrir categoria Programação > Valores] [soltar "valor da variável" em cima do "0" em "Barra de"] [trocar "x" por "pontos" em "valor da variável dentro de Barra de"] [soltar "valor da variável" em cima do "100" em "Barra de"] [trocar "x" por "meta" em "valor da variável dentro de Barra de"]. No "Comece e acerte algumas pedras. Acertos aumenta, a barra vai preenchendo e Meta continua em 20. Ainda falta construir a pergunta que termina a partida.", [tocar prévia 400 300] [tecla Enter] [tecla Space] [apontar prévia 680 32]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Criar variável meta", "Mostrar placar Meta:", "Barra de"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Seu placar já conta os acertos. Agora prepare a meta de vinte e mostre quanto falta para a missão.", [apontar prévia 60 32]. No "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Ao iniciar"]. No "Encontre Criar variável pontos. Deixe à vista o encaixe depois dela e antes de dar vidas à nave.", [apontar abaixo de "Criar variável pontos"]. No "Abra Programação e depois Variáveis. Pegue Criar variável e solte nesse encaixe. Troque contador por meta e o valor 0 por 20.", [abrir categoria Programação > Variáveis] [encaixar "Criar variável" abaixo de "Criar variável pontos"] [trocar "contador" por "meta" em "Criar variável contador"] [trocar "0" por "20" em "Criar variável meta"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Encontre o placar Acertos. Deixe o encaixe depois dele à vista. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela.", [apontar abaixo de "Mostrar placar Acertos:"] [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela]. No "Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y, 32; e no tamanho, 21.", [encaixar "Mostrar placar" abaixo de "Mostrar placar Acertos:"] [trocar "Pontos:" por "Meta:" em "Mostrar placar Pontos:"] [trocar "12" por "650" em "Mostrar placar Meta:"] [trocar "30" por "32" em "Mostrar placar Meta:"] [trocar "24" por "21" em "Mostrar placar Meta:"]. No "Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor.", [abrir categoria Programação > Valores] [soltar "valor da variável" em cima do "0" em "Mostrar placar Meta:"] [trocar "x" por "meta" em "valor da variável dentro de Mostrar placar Meta:"]. No "Deixe à vista o encaixe depois de Desenhar as vidas e antes da legenda. Volte a Jogo 2D, Vida e placar, Indicadores e texto na tela. Pegue Barra de e solte nesse encaixe.", [apontar abaixo de "Desenhar as vidas"] [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Barra de" abaixo de "Desenhar as vidas"]. No "Na barra, coloque x 280, y 23, largura 240 e altura 11.", [trocar "12" por "280" em "Barra de"] [trocar "48" por "23" em "Barra de"] [trocar "160" por "240" em "Barra de"] [trocar "14" por "11" em "Barra de"]. No "Clique no quadradinho de cor da barra e escolha na paleta uma cor bem viva: é ela que vai encher conforme você acerta.", [apontar bloco "Barra de"]. No "Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa.", [abrir categoria Programação > Valores] [soltar "valor da variável" em cima do "0" em "Barra de"] [trocar "x" por "pontos" em "valor da variável dentro de Barra de"] [soltar "valor da variável" em cima do "100" em "Barra de"] [trocar "x" por "meta" em "valor da variável dentro de Barra de"]. No "Comece e acerte algumas pedras. Acertos aumenta, a barra vai preenchendo e Meta continua em 20. Ainda falta construir a pergunta que termina a partida.", [tocar prévia 400 300] [tecla Enter] [tecla Space] [apontar prévia 680 32]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Criar variável meta", "Mostrar placar Meta:", "Barra de"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -69,11 +69,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [short pause]
 
-[confident, clear, unhurried voice] Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y,32; e no tamanho,21.
-
-[short pause]
-
-[confident, clear, unhurried voice] Clique no quadradinho de cor do placar Meta. Na janelinha, apague o código de Cor em hexadecimal, digite o azul claro #c9eaff e clique em OK.
+[confident, clear, unhurried voice] Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y, 32; e no tamanho, 21.
 
 [short pause]
 
@@ -89,7 +85,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [short pause]
 
-[confident, clear, unhurried voice] Clique no quadradinho de cor da barra. Na janelinha, apague o código de Cor em hexadecimal, digite o verde-água #65dfcf e clique em OK.
+[confident, clear, unhurried voice] Clique no quadradinho de cor da barra e escolha na paleta uma cor bem viva: é ela que vai encher conforme você acerta.
 
 [short pause]
 
@@ -218,7 +214,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-reiniciar`
 
-**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -229,16 +225,16 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] Se eu voltar ao começo com pontos antigos, será mesmo uma nova partida?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-reiniciar-K1 | Debinha | 1 | reinício já está preparado. Agora você vai investigar a diferença entre mudar só a imagem e preparar a rodada inteira. | Se eu voltar ao começo com pontos antigos, será mesmo uma nova partida? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
+| video-reiniciar-K1 | Debinha | 1 | reinício já está preparado. Agora você vai investigar a diferença entre mudar só a imagem e preparar a rodada inteira. | Se eu voltar ao começo com pontos antigos, será mesmo uma nova partida? | Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

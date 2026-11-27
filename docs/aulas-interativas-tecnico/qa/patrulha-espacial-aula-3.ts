@@ -19,7 +19,7 @@ export const patrulhaAula3: ConstrutorAula = {
       objective:
         'Responder ao contato entre um tiro e um asteroide, retirando os dois e consumindo o alvo.',
       ponte:
-        'Use a investigação da Ilha para programar um contato real. Dentro do par preparado, retire o tiro e a pedra envolvidos e marque esse alvo como consumido.',
+        'Programe o acerto: quando um laser encosta num asteroide, os dois somem e esse asteroide não conta de novo.',
       falas: [
         [
           'teste',
@@ -153,7 +153,7 @@ export const patrulhaAula3: ConstrutorAula = {
       etapa: 'contador',
       objective: 'Criar o contador pontos com valor zero no início de cada jogo.',
       ponte:
-        'Crie pontos com valor 0 em Ao iniciar. O mostrador vem depois; nesta parte, confira onde o contador começa.',
+        'Crie a variável pontos começando em zero. Ela é a caixinha que vai guardar os acertos.',
       semEfeitoVisivel: true,
       falas: [
         [
@@ -201,7 +201,7 @@ export const patrulhaAula3: ConstrutorAula = {
       etapa: 'soma',
       objective: 'Somar um ponto dentro da mesma resposta que consome o par acertado.',
       ponte:
-        'Coloque a soma dentro do acerto real. Um tiro que passa no vazio não soma. Depois vamos ligar o mostrador à contagem.',
+        'Some um ponto dentro do acerto. Um tiro que passa no vazio não soma.',
       semEfeitoVisivel: true,
       falas: [
         [
@@ -255,7 +255,7 @@ export const patrulhaAula3: ConstrutorAula = {
       objective:
         'Mostrar o zero inicial e atualizar o placar com a variável pontos em cada acerto.',
       ponte:
-        'Ligue a contagem ao aviso da tela. Confira o zero inicial, um acerto e um disparo no vazio. Depois envie sua patrulha com placar.',
+        'Mostre os acertos na tela e teste: zero no começo, um acerto e um tiro no vazio. Depois envie sua patrulha com placar.',
       falas: [
         [
           'conversa',
@@ -263,7 +263,7 @@ export const patrulhaAula3: ConstrutorAula = {
         ],
         [
           'instrucao',
-          'Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com o título Patrulha Espacial e Projeto inicial. Deixe o encaixe logo abaixo dele visível.',
+          'Em Ao iniciar, encontre Escrever na tela em cima, no meio, com o título Patrulha Espacial. Deixe o encaixe logo abaixo dele visível.',
           '[arrastar até "Escrever na tela ↑ em cima, no meio"] [apontar abaixo de "Escrever na tela ↑ em cima, no meio"]',
         ],
         [

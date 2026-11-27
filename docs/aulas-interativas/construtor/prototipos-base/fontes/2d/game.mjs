@@ -155,7 +155,7 @@ export function createIR(preset = presets[0], initial = false) {
     command('drawScore', { ctxVar: 'ctx', label: 'Meta:', value: variable('meta'), x: 650, y: 32, color: '#c9eaff', size: 21 }),
     command('drawSpriteHealth', { ctxVar: 'ctx', spriteVar: 'nave', style: 'hearts', x: 22, y: 52, color: '#ff9bae', size: 21 }),
     command('drawBar', { ctxVar: 'ctx', value: variable('pontos'), max: variable('meta'), x: 280, y: 23, w: 240, h: 11, color: '#65dfcf' }),
-    label('SETAS: mover  ·  ESPAÇO: disparar', 780, 462, 15, '#d8e6f8', 'right'),
+    label('SETAS: mover   ESPAÇO: disparar', 400, 60, 15, '#ffffff', 'center'),
   ];
 
   const frames = command('updateEachFrame', {

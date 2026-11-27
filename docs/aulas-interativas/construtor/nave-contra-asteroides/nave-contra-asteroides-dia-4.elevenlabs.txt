@@ -4,9 +4,9 @@
 
 [curious] O que muda quando eu preparo as vidas enquanto a partida já está acontecendo?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -40,11 +40,11 @@
 
 [short pause]
 
-[confident, clear, unhurried voice] Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x,22; e no y,52.
+[confident, clear, unhurried voice] Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x, 22; e no y, 52.
 
 [short pause]
 
-[confident, clear, unhurried voice] Clique no quadradinho de cor e escolha o rosa que você quiser para os corações. Para usar a cor do exemplo, apague o código de Cor em hexadecimal, digite #ff9bae e clique em OK.
+[confident, clear, unhurried voice] Clique no quadradinho de cor e escolha na paleta a cor que você quiser para os corações.
 
 [short pause]
 
@@ -88,7 +88,7 @@
 
 [short pause]
 
-[confident, clear, unhurried voice] Clique no quadradinho de cor da explosão e escolha uma cor. Para usar o laranja do exemplo, apague o código de Cor em hexadecimal, digite #ff956c e clique em OK.
+[confident, clear, unhurried voice] Se quiser, clique no quadradinho de cor da explosão e escolha outra cor na paleta. Uma cor diferente da explosão do tiro ajuda a perceber que a nave foi atingida.
 
 [short pause]
 
@@ -112,9 +112,9 @@
 
 [curious] Como eu consigo perceber quando esse respiro começou e terminou?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -132,7 +132,7 @@
 
 [short pause]
 
-[confident, clear, unhurried voice] Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros.
+[confident, clear, unhurried voice] Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros. O jogo desenha uns sessenta quadros por segundo, então são mais ou menos um segundo de proteção.
 
 [short pause]
 

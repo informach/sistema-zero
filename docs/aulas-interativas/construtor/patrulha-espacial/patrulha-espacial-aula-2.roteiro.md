@@ -6,11 +6,41 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 **Antes de gravar:** use uma sessão de ensaio sem envio anterior, carregue a entrada da parte e dê foco ao jogo antes das teclas. Mostre Objetivo cumprido! e Projeto enviado! somente quando aparecerem. Os tempos de tecla são estimativas a confirmar no Verificar plano. Gravação e publicação pendentes.
 
-## Parte 1. Um asteroide a cada intervalo
+## Parte 1. O ritmo dos asteroides
+
+**Clipe:** `video-ritmo-das-pedras`
+
+**Na tela:** Na edição, ilustrar a ideia narrada sem mostrar a solução da experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, com a bancada 2D da Nave Contra Asteroides; não trocar a cena por uma nave 3D. No "O Zappy vai te mostrando", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Seus lasers já voam pela rota. Agora vêm os asteroides. Na Nave Contra Asteroides, um relógio criava uma pedra de tempos em tempos. Na patrulha vai ser igual, só que as pedras nascem lá no fundo e vêm na sua direção.
+
+[curious] E se nascer um asteroide em cada quadro do jogo?
+
+[engaging, energetic, conversational voice] Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a mesma daqui. Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] O Zappy vai te mostrando o que investigar. Você pode repetir e comparar o que acontece. Depois, a gente leva a descoberta para a patrulha. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-ritmo-das-pedras-K1 | Dedé | 1 | uma pedra de tempos em tempos. Na patrulha vai ser igual, só que as pedras nascem lá no fundo e vêm na sua direção. | E se nascer um asteroide em cada quadro do jogo? | Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Falas da experiência:** consulte `zappy-etapas.json`. O vídeo convida; os controles e as comparações continuam livres na bancada.
+
+**Recado na página (não gravar):** Sua vez! Compare quantas pedras nascem com intervalos diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+
+## Parte 2. Um asteroide a cada intervalo
 
 **Clipe:** `video-relogio-dos-asteroides`
 
-**Na tela:** A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No "Encontre a área Enquanto estiver rodando. Deixe à vista um espaço dentro dela, depois de A cada quadro da cena e fora de tudo que está dentro desse bloco.", [arrastar até "Enquanto estiver rodando"] [apontar abaixo de "A cada quadro da cena"]. No "Abra Jogo 3D, depois Tempo e sorteio e Tempo. Pegue A cada 2 segundos e coloque nesse espaço.", [abrir categoria Jogo 3D > Tempo e sorteio > Tempo] [encaixar "A cada 2 segundos" abaixo de "A cada quadro da cena"]. No "Troque o tempo de dois por um vírgula cinco. Esse intervalo é um segundo e meio.", [trocar "2" por "1.5" em "A cada 2 segundos"]. No "Dentro de o relógio de um segundo e meio, deixe à vista o espaço ao lado de fazer.", [apontar encaixe em "A cada 1.5 segundos"]. No "Abra Programação e depois Lógica e Se.", [abrir categoria Programação > Lógica & Se]. No "Pegue o bloco Se e solte nesse espaço ao lado de fazer.", [encaixar "Se" em "A cada 1.5 segundos"]. No "Clique no x da pergunta e escolha estado.", [trocar "x" por "estado" em "Se valor da variável x > 0 dentro de A cada 1.5 segundos"]. No "Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.", [trocar ">" por "=" em "Se valor da variável estado > 0 dentro de A cada 1.5 segundos"]. No "Deixe à vista o zero que está do lado direito da pergunta.", [apontar bloco "Se valor da variável estado = 0 dentro de A cada 1.5 segundos"]. No "Abra Programação, depois Valores, e pegue o bloco texto.", [abrir categoria Programação > Valores]. No "Solte o bloco texto em cima desse zero.", [soltar "texto" em cima do "0" em "Se valor da variável estado = 0 dentro de A cada 1.5 segundos"]. No "Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.", [trocar "Olá" por "jogando" em "Se valor da variável estado = texto Olá dentro de A cada 1.5 segundos"]. No "Deixe o espaço então desse Se à vista.", [apontar encaixe em "Se dentro de A cada 1.5 segundos" no "então"]. No "Abra Jogo 3D e Grupos. Encaixe Criar uma cópia no então.", [abrir categoria Jogo 3D > Grupos] [encaixar "Criar uma cópia" em "Se dentro de A cada 1.5 segundos" no "então"]. No "Escolha moldeAsteroide no primeiro campo e asteroides no grupo. Deixe x em zero. Mude y para um e z para menos vinte e oito.", [trocar "molde" por "moldeAsteroide" em "Criar uma cópia dentro de A cada 1.5 segundos"] [trocar "inimigos" por "asteroides" em "Criar uma cópia dentro de A cada 1.5 segundos"] nota de gravação manual: trocar "0" por "1" em "y de Criar uma cópia de moldeAsteroide"; escolher visualmente o campo nomeado, conservando x nota de gravação manual: trocar "0" por "-28" em "z de Criar uma cópia de moldeAsteroide"; escolher visualmente o campo nomeado, conservando x. No "Clique em Rodar de novo e espere um pouco na abertura. Nenhuma pedra deve aparecer. Pressione Enter e espere dois segundos. Um asteroide aparece no centro, lá no fundo.", [rodar de novo] nota de edição: aguardar dois segundos na abertura [tecla Enter] nota de edição: aguardar dois segundos [apontar prévia]. No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos "A cada 1.5 segundos"].  No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
+**Na tela:** A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No "Encontre a área Enquanto estiver rodando. Deixe à vista um espaço dentro dela, depois de A cada quadro da cena e fora de tudo que está dentro desse bloco.", [arrastar até "Enquanto estiver rodando"] [apontar abaixo de "A cada quadro da cena"]. No "Abra Jogo 3D, depois Tempo e sorteio e Tempo. Pegue A cada 2 segundos e coloque nesse espaço.", [abrir categoria Jogo 3D > Tempo e sorteio > Tempo] [encaixar "A cada 2 segundos" abaixo de "A cada quadro da cena"]. No "Troque o tempo de dois por um vírgula cinco. Esse intervalo é um segundo e meio.", [trocar "2" por "1.5" em "A cada 2 segundos"]. No "Dentro de o relógio de um segundo e meio, deixe à vista o espaço ao lado de fazer.", [apontar encaixe em "A cada 1.5 segundos"]. No "Abra Programação e depois Lógica e Se.", [abrir categoria Programação > Lógica & Se]. No "Pegue o bloco Se e solte nesse espaço ao lado de fazer.", [encaixar "Se" em "A cada 1.5 segundos"]. No "Clique no x da pergunta e escolha estado.", [trocar "x" por "estado" em "Se valor da variável x > 0 dentro de A cada 1.5 segundos"]. No "Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.", [trocar ">" por "=" em "Se valor da variável estado > 0 dentro de A cada 1.5 segundos"]. No "Deixe à vista o zero que está do lado direito da pergunta.", [apontar bloco "Se valor da variável estado = 0 dentro de A cada 1.5 segundos"]. No "Abra Programação, depois Valores, e pegue o bloco texto.", [abrir categoria Programação > Valores]. No "Solte o bloco texto em cima desse zero.", [soltar "texto" em cima do "0" em "Se valor da variável estado = 0 dentro de A cada 1.5 segundos"]. No "Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.", [trocar "Olá" por "jogando" em "Se valor da variável estado = texto Olá dentro de A cada 1.5 segundos"]. No "Deixe o espaço então desse Se à vista.", [apontar encaixe em "Se dentro de A cada 1.5 segundos" no "então"]. No "Abra Jogo 3D e Grupos. Encaixe Criar uma cópia no então.", [abrir categoria Jogo 3D > Grupos] [encaixar "Criar uma cópia" em "Se dentro de A cada 1.5 segundos" no "então"]. No "Escolha moldeAsteroide no primeiro campo e asteroides no grupo. Deixe x em zero. Mude y para um e z para menos vinte e oito.", [trocar "molde" por "moldeAsteroide" em "Criar uma cópia dentro de A cada 1.5 segundos"] [trocar "inimigos" por "asteroides" em "Criar uma cópia dentro de A cada 1.5 segundos"] nota de gravação manual: trocar "0" por "1" em "y de Criar uma cópia de moldeAsteroide"; escolher visualmente o campo nomeado, conservando x nota de gravação manual: trocar "0" por "-28" em "z de Criar uma cópia de moldeAsteroide"; escolher visualmente o campo nomeado, conservando x. No "Clique em Rodar de novo e espere um pouco na abertura. Nenhuma pedra deve aparecer. Pressione Enter e espere dois segundos. Um asteroide aparece no centro, lá no fundo.", [rodar de novo] nota de edição: aguardar dois segundos na abertura [tecla Enter] nota de edição: aguardar dois segundos [apontar prévia]. No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos "A cada 1.5 segundos"].  No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -27,6 +57,8 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [confident, clear, unhurried voice] Troque o tempo de dois por um vírgula cinco. Esse intervalo é um segundo e meio.
 
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
 [confident, clear, unhurried voice] Dentro de o relógio de um segundo e meio, deixe à vista o espaço ao lado de fazer.
 
 [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
@@ -37,7 +69,7 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
 
-[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
 
 [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
 
@@ -78,9 +110,9 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Recado na página (não gravar):** Monte o relógio dos asteroides. Primeiro a pedra vai nascer parada lá no fundo. Confira que o relógio espera o começo da partida.
+**Recado na página (não gravar):** Sua vez! Monte o relógio que cria um asteroide a cada um segundo e meio, só durante a partida. Por enquanto ele nasce parado lá no fundo. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-## Parte 2. Uma faixa para as entradas
+## Parte 3. Uma faixa para as entradas
 
 **Clipe:** `video-lugares-de-entrada`
 
@@ -120,9 +152,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Use a receita de posição: número aleatório × 10.4 − 5.2. Ela escolhe o X das novas pedras dentro da rota. Conserve Y = 1 e Z = -28.
+**Recado na página (não gravar):** Sua vez! Sorteie de onde vem cada asteroide: a receita de número aleatório escolhe um lugar diferente dentro da rota. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-## Parte 3. Os asteroides vêm até a nave
+## Parte 4. Os asteroides vêm até a nave
 
 **Clipe:** `video-asteroides-se-aproximam`
 
@@ -164,9 +196,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Recado na página (não gravar):** Defina velocidadeAsteroides como 7. Compare o caminho das pedras com o caminho dos lasers e confira o que muda.
+**Recado na página (não gravar):** Sua vez! Faça os asteroides virem na direção da nave e compare com o caminho dos lasers. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-## Parte 4. A pedra sai depois de passar
+## Parte 5. A pedra sai depois de passar
 
 **Clipe:** `video-fim-da-rota`
 
@@ -204,4 +236,4 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
-**Recado na página (não gravar):** Defina o limite dos asteroides no eixo Z. Teste as duas direções e envie sua rota com lasers e pedras em movimento.
+**Recado na página (não gravar):** Hora de conferir e enviar! Tire do jogo os asteroides que já passaram pela nave. Teste e envie sua rota com lasers e asteroides em movimento. Clique em Verificar projeto, envie o projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

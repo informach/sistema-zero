@@ -108,7 +108,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-seta-e-velocidade`
 
-**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -119,16 +119,16 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] E quando eu solto a seta?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-seta-e-velocidade-K1 | Debinha | 1 | também acontece em pequenos passos, um em cada quadro. A seta que você segura indica o lado para o qual a nave deve ir. | E quando eu solto a seta? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
+| video-seta-e-velocidade-K1 | Debinha | 1 | também acontece em pequenos passos, um em cada quadro. A seta que você segura indica o lado para o qual a nave deve ir. | E quando eu solto a seta? | Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -140,7 +140,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-setas`
 
-**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Clique no jogo, pressione Enter e segure uma seta. A nave continua parada, porque ainda falta dizer como ela se move.", [tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowRight por 0,3 s] . No "Lembra da experiência da parte anterior? O voo acontece em passinhos a cada quadro. Agora coloque esse movimento dentro da partida.", [apontar bloco "A cada quadro do jogo"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Dentro de A cada quadro do jogo, encontre o Se com a pergunta o estado do jogo é jogando. Deixe à vista o espaço vazio do então.", [apontar encaixe em "Se o estado do jogo é jogando" no "então"]. No "Abra Jogo 2D, depois Movimento e depois Movimentos prontos.", [abrir categoria Jogo 2D > Movimento > Movimentos prontos]. No "Pegue Mover o sprite nave com as setas esquerda e direita e solte dentro do então desse Se.", [encaixar "Mover o sprite nave com as setas" em "Se o estado do jogo é jogando" no "então"]. No "O nome já é nave. No campo velocidade, troque 6 por 5.", [trocar "6" por "5" em "Mover o sprite nave com as setas"]. No "Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro.", [apontar bloco "o estado do jogo é"]. No "Clique no jogo e pressione Enter se a abertura estiver aparecendo. Segure a seta da direita por um instante, solte e faça o mesmo com a esquerda. A nave acompanha as setas e para quando você solta.", [tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowRight por 0,4 s]  [segurar tecla ArrowLeft por 0,4 s] . No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Mover o sprite nave com as setas"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Clique no jogo, pressione Enter e segure uma seta. A nave continua parada, porque ainda falta dizer como ela se move.", [tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowRight por 0,3 s] . No "Lembra da experiência da parte anterior? O voo acontece em passinhos a cada quadro. Agora coloque esse movimento dentro da partida.", [apontar bloco "A cada quadro do jogo"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Dentro de A cada quadro do jogo, encontre o Se com a pergunta o estado do jogo é jogando. Deixe à vista o espaço vazio do então.", [apontar encaixe em "Se o estado do jogo é jogando" no "então"]. No "Abra Jogo 2D, depois Movimento e depois Movimentos prontos.", [abrir categoria Jogo 2D > Movimento > Movimentos prontos]. No "Pegue Mover o sprite nave com as setas esquerda e direita e solte dentro do então desse Se.", [encaixar "Mover o sprite nave com as setas" em "Se o estado do jogo é jogando" no "então"]. No "O nome já é nave. No campo velocidade, troque 6 por 5.", [trocar "6" por "5" em "Mover o sprite nave com as setas"]. No "Pense na placa de aberto ou fechado de uma loja. O jogo também tem uma placa, chamada estado: na abertura ela diz início, depois do Enter ela vira jogando e, no fim, vitória ou derrota. Esse Se olha a placa e só deixa a nave andar quando ela diz jogando. É por isso que, na abertura, a nave fica quietinha.", [apontar bloco "o estado do jogo é"]. No "Clique no jogo e pressione Enter se a abertura estiver aparecendo. Segure a seta da direita por um instante, solte e faça o mesmo com a esquerda. A nave acompanha as setas e para quando você solta.", [tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowRight por 0,4 s]  [segurar tecla ArrowLeft por 0,4 s] . No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Mover o sprite nave com as setas"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -169,7 +169,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [short pause]
 
-[confident, clear, unhurried voice] Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro.
+[confident, clear, unhurried voice] Pense na placa de aberto ou fechado de uma loja. O jogo também tem uma placa, chamada estado: na abertura ela diz início, depois do Enter ela vira jogando e, no fim, vitória ou derrota. Esse Se olha a placa e só deixa a nave andar quando ela diz jogando. É por isso que, na abertura, a nave fica quietinha.
 
 [short pause]
 
@@ -188,7 +188,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-limite-da-tela`
 
-**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -199,16 +199,16 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] Se eu continuar segurando a seta, a nave pode desaparecer?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-limite-da-tela-K1 | Debinha | 1 | pode levar a nave além dessa janela. O limite confere onde ela ficou e mantém sua caixa dentro da área de jogo. | Se eu continuar segurando a seta, a nave pode desaparecer? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
+| video-limite-da-tela-K1 | Debinha | 1 | pode levar a nave além dessa janela. O limite confere onde ela ficou e mantém sua caixa dentro da área de jogo. | Se eu continuar segurando a seta, a nave pode desaparecer? | Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -264,7 +264,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Sua nave já responde às setas e fica dentro da tela. Agora deixe uma legenda dos controles para quem for jogar.", [apontar prévia]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe logo abaixo dele à vista, antes das perguntas que desenham as telas.", [apontar abaixo de "Desenhar o sprite nave"]. No "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Escrever e encaixe nesse lugar.", [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Escrever" abaixo de "Desenhar o sprite nave"]. No "No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo.", [trocar "Nave contra Asteroides" por "SETAS: mover  ·  ESPAÇO: disparar" em "Escrever"]. No "Coloque 780 no x,462 no y e 15 no tamanho. Escolha o alinhamento à direita.", [trocar "12" por "780" em "Escrever"] [trocar "30" por "462" em "Escrever"] [trocar "20" por "15" em "Escrever"] [trocar "à esquerda" por "à direita" em "Escrever"]. No "Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito.", [apontar bloco "Escrever"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#d8e6f8" em "Cor em hexadecimal"] [clicar "OK"]. No "Comece a partida e teste as duas setas até as bordas. Confira também a legenda. O disparo ainda será construído na próxima aula; agora, o movimento já funciona.", [tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowLeft por 2 s]  [segurar tecla ArrowRight por 3 s]  [apontar prévia 680 460]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Escrever"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", iniciar o envio e confirmar [enviar projeto]. No "Quando aparecer Projeto enviado!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Concluir aula", sair da parte [concluir aula].
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Sua nave já responde às setas e fica dentro da tela. Agora deixe uma legenda dos controles para quem for jogar.", [apontar prévia]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe logo abaixo dele à vista, antes das perguntas que desenham as telas.", [apontar abaixo de "Desenhar o sprite nave"]. No "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Escrever e encaixe nesse lugar.", [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Escrever" abaixo de "Desenhar o sprite nave"]. No "No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover ESPAÇO: disparar. Deixe uns espaços entre os dois controles.", [trocar "Nave contra Asteroides" por "SETAS: mover   ESPAÇO: disparar" em "Escrever"]. No "Coloque 400 no x, 60 no y e 15 no tamanho, e escolha o alinhamento no centro. Assim a legenda fica no alto da tela, longe da nave: 400 é o meio da largura.", [trocar "12" por "400" em "Escrever"] [trocar "30" por "60" em "Escrever"] [trocar "20" por "15" em "Escrever"] [trocar "à esquerda" por "no centro" em "Escrever"]. No "Comece a partida e teste as duas setas até as bordas. Confira também a legenda. O disparo ainda será construído na próxima aula; agora, o movimento já funciona.", [tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowLeft por 2 s]  [segurar tecla ArrowRight por 3 s]  [apontar prévia 400 60]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Escrever"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", iniciar o envio e confirmar [enviar projeto]. No "Quando aparecer Projeto enviado!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Concluir aula", sair da parte [concluir aula].
 
 **Fala para ElevenLabs:**
 
@@ -283,15 +283,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [short pause]
 
-[confident, clear, unhurried voice] No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo.
+[confident, clear, unhurried voice] No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover   ESPAÇO: disparar. Deixe uns espaços entre os dois controles.
 
 [short pause]
 
-[confident, clear, unhurried voice] Coloque 780 no x,462 no y e 15 no tamanho. Escolha o alinhamento à direita.
-
-[short pause]
-
-[confident, clear, unhurried voice] Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito.
+[confident, clear, unhurried voice] Coloque 400 no x, 60 no y e 15 no tamanho, e escolha o alinhamento no centro. Assim a legenda fica no alto da tela, longe da nave: 400 é o meio da largura.
 
 [short pause]
 

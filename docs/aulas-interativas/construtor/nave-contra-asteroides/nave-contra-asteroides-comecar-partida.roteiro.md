@@ -10,27 +10,27 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 **Clipe:** `video-estado-do-jogo`
 
-**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Uma placa de aberto ou fechado muda o que pode acontecer numa loja. A porta pode ser a mesma, mas a placa informa se já é hora de entrar.
+[engaging, energetic, conversational voice] Lembra da placa de aberto ou fechado da primeira aula? A porta da loja pode ser a mesma, mas a placa informa se já é hora de entrar.
 
-[engaging, energetic, conversational voice] No jogo, o estado funciona como essa informação. A abertura é um momento, e a partida em andamento é outro. Uma pergunta confere em que momento o jogo está antes de liberar movimento, tiros e novas pedras.
+[engaging, energetic, conversational voice] No jogo, essa placa é o estado. A abertura é um momento, e a partida em andamento é outro. Cada regra nova que você montou ganhou um Se jogando, que confere a placa antes de liberar movimento, tiros e novas pedras.
 
 [curious] O jogo pode desenhar a nave mesmo quando ela ainda não pode se mover?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-estado-do-jogo-K1 | Dedé | 1 | em andamento é outro. Uma pergunta confere em que momento o jogo está antes de liberar movimento, tiros e novas pedras. | O jogo pode desenhar a nave mesmo quando ela ainda não pode se mover? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
+| video-estado-do-jogo-K1 | Dedé | 1 | regra nova que você montou ganhou um Se jogando, que confere a placa antes de liberar movimento, tiros e novas pedras. | O jogo pode desenhar a nave mesmo quando ela ainda não pode se mover? | Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -38,30 +38,34 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Sua vez! Compare as ações antes e depois de a partida começar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
-## Parte 2. Confira as três guardas da partida
+## Parte 2. Investigue: e se o laser não esperasse a partida?
 
 **Clipe:** `video-teste-inicio`
 
-**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "O começo e as telas já vieram preparados. Você vai conferir onde suas novas regras esperam a partida começar.", [apontar bloco "Quando apertar a tecla Enter"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Encontre A cada quadro do jogo. Leia a pergunta o estado do jogo é jogando. Confira que movimento, atualização dos grupos e colisões ficam dentro do então desse Se.", [mostrar blocos "A cada quadro do jogo", "o estado do jogo é jogando"]. No "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Quando acontecer"]. No "Encontre o evento de Espaço. Confira que a criação do laser e o som ficam dentro de outro Se jogando.", [mostrar blocos "Quando apertar a tecla barra de espaço", "o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Encontre A cada 1,5 segundos. Confira que criar o asteroide fica dentro do Se jogando desse relógio. Conserve os blocos preparados de Enter e das telas.", [mostrar blocos "A cada 1.5 segundos", "o estado do jogo é jogando dentro de A cada"]. No "Clique em Rodar de novo para voltar à abertura.", [rodar de novo]. No "Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. A abertura deve continuar esperando: a nave não anda, não sai laser e não nasce pedra.", [tocar prévia 400 300] [segurar tecla ArrowRight por 0,4 s] [tecla Space] [apontar prévia 400 240]. No "Agora pressione Enter. Confira que as setas, o laser e as pedras funcionam durante a partida.", [tecla Enter] [segurar tecla ArrowRight por 0,4 s] [tecla Space] [apontar prévia 400 240]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "A cada quadro do jogo", "Quando apertar a tecla barra de espaço", "A cada 1.5 segundos"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Agora você vai fazer uma investigação de verdade: tirar uma guarda, ver o que quebra e consertar.", [apontar bloco "Quando apertar a tecla barra de espaço"]. No "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Quando acontecer"]. No "Encontre o evento de Espaço. Dentro dele, o Se jogando guarda a criação do laser e o som.", [mostrar blocos "Quando apertar a tecla barra de espaço", "o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço"]. No "Arraste No grupo tiros criar um sprite para fora do então e solte logo abaixo do Se, ainda dentro do evento. O som vem junto, grudado embaixo.", [encaixar "No grupo tiros criar um sprite" abaixo de "Se o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço"]. No "Clique em Rodar de novo. Na abertura, antes do Enter, aperte Espaço algumas vezes. O que aconteceu? O laser sai mesmo com a placa dizendo início: sem a guarda, a regra não espera a partida.", [rodar de novo] [tocar prévia 400 300] [tecla Space] [tecla Space] [apontar prévia 400 300]. No "Agora conserte. Arraste No grupo tiros criar um sprite de volta para dentro do então do Se jogando.", [encaixar "No grupo tiros criar um sprite" em "Se o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço" no "então"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Confira também as outras duas guardas: o Se jogando de A cada quadro do jogo, com o movimento e as colisões, e o Se jogando do relógio A cada 1,5 segundos, com o asteroide.", [mostrar blocos "A cada quadro do jogo", "o estado do jogo é jogando"] [mostrar blocos "A cada 1.5 segundos", "o estado do jogo é jogando dentro de A cada"]. No "Clique em Rodar de novo para voltar à abertura.", [rodar de novo]. No "Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. Agora a abertura espera de verdade: a nave não anda, não sai laser e não nasce pedra.", [tocar prévia 400 300] [segurar tecla ArrowRight por 0,4 s] [tecla Space] [apontar prévia 400 240]. No "Agora pressione Enter. Confira que as setas, o laser e as pedras funcionam durante a partida.", [tecla Enter] [segurar tecla ArrowRight por 0,4 s] [tecla Space] [apontar prévia 400 240]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "A cada quadro do jogo", "Quando apertar a tecla barra de espaço", "A cada 1.5 segundos"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O começo e as telas já vieram preparados. Você vai conferir onde suas novas regras esperam a partida começar.
-
-[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
-
-[short pause]
-
-[confident, clear, unhurried voice] Encontre A cada quadro do jogo. Leia a pergunta o estado do jogo é jogando. Confira que movimento, atualização dos grupos e colisões ficam dentro do então desse Se.
-
-[short pause]
+[engaging, energetic, conversational voice] Agora você vai fazer uma investigação de verdade: tirar uma guarda, ver o que quebra e consertar.
 
 [confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
 [short pause]
 
-[confident, clear, unhurried voice] Encontre o evento de Espaço. Confira que a criação do laser e o som ficam dentro de outro Se jogando.
+[confident, clear, unhurried voice] Encontre o evento de Espaço. Dentro dele, o Se jogando guarda a criação do laser e o som.
+
+[short pause]
+
+[confident, clear, unhurried voice] Arraste No grupo tiros criar um sprite para fora do então e solte logo abaixo do Se, ainda dentro do evento. O som vem junto, grudado embaixo.
+
+[short pause]
+
+[confident, clear, unhurried voice] Clique em Rodar de novo. Na abertura, antes do Enter, aperte Espaço algumas vezes. O que aconteceu? O laser sai mesmo com a placa dizendo início: sem a guarda, a regra não espera a partida.
+
+[short pause]
+
+[confident, clear, unhurried voice] Agora conserte. Arraste No grupo tiros criar um sprite de volta para dentro do então do Se jogando.
 
 [short pause]
 
@@ -69,7 +73,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [short pause]
 
-[confident, clear, unhurried voice] Encontre A cada 1,5 segundos. Confira que criar o asteroide fica dentro do Se jogando desse relógio. Conserve os blocos preparados de Enter e das telas.
+[confident, clear, unhurried voice] Confira também as outras duas guardas: o Se jogando de A cada quadro do jogo, com o movimento e as colisões, e o Se jogando do relógio A cada 1,5 segundos, com o asteroide.
 
 [short pause]
 
@@ -77,7 +81,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [short pause]
 
-[upbeat, encouraging voice] Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. A abertura deve continuar esperando: a nave não anda, não sai laser e não nasce pedra.
+[upbeat, encouraging voice] Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. Agora a abertura espera de verdade: a nave não anda, não sai laser e não nasce pedra.
 
 [upbeat, encouraging voice] Agora pressione Enter. Confira que as setas, o laser e as pedras funcionam durante a partida.
 
@@ -88,7 +92,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Confira as três guardas da partida. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue: e se o laser não esperasse a partida?. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 ## Parte 3. Escolha a aparência das pedras e dos lasers
 

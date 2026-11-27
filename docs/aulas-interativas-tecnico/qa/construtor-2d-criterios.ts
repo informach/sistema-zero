@@ -150,8 +150,8 @@ export function criterios2D(etapa: string): SectionProjectCheck[] {
       check(
         'movimento-na-partida',
         reached('limite')
-          ? 'Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.'
-          : 'Mova a nave com passinho 5 dentro de Se jogando, a cada quadro.',
+          ? 'Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.'
+          : 'Mova a nave com as setas, velocidade 5, dentro de Se jogando.',
         frame(moving),
         'O movimento fica no então de Se jogando; o limite vem logo depois dele.',
       ),
@@ -237,7 +237,7 @@ export function criterios2D(etapa: string): SectionProjectCheck[] {
       check(
         'evento-protegido',
         reached('voo-tiros')
-          ? 'Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.'
+          ? 'Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.'
           : reached('origem-tiro')
             ? 'Crie o laser lendo a posição atual da nave, dentro de Se jogando.'
             : reached('grupo-tiros')
@@ -283,7 +283,7 @@ export function criterios2D(etapa: string): SectionProjectCheck[] {
       check(
         'intervalo-asteroides',
         reached('asteroides')
-          ? 'Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.'
+          ? 'Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.'
           : 'Use A cada 1,5 segundos com a guarda Se jogando.',
         uses(
           p('sz_g2d_every_seconds', undefined, {
@@ -334,7 +334,7 @@ export function criterios2D(etapa: string): SectionProjectCheck[] {
       check(
         'dano-e-protecao',
         reached('dano')
-          ? 'Retire a pedra da batida e tire uma vida, com proteção de 60 quadros.'
+          ? 'Retire a pedra da batida e tire uma vida, com um segundo de proteção.'
           : 'No encontro com a nave, retire só a pedra chamada atingiuNave.',
         frame(
           p(
@@ -351,7 +351,7 @@ export function criterios2D(etapa: string): SectionProjectCheck[] {
     checks.push(
       check(
         'condicao-vitoria',
-        'Depois das colisões, use pontos maior ou igual a meta para selecionar vitoria.',
+        'Depois das colisões, quando os pontos chegarem à meta, mostre a vitória.',
         frame(victory),
         'A condição usa a contagem pontos e a meta fixa, dentro de Se jogando.',
       ),

@@ -1,3 +1,7 @@
+[curious] E se nascer um asteroide em cada quadro do jogo?
+
+[long pause]
+
 [curious] Se eu colocar a cópia em cada quadro, não aparece mais rápido?
 
 [long pause]

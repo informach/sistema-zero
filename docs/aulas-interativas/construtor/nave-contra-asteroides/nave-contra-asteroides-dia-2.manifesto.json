@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-direcao-do-tiro",
-      "plannedVideo": "Título: Para que lado o laser anda?\n\nMaster integral da professora. Roteiro: nave-contra-asteroides-dia-2.roteiro.md, clipe video-direcao-do-tiro. Substituições kids: [{\"id\":\"video-direcao-do-tiro-K1\",\"clipe\":\"video-direcao-do-tiro\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Um número negativo deixa o laser mais fraco?\",\"falaPersonagem\":\"Um número negativo deixa o laser mais fraco?\",\"ancoraAntes\":\"para baixo. A velocidade vertical diz quanto esse y muda em cada passinho. O sinal do número participa dessa direção.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+      "plannedVideo": "Título: Para que lado o laser anda?\n\nMaster integral da professora. Roteiro: nave-contra-asteroides-dia-2.roteiro.md, clipe video-direcao-do-tiro. Substituições kids: [{\"id\":\"video-direcao-do-tiro-K1\",\"clipe\":\"video-direcao-do-tiro\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Um número negativo deixa o laser mais fraco?\",\"falaPersonagem\":\"Um número negativo deixa o laser mais fraco?\",\"ancoraAntes\":\"para baixo. A velocidade vertical diz quanto esse y muda em cada passinho. O sinal do número participa dessa direção.\",\"ancoraDepois\":\"Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-direcao-do-tiro",
@@ -209,7 +209,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave Contra Asteroides · origem-tiro</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: 0 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover  ·  ESPAÇO: disparar\", 780, 462, \"#d8e6f8\", 15, \"right\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: 0 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover   ESPAÇO: disparar\", 400, 60, \"#ffffff\", 15, \"center\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -601,14 +601,14 @@
                       "ctxVar": "ctx",
                       "text": {
                         "type": "str",
-                        "value": "SETAS: mover  ·  ESPAÇO: disparar",
+                        "value": "SETAS: mover   ESPAÇO: disparar",
                         "__id": "nave-2d-completo-82"
                       },
-                      "x": 780,
-                      "y": 462,
-                      "color": "#d8e6f8",
+                      "x": 400,
+                      "y": 60,
+                      "color": "#ffffff",
                       "size": 15,
-                      "align": "right",
+                      "align": "center",
                       "__id": "nave-2d-completo-81"
                     },
                     {
@@ -1332,15 +1332,15 @@
                                               "type": "sz_g2d_draw_label",
                                               "id": "nave-2d-completo-81",
                                               "fields": {
-                                                "COLOR": "#d8e6f8",
-                                                "ALIGN": "right"
+                                                "COLOR": "#ffffff",
+                                                "ALIGN": "center"
                                               },
                                               "inputs": {
                                                 "TEXT": {
                                                   "shadow": {
                                                     "type": "sz_val_text",
                                                     "fields": {
-                                                      "TEXT": "SETAS: mover  ·  ESPAÇO: disparar"
+                                                      "TEXT": "SETAS: mover   ESPAÇO: disparar"
                                                     },
                                                     "id": "nave-2d-completo-82"
                                                   }
@@ -1349,7 +1349,7 @@
                                                   "shadow": {
                                                     "type": "sz_val_number",
                                                     "fields": {
-                                                      "NUM": 780
+                                                      "NUM": 400
                                                     }
                                                   }
                                                 },
@@ -1357,7 +1357,7 @@
                                                   "shadow": {
                                                     "type": "sz_val_number",
                                                     "fields": {
-                                                      "NUM": 462
+                                                      "NUM": 60
                                                     }
                                                   }
                                                 },
@@ -1972,7 +1972,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave Contra Asteroides · origem-tiro</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: 0 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover  ·  ESPAÇO: disparar\", 780, 462, \"#d8e6f8\", 15, \"right\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
+                "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: 0 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover   ESPAÇO: disparar\", 400, 60, \"#ffffff\", 15, \"center\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
               },
               "extraFiles": [],
               "assets": [
@@ -2364,14 +2364,14 @@
                           "ctxVar": "ctx",
                           "text": {
                             "type": "str",
-                            "value": "SETAS: mover  ·  ESPAÇO: disparar",
+                            "value": "SETAS: mover   ESPAÇO: disparar",
                             "__id": "nave-2d-completo-82"
                           },
-                          "x": 780,
-                          "y": 462,
-                          "color": "#d8e6f8",
+                          "x": 400,
+                          "y": 60,
+                          "color": "#ffffff",
                           "size": 15,
-                          "align": "right",
+                          "align": "center",
                           "__id": "nave-2d-completo-81"
                         },
                         {
@@ -3095,15 +3095,15 @@
                                                   "type": "sz_g2d_draw_label",
                                                   "id": "nave-2d-completo-81",
                                                   "fields": {
-                                                    "COLOR": "#d8e6f8",
-                                                    "ALIGN": "right"
+                                                    "COLOR": "#ffffff",
+                                                    "ALIGN": "center"
                                                   },
                                                   "inputs": {
                                                     "TEXT": {
                                                       "shadow": {
                                                         "type": "sz_val_text",
                                                         "fields": {
-                                                          "TEXT": "SETAS: mover  ·  ESPAÇO: disparar"
+                                                          "TEXT": "SETAS: mover   ESPAÇO: disparar"
                                                         },
                                                         "id": "nave-2d-completo-82"
                                                       }
@@ -3112,7 +3112,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 780
+                                                          "NUM": 400
                                                         }
                                                       }
                                                     },
@@ -3120,7 +3120,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 462
+                                                          "NUM": 60
                                                         }
                                                       }
                                                     },
@@ -3733,7 +3733,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave Contra Asteroides · voo-tiros</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: -7 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n      SZGame2D.updateGroup(tiros);\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover  ·  ESPAÇO: disparar\", 780, 462, \"#d8e6f8\", 15, \"right\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
+                "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: -7 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n      SZGame2D.updateGroup(tiros);\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover   ESPAÇO: disparar\", 400, 60, \"#ffffff\", 15, \"center\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
               },
               "extraFiles": [],
               "assets": [
@@ -4130,14 +4130,14 @@
                           "ctxVar": "ctx",
                           "text": {
                             "type": "str",
-                            "value": "SETAS: mover  ·  ESPAÇO: disparar",
+                            "value": "SETAS: mover   ESPAÇO: disparar",
                             "__id": "nave-2d-completo-82"
                           },
-                          "x": 780,
-                          "y": 462,
-                          "color": "#d8e6f8",
+                          "x": 400,
+                          "y": 60,
+                          "color": "#ffffff",
                           "size": 15,
-                          "align": "right",
+                          "align": "center",
                           "__id": "nave-2d-completo-81"
                         },
                         {
@@ -4870,15 +4870,15 @@
                                                   "type": "sz_g2d_draw_label",
                                                   "id": "nave-2d-completo-81",
                                                   "fields": {
-                                                    "COLOR": "#d8e6f8",
-                                                    "ALIGN": "right"
+                                                    "COLOR": "#ffffff",
+                                                    "ALIGN": "center"
                                                   },
                                                   "inputs": {
                                                     "TEXT": {
                                                       "shadow": {
                                                         "type": "sz_val_text",
                                                         "fields": {
-                                                          "TEXT": "SETAS: mover  ·  ESPAÇO: disparar"
+                                                          "TEXT": "SETAS: mover   ESPAÇO: disparar"
                                                         },
                                                         "id": "nave-2d-completo-82"
                                                       }
@@ -4887,7 +4887,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 780
+                                                          "NUM": 400
                                                         }
                                                       }
                                                     },
@@ -4895,7 +4895,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 462
+                                                          "NUM": 60
                                                         }
                                                       }
                                                     },
@@ -5509,7 +5509,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave Contra Asteroides · limpeza-tiros</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: -7 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n      SZGame2D.updateGroup(tiros);\n      SZGame2D.pruneOffscreen(ctx, tiros, 40, (foraDaTela) => {\n\n      });\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover  ·  ESPAÇO: disparar\", 780, 462, \"#d8e6f8\", 15, \"right\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
+                "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07152b\");\n  SZGame2D.fitScreen(100);\n  SZGame2D.setStageDescription(\"Projeto inicial de Nave Contra Asteroides. Enter começa. Cenário, nave, telas e reinício preparados; movimento e regras serão construídos nas aulas.\");\n  SZGame2D.setBackdrop(\"cenario-aurora\");\n  const nave = SZGame2D.createSprite({ x: 372, y: 396, w: 56, h: 64, image: \"nave-falcao-azul\" });\n  SZGame2D.setHitboxScale(nave, 75);\n  const painelMensagem = SZGame2D.createSprite({ x: 48, y: 140, w: 704, h: 176, color: \"#0c1a34\" });\n  const tiros = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onKey(\"Enter\", () => {\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else {\n      if (SZGame2D.sceneIs(\"vitoria\")) {\n        SZGame2D.restart();\n      } else {\n        if (SZGame2D.sceneIs(\"derrota\")) {\n          SZGame2D.restart();\n        }\n      }\n    }\n  }, \"nave-2d-inicial-8\");\n  SZGame2D.onKey(\"Space\", () => {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.spawn(tiros, { x: SZGame2D.centerX(nave) - 5, y: SZGame2D.spriteY(nave) - 24, w: 10, h: 28, image: \"laser-ciano\", vx: 0, vy: -7 });\n      SZGame2D.playFx(\"shoot\");\n    }\n  }, \"nave-2d-completo-25\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.arrowsX(nave, 5);\n      SZGame2D.clampToScreen(nave, ctx);\n      SZGame2D.updateGroup(tiros);\n      SZGame2D.pruneOffscreen(ctx, tiros, 40, (foraDaTela) => {\n\n      });\n    }\n    SZGame2D.clear();\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.drawLabel(ctx, \"SETAS: mover   ESPAÇO: disparar\", 400, 60, \"#ffffff\", 15, \"center\");\n    if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"NAVE CONTRA ASTEROIDES\", 400, 182, \"#e0f5ff\", 29, \"center\");\n      SZGame2D.drawLabel(ctx, \"Abra a rota: acerte 20 asteroides.\", 400, 220, \"#d1e5f3\", 21, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie para proteger suas três vidas.\", 400, 252, \"#c4d7eb\", 19, \"center\");\n      SZGame2D.drawLabel(ctx, \"Aperte ENTER para começar\", 400, 290, \"#7ce9da\", 21, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"vitoria\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"ROTA LIBERADA!\", 400, 187, \"#8cf1cb\", 32, \"center\");\n      SZGame2D.drawLabel(ctx, \"Boa viagem, comandante!\", 400, 232, \"#f2f9ff\", 24, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n    if (SZGame2D.sceneIs(\"derrota\")) {\n      SZGame2D.drawSprite(ctx, painelMensagem);\n      SZGame2D.drawLabel(ctx, \"VAMOS TENTAR OUTRA VEZ?\", 400, 187, \"#ffd19d\", 27, \"center\");\n      SZGame2D.drawLabel(ctx, \"Desvie dos asteroides e encontre sua rota.\", 400, 232, \"#f2f9ff\", 20, \"center\");\n      SZGame2D.drawLabel(ctx, \"ENTER para voltar ao início\", 400, 283, \"#b5d4ef\", 20, \"center\");\n    }\n  }, \"nave-2d-inicial-18\");\n}, \"__sz-project\");\n"
               },
               "extraFiles": [],
               "assets": [
@@ -5914,14 +5914,14 @@
                           "ctxVar": "ctx",
                           "text": {
                             "type": "str",
-                            "value": "SETAS: mover  ·  ESPAÇO: disparar",
+                            "value": "SETAS: mover   ESPAÇO: disparar",
                             "__id": "nave-2d-completo-82"
                           },
-                          "x": 780,
-                          "y": 462,
-                          "color": "#d8e6f8",
+                          "x": 400,
+                          "y": 60,
+                          "color": "#ffffff",
                           "size": 15,
-                          "align": "right",
+                          "align": "center",
                           "__id": "nave-2d-completo-81"
                         },
                         {
@@ -6664,15 +6664,15 @@
                                                   "type": "sz_g2d_draw_label",
                                                   "id": "nave-2d-completo-81",
                                                   "fields": {
-                                                    "COLOR": "#d8e6f8",
-                                                    "ALIGN": "right"
+                                                    "COLOR": "#ffffff",
+                                                    "ALIGN": "center"
                                                   },
                                                   "inputs": {
                                                     "TEXT": {
                                                       "shadow": {
                                                         "type": "sz_val_text",
                                                         "fields": {
-                                                          "TEXT": "SETAS: mover  ·  ESPAÇO: disparar"
+                                                          "TEXT": "SETAS: mover   ESPAÇO: disparar"
                                                         },
                                                         "id": "nave-2d-completo-82"
                                                       }
@@ -6681,7 +6681,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 780
+                                                          "NUM": 400
                                                         }
                                                       }
                                                     },
@@ -6689,7 +6689,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 462
+                                                          "NUM": 60
                                                         }
                                                       }
                                                     },
@@ -7348,7 +7348,7 @@
           },
           {
             "id": "movimento-na-partida",
-            "label": "Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.",
+            "label": "Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -7426,7 +7426,7 @@
           },
           {
             "id": "evento-protegido",
-            "label": "Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.",
+            "label": "Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -7732,7 +7732,7 @@
           },
           {
             "id": "movimento-na-partida",
-            "label": "Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.",
+            "label": "Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -7810,7 +7810,7 @@
           },
           {
             "id": "evento-protegido",
-            "label": "Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.",
+            "label": "Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -8171,7 +8171,7 @@
           },
           {
             "id": "movimento-na-partida",
-            "label": "Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.",
+            "label": "Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -8249,7 +8249,7 @@
           },
           {
             "id": "evento-protegido",
-            "label": "Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.",
+            "label": "Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",

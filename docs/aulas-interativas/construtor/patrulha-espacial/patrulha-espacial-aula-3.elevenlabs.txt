@@ -100,7 +100,7 @@
 
 [engaging, energetic, conversational voice] A contagem já começa em zero e soma no acerto. Agora o piloto precisa enxergar esse número. Vamos preparar o aviso inicial e atualizar o mesmo lugar depois de cada acerto.
 
-[confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com o título Patrulha Espacial e Projeto inicial. Deixe o encaixe logo abaixo dele visível.
+[confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela em cima, no meio, com o título Patrulha Espacial. Deixe o encaixe logo abaixo dele visível.
 
 [confident, clear, unhurried voice] Abra Jogo 3D, Placar, vida e telas e Na tela. Pegue Escrever na tela e coloque nesse lugar.
 

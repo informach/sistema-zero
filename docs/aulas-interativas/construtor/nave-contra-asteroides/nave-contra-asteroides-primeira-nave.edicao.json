@@ -35,7 +35,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "também acontece em pequenos passos, um em cada quadro. A seta que você segura indica o lado para o qual a nave deve ir.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "E quando eu solto a seta?",
       "falaPersonagem": "E quando eu solto a seta?",
       "tags": ["[curious]"]
@@ -46,7 +46,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "pode levar a nave além dessa janela. O limite confere onde ela ficou e mantém sua caixa dentro da área de jogo.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "Se eu continuar segurando a seta, a nave pode desaparecer?",
       "falaPersonagem": "Se eu continuar segurando a seta, a nave pode desaparecer?",
       "tags": ["[curious]"]

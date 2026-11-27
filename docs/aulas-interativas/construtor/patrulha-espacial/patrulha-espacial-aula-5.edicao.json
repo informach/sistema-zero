@@ -19,8 +19,8 @@
       "clipe": "video-meta-da-patrulha",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou.",
-      "ancoraDepois": "Nesta patrulha, a vida é conferida primeiro. Se acabou, vale a derrota. A vitória fica no senão, quando ainda há vida",
+      "ancoraAntes": "possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida. Antes de montar, uma pergunta para você pensar.",
+      "ancoraDepois": "Pense na sua resposta. Nesta patrulha, a vida é conferida primeiro: se acabou, vale a derrota. Por isso a vitória vai",
       "falaPrincipal": "Se eu chegar a vinte e a vida também acabar, qual resultado vale?",
       "falaPersonagem": "Se eu chegar a vinte e a vida também acabar, qual resultado vale?",
       "tags": ["[curious]"]

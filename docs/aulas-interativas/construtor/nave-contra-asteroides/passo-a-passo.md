@@ -56,7 +56,7 @@ Faça a nave responder às setas
 3. Abra Jogo 2D, depois Movimento e depois Movimentos prontos.
 4. Pegue Mover o sprite nave com as setas esquerda e direita e solte dentro do então desse Se.
 5. O nome já é nave. No campo velocidade, troque 6 por 5.
-6. Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro.
+6. Pense na placa de aberto ou fechado de uma loja. O jogo também tem uma placa, chamada estado: na abertura ela diz início, depois do Enter ela vira jogando e, no fim, vitória ou derrota. Esse Se olha a placa e só deixa a nave andar quando ela diz jogando. É por isso que, na abertura, a nave fica quietinha.
 
 **Teste no jogo:**
 
@@ -90,9 +90,8 @@ Mostre os controles e envie
 1. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 2. Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe logo abaixo dele à vista, antes das perguntas que desenham as telas.
 3. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Escrever e encaixe nesse lugar.
-4. No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo.
-5. Coloque 780 no x,462 no y e 15 no tamanho. Escolha o alinhamento à direita.
-6. Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito.
+4. No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover   ESPAÇO: disparar. Deixe uns espaços entre os dois controles.
+5. Coloque 400 no x, 60 no y e 15 no tamanho, e escolha o alinhamento no centro. Assim a legenda fica no alto da tela, longe da nave: 400 é o meio da largura.
 
 **Teste no jogo:**
 
@@ -357,7 +356,7 @@ Mostre o acerto
 1. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 2. Encontre o encontro entre tiros e asteroides. Dentro do fazer, deixe à vista o encaixe depois das duas retiradas.
 3. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas. Pegue Soltar explosão no sprite e encaixe nesse lugar.
-4. Conserve o nome asteroide. Clique no quadradinho de cor desse bloco. Na janelinha, apague o código de Cor em hexadecimal, digite #ffce69, com o sinal de cerquilha na frente, e clique em OK.
+4. Conserve o nome asteroide. Se quiser, clique no quadradinho de cor desse bloco e escolha a cor da explosão na paleta. A cor é escolha sua: ela não muda o jogo.
 5. Deixe o encaixe logo abaixo da explosão à vista. Abra Jogo 2D, depois Som e depois Efeitos prontos. Encaixe Tocar efeito e escolha explosão.
 
 **Teste no jogo:**
@@ -395,8 +394,8 @@ Prepare o placar
 5. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 6. Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe depois dele à vista, antes da legenda e das telas.
 7. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Mostrar placar e encaixe nesse lugar.
-8. No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x,32 no y e 23 no tamanho.
-9. Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista.
+8. No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x, 32 no y e 23 no tamanho.
+9. O placar chega branco, que aparece bem no espaço. Se quiser outra cor clara, escolha no quadradinho de cor. Agora deixe o número do valor do placar à vista.
 10. Abra Programação e depois Valores. Pegue o valor de variável, que chega com x, e encaixe sobre o número do placar. Clique nesse x e escolha pontos.
 
 **Teste no jogo:**
@@ -454,8 +453,8 @@ Prepare e mostre as três vidas
 5. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 6. Dentro de A cada quadro do jogo, encontre o placar Acertos. Deixe à vista o encaixe depois dele e antes da legenda dos controles.
 7. Na mesma categoria Vida, pegue Desenhar as vidas do sprite e solte nesse encaixe.
-8. Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x,22; e no y,52.
-9. Clique no quadradinho de cor e escolha o rosa que você quiser para os corações. Para usar a cor do exemplo, apague o código de Cor em hexadecimal, digite #ff9bae e clique em OK.
+8. Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x, 22; e no y, 52.
+9. Clique no quadradinho de cor e escolha na paleta a cor que você quiser para os corações.
 
 **Teste no jogo:**
 
@@ -472,7 +471,7 @@ Encontre a pedra que bateu na nave
 5. Deixe o fazer dessa nova colisão à vista. Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar o sprite do grupo e solte dentro desse fazer.
 6. No nome do sprite, troque asteroide por atingiuNave. O grupo continua asteroides. Esse nome indica só a pedra dessa batida.
 7. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas. Pegue Soltar explosão no sprite e solte depois da retirada, dentro da mesma colisão. Escolha atingiuNave no nome do sprite.
-8. Clique no quadradinho de cor da explosão e escolha uma cor. Para usar o laranja do exemplo, apague o código de Cor em hexadecimal, digite #ff956c e clique em OK.
+8. Se quiser, clique no quadradinho de cor da explosão e escolha outra cor na paleta. Uma cor diferente da explosão do tiro ajuda a perceber que a nave foi atingida.
 9. Abra Jogo 2D, depois Som e depois Efeitos prontos. Pegue Tocar efeito e solte depois da explosão, dentro dessa colisão. Escolha o efeito batida.
 
 **Teste no jogo:**
@@ -493,7 +492,7 @@ Tire uma vida e dê um respiro
 1. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 2. Encontre Para cada sprite do grupo asteroides que colidir com o sprite nave. Dentro dele, deixe à vista o encaixe depois da explosão e antes do som de batida.
 3. Abra Jogo 2D, depois Vida e placar e depois Vida. Pegue Machucar o sprite e deixá-lo invencível e solte nesse encaixe.
-4. Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros.
+4. Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros. O jogo desenha uns sessenta quadros por segundo, então são mais ou menos um segundo de proteção.
 
 **Teste no jogo:**
 
@@ -519,21 +518,22 @@ Compare as ações antes e depois de a partida começar.
 1. Compare as ações antes e depois de a partida começar.
 2. Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece.
 
-### Confira as três guardas da partida
+### Investigue: e se o laser não esperasse a partida?
 
-Confira as três guardas da partida
+Investigue: e se o laser não esperasse a partida?
 
-1. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
-2. Encontre A cada quadro do jogo. Leia a pergunta o estado do jogo é jogando. Confira que movimento, atualização dos grupos e colisões ficam dentro do então desse Se.
-3. Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
-4. Encontre o evento de Espaço. Confira que a criação do laser e o som ficam dentro de outro Se jogando.
-5. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
-6. Encontre A cada 1,5 segundos. Confira que criar o asteroide fica dentro do Se jogando desse relógio. Conserve os blocos preparados de Enter e das telas.
-7. Clique em Rodar de novo para voltar à abertura.
+1. Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+2. Encontre o evento de Espaço. Dentro dele, o Se jogando guarda a criação do laser e o som.
+3. Arraste No grupo tiros criar um sprite para fora do então e solte logo abaixo do Se, ainda dentro do evento. O som vem junto, grudado embaixo.
+4. Clique em Rodar de novo. Na abertura, antes do Enter, aperte Espaço algumas vezes. O que aconteceu? O laser sai mesmo com a placa dizendo início: sem a guarda, a regra não espera a partida.
+5. Agora conserte. Arraste No grupo tiros criar um sprite de volta para dentro do então do Se jogando.
+6. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+7. Confira também as outras duas guardas: o Se jogando de A cada quadro do jogo, com o movimento e as colisões, e o Se jogando do relógio A cada 1,5 segundos, com o asteroide.
+8. Clique em Rodar de novo para voltar à abertura.
 
 **Teste no jogo:**
 
-- Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. A abertura deve continuar esperando: a nave não anda, não sai laser e não nasce pedra.
+- Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. Agora a abertura espera de verdade: a nave não anda, não sai laser e não nasce pedra.
 - Agora pressione Enter. Confira que as setas, o laser e as pedras funcionam durante a partida.
 
 ### Escolha a aparência das pedras e dos lasers
@@ -579,13 +579,12 @@ Prepare a meta e mostre o progresso
 3. Abra Programação e depois Variáveis. Pegue Criar variável e solte nesse encaixe. Troque contador por meta e o valor 0 por 20.
 4. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 5. Encontre o placar Acertos. Deixe o encaixe depois dele à vista. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela.
-6. Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y,32; e no tamanho,21.
-7. Clique no quadradinho de cor do placar Meta. Na janelinha, apague o código de Cor em hexadecimal, digite o azul claro #c9eaff e clique em OK.
-8. Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor.
-9. Deixe à vista o encaixe depois de Desenhar as vidas e antes da legenda. Volte a Jogo 2D, Vida e placar, Indicadores e texto na tela. Pegue Barra de e solte nesse encaixe.
-10. Na barra, coloque x 280, y 23, largura 240 e altura 11.
-11. Clique no quadradinho de cor da barra. Na janelinha, apague o código de Cor em hexadecimal, digite o verde-água #65dfcf e clique em OK.
-12. Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa.
+6. Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y, 32; e no tamanho, 21.
+7. Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor.
+8. Deixe à vista o encaixe depois de Desenhar as vidas e antes da legenda. Volte a Jogo 2D, Vida e placar, Indicadores e texto na tela. Pegue Barra de e solte nesse encaixe.
+9. Na barra, coloque x 280, y 23, largura 240 e altura 11.
+10. Clique no quadradinho de cor da barra e escolha na paleta uma cor bem viva: é ela que vai encher conforme você acerta.
+11. Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa.
 
 **Teste no jogo:**
 

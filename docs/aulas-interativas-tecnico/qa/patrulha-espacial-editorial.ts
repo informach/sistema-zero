@@ -47,6 +47,14 @@ type Montagem = {
   notaDeGravacao?: string
 }
 
+/** O recado da página no padrão das aulas do Faísca e da Nave: o que fazer e quando seguir. */
+function recadoDaPagina(m: Montagem) {
+  if (m.entrega)
+    return `Hora de conferir e enviar! ${m.ponte} Clique em Verificar projeto, envie o projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em ${m.entrega.saida}.`
+  const teste = m.semEfeitoVisivel ? 'Clique em Verificar projeto.' : 'Teste no seu jogo e clique em Verificar projeto.'
+  return `Sua vez! ${m.ponte} ${teste} Quando aparecer Objetivo cumprido!, clique em Próxima parte.`
+}
+
 /** O master e o Na tela saem dos mesmos segmentos, sem âncoras inventadas. */
 export function montagemPatrulha(m: Montagem): ConstrutorTrecho {
   const final = m.entrega
@@ -64,7 +72,7 @@ export function montagemPatrulha(m: Montagem): ConstrutorTrecho {
     etapa: m.etapa,
     objective: m.objective,
     kind: m.entrega ? 'delivery' : 'build',
-    ponte: m.ponte,
+    ponte: recadoDaPagina(m),
     text: `${montarFalaPatrulha(m.falas)} ${final}`,
     screen:
       `A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. ${telaDasFalasPatrulha(m.falas)} ${conferencia} ${saida} ${m.notaDeGravacao ?? ''}`.trim(),
@@ -77,12 +85,25 @@ export function montagemPatrulha(m: Montagem): ConstrutorTrecho {
 }
 
 /** Montagem integral da guarda conhecida; o Se da paleta já traz x > 0. */
-export function guardaPatrulha(destino: string, contexto: string): FalaPatrulha[] {
+export function guardaPatrulha(
+  destino: string,
+  contexto: string,
+  primeiraVez = false,
+): FalaPatrulha[] {
   const inicial = `Se valor da variável x > 0 dentro de ${destino}`
   const comEstado = `Se valor da variável estado > 0 dentro de ${destino}`
   const igualZero = `Se valor da variável estado = 0 dentro de ${destino}`
   const comTexto = `Se valor da variável estado = texto Olá dentro de ${destino}`
+  const ponte: FalaPatrulha[] = primeiraVez
+    ? [
+        [
+          'conversa',
+          'Lembra da placa do estado na Nave Contra Asteroides? Lá, a pergunta o estado do jogo é jogando vinha num bloco pronto. Aqui você monta a mesma pergunta com uma comparação: estado é igual a jogando?',
+        ],
+      ]
+    : [['conversa', 'Agora a guarda que você já conhece: estado é igual a jogando?']]
   return [
+    ...ponte,
     [
       'instrucao',
       `Dentro de ${contexto}, deixe à vista o espaço ao lado de fazer.`,
@@ -109,7 +130,7 @@ export function guardaPatrulha(destino: string, contexto: string): FalaPatrulha[
     ],
     [
       'instrucao',
-      'Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.',
+      'Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.',
       `[trocar ">" por "=" em "${comEstado}"]`,
     ],
     [

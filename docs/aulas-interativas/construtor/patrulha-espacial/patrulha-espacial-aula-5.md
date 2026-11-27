@@ -58,7 +58,7 @@ Conferir a meta no senão da derrota e acionar a vitória uma única vez.
 
 ## Parte 3. Confira a patrulha completa
 
-Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partida completo.
+Testar o ciclo de partida completo e enviar a patrulha pronta.
 
 - Intenção: delivery.
 - Atividades: video-patrulha-pronta, ponte-patrulha-pronta, projeto.
@@ -80,7 +80,6 @@ Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partid
 - Conserve o movimento lateral preparado: espere Enter e respeite as bordas e a altura da nave.
 - Confira que o tiro criado sai do grupo ao terminar seu caminho.
 - Espere na abertura sem asteroides; depois de Enter, confira o surgimento.
-- Mostre os quatro avisos fornecidos: os dois da abertura e os dois de depois de Enter.
 
 ## Parte 4. Por que o jogo termina?
 

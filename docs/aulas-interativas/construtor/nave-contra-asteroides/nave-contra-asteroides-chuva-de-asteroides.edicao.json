@@ -22,7 +22,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "asteroides. Ele indica quanto tempo esperar antes de criar outro, enquanto os que já nasceram continuam seu caminho.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "E se nascer um asteroide em todo quadro?",
       "falaPersonagem": "E se nascer um asteroide em todo quadro?",
       "tags": ["[curious]"]
@@ -33,7 +33,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "da parte visível e entrar caindo. Isso deixa a chegada acontecer pela beirada, em vez de aparecer no meio do caminho.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "O sorteio precisa dar um lugar diferente todas as vezes?",
       "falaPersonagem": "O sorteio precisa dar um lugar diferente todas as vezes?",
       "tags": ["[curious]"]

@@ -4,6 +4,8 @@
 
 [engaging, energetic, conversational voice] A nova conferência vai entrar antes desse Se. Assim, se a partida acabou, o jogo decide o resultado antes de continuar o movimento.
 
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
 [confident, clear, unhurried voice] Dentro de A cada quadro da cena, no começo do fazer, deixe à vista o espaço ao lado de fazer.
 
 [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
@@ -14,7 +16,7 @@
 
 [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
 
-[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
 
 [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
 
@@ -62,13 +64,17 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Você já encerra a partida quando as vidas acabam. Agora vamos completar a outra possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida.
+[engaging, energetic, conversational voice] Você já encerra a partida quando as vidas acabam. Agora vamos completar a outra possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida. Antes de montar, uma pergunta para você pensar.
+
+[curious] Se eu chegar a vinte e a vida também acabar, qual resultado vale?
+
+[engaging, energetic, conversational voice] Pense na sua resposta. Nesta patrulha, a vida é conferida primeiro: se acabou, vale a derrota. Por isso a vitória vai ficar no senão, que só acontece quando ainda há vida.
 
 [confident, clear, unhurried voice] Encontre a pergunta Se a vida de nave é menor ou igual a zero, no começo de A cada quadro da cena.
 
 [confident, clear, unhurried voice] Clique no segundo mais desse Se, o que fica logo antes de senão, para abrir esse espaço. Deixe visível o espaço do senão que apareceu.
 
-[engaging, energetic, conversational voice] Se a vida chegou a zero, o então cuida da derrota. Senão, a nave ainda tem vida, e podemos conferir a meta de acertos. Essa ordem decide uma única resposta.
+[engaging, energetic, conversational voice] Se a vida chegou a zero, o então cuida da derrota. Senão, a nave ainda tem vida, e podemos conferir a meta de acertos. Essa ordem decide uma única resposta, a que você pensou agora há pouco.
 
 [confident, clear, unhurried voice] Abra Programação e Lógica e Se. Pegue um Se e encaixe no senão.
 
@@ -86,10 +92,6 @@
 
 [confident, clear, unhurried voice] Deixe o encaixe abaixo do som visível. Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou.
 
-[curious] Se eu chegar a vinte e a vida também acabar, qual resultado vale?
-
-[engaging, energetic, conversational voice] Nesta patrulha, a vida é conferida primeiro. Se acabou, vale a derrota. A vitória fica no senão, quando ainda há vida para completar a rota.
-
 [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Pilote, desvie e acerte as pedras. Quando o placar chega a vinte e você ainda tem vida, aparece a tela de vitória.
 
 [upbeat, encouraging voice] Depois do resultado, tente mover e disparar: a partida está encerrada. Clique em Voltar ao início. O começo volta com pontos zero e três vidas.
@@ -104,19 +106,11 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sua patrulha já tem as regras completas. Falta trocar os avisos de projeto inicial pelos avisos da versão pronta. Esses textos estão no seu passo a passo para você copiar exatamente. Depois vamos conferir o conjunto.
-
-[confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com Patrulha Espacial e Projeto inicial. Troque o texto inteiro por: PATRULHA ESPACIAL, barra em pé, Abra uma rota entre os asteroides.
-
-[confident, clear, unhurried voice] Ainda em Ao iniciar, encontre o aviso de baixo com Enter e as setas. Troque o texto pelo aviso completo: ENTER, começar; SETAS, mover; ESPAÇO, um tiro por aperto. Use os dois-pontos e as barras como estão no passo a passo.
-
-[confident, clear, unhurried voice] Em Quando acontecer, encontre o acontecimento de Enter. Dentro dele, o aviso de cima diz Conheça a nave. Troque o texto inteiro por: Abra a rota, dois-pontos, acerte vinte asteroides e proteja sua nave.
-
-[confident, clear, unhurried voice] Logo abaixo está o aviso de que as regras serão construídas nas aulas. Troque pelo aviso pronto: SETAS, mover; ESPAÇO, atirar; Asteroide que passa não tira vida. Copie os separadores do passo a passo.
+[engaging, energetic, conversational voice] Sua patrulha já tem as regras completas: disparos, asteroides, acertos, pontos, vidas e as duas formas de terminar. Os avisos da tela já mostram a missão desde a primeira aula. Agora é hora de testar o jogo inteiro, como um piloto de testes, antes de enviar.
 
 [upbeat, encouraging voice] Clique em Rodar de novo. Confira a abertura, os três corações e o zero no placar. Toque em Espaço antes de Enter: não deve sair laser.
 
-[upbeat, encouraging voice] Pressione Enter. Confira o novo aviso, mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois.
+[upbeat, encouraging voice] Pressione Enter. Mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois.
 
 [upbeat, encouraging voice] Confira as duas formas de terminar em partidas diferentes: acabar a vida mostra derrota; chegar a vinte acertos com vida mostra vitória. Depois de cada resultado, use Voltar ao início.
 
@@ -124,7 +118,7 @@
 
 [interested, animated voice] Você levou a ideia da nave para um espaço com profundidade e construiu as regras que fazem a patrulha acontecer. Agora seu jogo está pronto para ser jogado do começo ao fim.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os quatro avisos usam os textos fornecidos, a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas.
 
 [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 

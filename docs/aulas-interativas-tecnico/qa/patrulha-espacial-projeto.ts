@@ -82,8 +82,8 @@ export function fontePatrulha(etapa: PatrulhaEtapa): string {
     )
   if (tem('placar')) {
     source = source.replace(
-      'SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Projeto inicial");',
-      'SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Projeto inicial");\nSZGame3D.hudText("top-right", "Acertos: 0 / 20");',
+      'SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Abra uma rota entre os asteroides");',
+      'SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Abra uma rota entre os asteroides");\nSZGame3D.hudText("top-right", "Acertos: 0 / 20");',
     )
   }
 

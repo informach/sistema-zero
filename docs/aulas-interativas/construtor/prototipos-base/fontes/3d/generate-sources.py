@@ -67,13 +67,13 @@ let velocidadeAsteroides = 0;
 let estado = "inicio";
 SZGame3D.setScreenText("fim", "Vamos tentar outra vez?", "Sua nave pode abrir esta rota. Volte ao início para uma nova patrulha.", "Voltar ao início");
 SZGame3D.setScreenText("vitoria", "Rota liberada!", "Você abriu passagem por 20 asteroides. A patrulha pode continuar!", "Voltar ao início");
-SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Projeto inicial");
-SZGame3D.hudText("bottom-center", "ENTER: começar | SETAS: mover");
+SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Abra uma rota entre os asteroides");
+SZGame3D.hudText("bottom-center", "ENTER: começar | SETAS: mover | ESPAÇO: atirar");
 SZGame3D.onKey("Enter", () => {
   if (estado === "inicio") {
     estado = "jogando";
-    SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Conheça a nave");
-    SZGame3D.hudText("bottom-center", "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.");
+    SZGame3D.hudText("top-center", "Abra a rota: acerte 20 asteroides e proteja sua nave");
+    SZGame3D.hudText("bottom-center", "SETAS: mover | ESPAÇO: atirar");
   }
 });
 SZGame3D.animate(cena, () => {
@@ -102,12 +102,12 @@ SZGame3D.setScreenText("fim", "Vamos tentar outra vez?", "Sua nave pode abrir es
 SZGame3D.setScreenText("vitoria", "Rota liberada!", "Você abriu passagem por 20 asteroides. A patrulha pode continuar!", "Voltar ao início");
 SZGame3D.hudText("top-center", "PATRULHA ESPACIAL | Abra uma rota entre os asteroides");
 SZGame3D.hudText("top-right", "Acertos: 0 / 20");
-SZGame3D.hudText("bottom-center", "ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto");
+SZGame3D.hudText("bottom-center", "ENTER: começar | SETAS: mover | ESPAÇO: atirar");
 SZGame3D.onKey("Enter", () => {
   if (estado === "inicio") {
     estado = "jogando";
     SZGame3D.hudText("top-center", "Abra a rota: acerte 20 asteroides e proteja sua nave");
-    SZGame3D.hudText("bottom-center", "SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida");
+    SZGame3D.hudText("bottom-center", "SETAS: mover | ESPAÇO: atirar");
   }
 });
 SZGame3D.onKey("Space", () => {

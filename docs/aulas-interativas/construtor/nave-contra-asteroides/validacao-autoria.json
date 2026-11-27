@@ -10,8 +10,8 @@
       "finalStage": "instrucoes",
       "sections": 8,
       "plannedVideos": 8,
-      "importBytes": 838296,
-      "exampleBytes": 571454,
+      "importBytes": 838282,
+      "exampleBytes": 571445,
       "examples": 5,
       "parts": [
         {
@@ -59,8 +59,8 @@
       "finalStage": "origem-tiro",
       "sections": 7,
       "plannedVideos": 7,
-      "importBytes": 613307,
-      "exampleBytes": 467514,
+      "importBytes": 613271,
+      "exampleBytes": 467478,
       "examples": 4,
       "parts": [
         {
@@ -123,8 +123,8 @@
       "finalStage": "limpeza-tiros",
       "sections": 4,
       "plannedVideos": 4,
-      "importBytes": 497708,
-      "exampleBytes": 356085,
+      "importBytes": 497666,
+      "exampleBytes": 356058,
       "examples": 3,
       "parts": [
         {
@@ -180,8 +180,8 @@
       "finalStage": "limpeza-asteroides",
       "sections": 7,
       "plannedVideos": 6,
-      "importBytes": 644367,
-      "exampleBytes": 483145,
+      "importBytes": 644316,
+      "exampleBytes": 483109,
       "examples": 4,
       "parts": [
         {
@@ -263,8 +263,8 @@
       "finalStage": "efeitos-acerto",
       "sections": 4,
       "plannedVideos": 4,
-      "importBytes": 523499,
-      "exampleBytes": 369318,
+      "importBytes": 523457,
+      "exampleBytes": 369291,
       "examples": 3,
       "parts": [
         {
@@ -327,8 +327,8 @@
       "finalStage": "pontos",
       "sections": 5,
       "plannedVideos": 4,
-      "importBytes": 533373,
-      "exampleBytes": 373855,
+      "importBytes": 533331,
+      "exampleBytes": 373828,
       "examples": 3,
       "parts": [
         {
@@ -394,8 +394,8 @@
       "finalStage": "dano",
       "sections": 6,
       "plannedVideos": 6,
-      "importBytes": 681589,
-      "exampleBytes": 506547,
+      "importBytes": 681538,
+      "exampleBytes": 506511,
       "examples": 4,
       "parts": [
         {
@@ -479,8 +479,8 @@
       "finalStage": "aparencias",
       "sections": 4,
       "plannedVideos": 4,
-      "importBytes": 548539,
-      "exampleBytes": 383399,
+      "importBytes": 548555,
+      "exampleBytes": 383372,
       "examples": 3,
       "parts": [
         {
@@ -546,8 +546,8 @@
       "finalStage": "final",
       "sections": 8,
       "plannedVideos": 7,
-      "importBytes": 837816,
-      "exampleBytes": 650738,
+      "importBytes": 837752,
+      "exampleBytes": 650693,
       "examples": 5,
       "parts": [
         {
@@ -651,112 +651,112 @@
     {
       "stage": "instrucoes",
       "file": "projetos/instrucoes.szproject.json",
-      "sha256": "d2a700897d44f99c4b2c4a6a5d58a05e10b418e6469c65941139291fa859647e"
+      "sha256": "d3f116eacfac04aa9fc8a62c30a850df5d1705201cac081228e883be6d895378"
     },
     {
       "stage": "evento-tiro",
       "file": "projetos/evento-tiro.szproject.json",
-      "sha256": "693baa91c864a6d75b57073128b053db3a61b503a06cdea4b4643244dc3b93d2"
+      "sha256": "9c7bbe2de5252076fbc5ec13beed06d82b66d7bdfd1df205c903af6a0723d55a"
     },
     {
       "stage": "grupo-tiros",
       "file": "projetos/grupo-tiros.szproject.json",
-      "sha256": "86f7fd965cabce69e3df477ea875655ea34818272cc2eb4f12f385d194348ab2"
+      "sha256": "ca4af388bd1fd1176d5a451f8a7b75f19d8ffa8f37c3b0e7ad768a207bdc59a7"
     },
     {
       "stage": "origem-tiro",
       "file": "projetos/origem-tiro.szproject.json",
-      "sha256": "657f053cdad12f0d69cce6b4da28de030f36a13d84f86baced4ef9cb7075241b"
+      "sha256": "44fb84fc5768eaa9ba80203607a49e0d81dd5ba52143c149c76bc2166a723887"
     },
     {
       "stage": "voo-tiros",
       "file": "projetos/voo-tiros.szproject.json",
-      "sha256": "8d703ed40dffd2f9fe84b9c172397c3d895e3850117038ca2ac9b4ea13187f4f"
+      "sha256": "3b9e2be2f5f26a748c942b2e4723b5dcd51f45e734839046afa498535e560b1b"
     },
     {
       "stage": "limpeza-tiros",
       "file": "projetos/limpeza-tiros.szproject.json",
-      "sha256": "c655c68171f7364f717a9be763eb853b54cd0ca3344f95d9d4c7f4892e2341b4"
+      "sha256": "8c24b570ad0ff79bc7fd4d87bc01336ca78d0c868fd780603a03f0324ceaadf0"
     },
     {
       "stage": "relogio-asteroides",
       "file": "projetos/relogio-asteroides.szproject.json",
-      "sha256": "e3528e8d1cb8e372eca4948db061f2a876ca43d5234d3a97d3b2ddb8b851ae06"
+      "sha256": "5e5c0e825f00a3781fe0eb3ef4d5199647259b3bacf9dadb065a9ab1b19a5763"
     },
     {
       "stage": "asteroides",
       "file": "projetos/asteroides.szproject.json",
-      "sha256": "6520d8fe8cc427b31171f43d408f098afefd28baa402ec73486ea352ea9ad3ed"
+      "sha256": "7c5923cbc8f9f9c759bfee95a1e59fce4227fb13c17c1f21d61daa2956f57160"
     },
     {
       "stage": "limpeza-asteroides",
       "file": "projetos/limpeza-asteroides.szproject.json",
-      "sha256": "1248f25d8985e3984cbb4047c32df31ef233077d1882db47ad0d482e1b178ded"
+      "sha256": "b0d4028227e195b8184a6a8b1ec6cf114e55ef3e64aa85d2747f0304d28205c0"
     },
     {
       "stage": "colisao-tiros",
       "file": "projetos/colisao-tiros.szproject.json",
-      "sha256": "0598e7f2b39bea14e96d4c744055c7c8235501cf9b3449bbdf8f154233058f07"
+      "sha256": "813381d090ec97dc6b60fb0bccfb4be3e585d224288cd7e0bf62247a5791548a"
     },
     {
       "stage": "efeitos-acerto",
       "file": "projetos/efeitos-acerto.szproject.json",
-      "sha256": "3097d1bf1959a8dfbca05cf44e5292d044f08c920528eaf2f4c08600aaf4f41d"
+      "sha256": "ad6c0bcd45af9f4c7bdc50c4ab69cd1e4cd846a99b00523b54479eebc0716614"
     },
     {
       "stage": "placar",
       "file": "projetos/placar.szproject.json",
-      "sha256": "7470cf6054112c31a9cbcb821d78173866282ac787b6cff31e74b52a5aa3eecd"
+      "sha256": "a6e49c40ea6d872f94fffbf65474e71cd3ca11fee7ec4c683a56ae67ca76d83a"
     },
     {
       "stage": "pontos",
       "file": "projetos/pontos.szproject.json",
-      "sha256": "a17e2b18a9c8685dc184249dd23e4c74b570188d7a93e8ae41d60ffb93cbf3ab"
+      "sha256": "7cb34b59249b7b1c2841ee47559bced16336ad320339c888ae12a892144eeee9"
     },
     {
       "stage": "vidas",
       "file": "projetos/vidas.szproject.json",
-      "sha256": "9fa5c6e92eb4fd2639a68b2ae083a1fd5fc01a2c9b9e06bff8a9b08a10a7842f"
+      "sha256": "e27b0a75d1b46e46b2f0deac2d311cc301eb3d03c5cd453671e768b5406c9615"
     },
     {
       "stage": "colisao-nave",
       "file": "projetos/colisao-nave.szproject.json",
-      "sha256": "80d63d5243902d37489bc176b8e30d6c723d5aa4ea5179cfd4afd306fcdf97a6"
+      "sha256": "b04ea304563bcbcbfdaf483e4115a9c06a5446eb9a2fd5b2e4c1cad7784bc5ef"
     },
     {
       "stage": "dano",
       "file": "projetos/dano.szproject.json",
-      "sha256": "5caa2a1a1e7892316d76b83b811b0b537552d4e619c9d77ac6c9f97c9ff7af24"
+      "sha256": "eff2775836d067b579d05bef09e00d62ec1666eff83dd7b71468ec15e3be1eca"
     },
     {
       "stage": "inicio-conferido",
       "file": "projetos/inicio-conferido.szproject.json",
-      "sha256": "88856253f1ed6c855daa8b2264c4c74e127dc8b37ecb0e405ae0f2291d94b247"
+      "sha256": "5de181d72a60a915bc08570f58dc3bcf9d8057c4985e4c6c956649d71b40ba99"
     },
     {
       "stage": "aparencias",
       "file": "projetos/aparencias.szproject.json",
-      "sha256": "dd2534f1e433eea724fecdc56b58ecead7f0727ca36764d38ede4ce38dfd4dad"
+      "sha256": "fc6ca7963dd7aa527f5faabd69ca3c35c9cdbccd767b317238c8db515a619f95"
     },
     {
       "stage": "meta",
       "file": "projetos/meta.szproject.json",
-      "sha256": "e8480c1087f3afb98e2d3294e65b623ba53a8fea9e825da4d26ea0f245a7d577"
+      "sha256": "99dac6fc05741de665db2b67839ea2a3fe63d0bd2f2dec46520c99832d8b1957"
     },
     {
       "stage": "vitoria",
       "file": "projetos/vitoria.szproject.json",
-      "sha256": "07e1fb9abad7ddb7f0b95348d487decfb21e4698a3735666996d2761a1b59623"
+      "sha256": "de3650c4d87833e4041f7fb2cabccb60a56f83d68d4eb06c2296de47a583e327"
     },
     {
       "stage": "derrota",
       "file": "projetos/derrota.szproject.json",
-      "sha256": "f09515371c3c6897b301f04488aaf65fc64acef93dd7d458ba7263a66e440b88"
+      "sha256": "736d73b09ec32efe7689d0802dd3ff80168cc7dd2d7e9ee580a93ca9a3855510"
     },
     {
       "stage": "final",
       "file": "projetos/final.szproject.json",
-      "sha256": "0b2f6f1c7026d5954c78968cbe669890c358864ecd562d5681c42eadd68806f7"
+      "sha256": "c2cd4275155f711de07c9b43d017d094168feb0cb17b1fb086eae72c58456eb0"
     }
   ],
   "limits": {

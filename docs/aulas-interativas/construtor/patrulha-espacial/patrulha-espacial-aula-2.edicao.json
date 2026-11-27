@@ -8,12 +8,24 @@
     "duracaoGarantidaPelaTag": false
   },
   "clipes": [
+    "video-ritmo-das-pedras",
     "video-relogio-dos-asteroides",
     "video-lugares-de-entrada",
     "video-asteroides-se-aproximam",
     "video-fim-da-rota"
   ],
   "intervencoes": [
+    {
+      "id": "video-ritmo-das-pedras-K1",
+      "clipe": "video-ritmo-das-pedras",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "uma pedra de tempos em tempos. Na patrulha vai ser igual, só que as pedras nascem lá no fundo e vêm na sua direção.",
+      "ancoraDepois": "Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a",
+      "falaPrincipal": "E se nascer um asteroide em cada quadro do jogo?",
+      "falaPersonagem": "E se nascer um asteroide em cada quadro do jogo?",
+      "tags": ["[curious]"]
+    },
     {
       "id": "video-relogio-dos-asteroides-K1",
       "clipe": "video-relogio-dos-asteroides",

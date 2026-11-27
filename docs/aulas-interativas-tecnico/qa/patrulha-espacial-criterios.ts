@@ -558,47 +558,6 @@ export function patrulhaChecks(etapa: string): SectionProjectCheck[] {
         },
       },
     })
-  if (etapa === 'completo')
-    objetivos.push({
-      id: 'avisos-da-partida',
-      label:
-        'Mostre os quatro avisos fornecidos: os dois da abertura e os dois de depois de Enter.',
-      rule: {
-        type: 'behavior',
-        steps: [{ action: 'press', key: 'Enter' }],
-        checkpoints: [
-          {
-            afterStep: 0,
-            expect: {
-              target: { kind: 'text' },
-              compare: 'contains',
-              value: 'PATRULHA ESPACIAL | Abra uma rota entre os asteroides',
-            },
-          },
-          {
-            afterStep: 0,
-            expect: {
-              target: { kind: 'text' },
-              compare: 'contains',
-              value: 'ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto',
-            },
-          },
-          {
-            afterStep: 1,
-            expect: {
-              target: { kind: 'text' },
-              compare: 'contains',
-              value: 'Abra a rota: acerte 20 asteroides e proteja sua nave',
-            },
-          },
-        ],
-        expect: {
-          target: { kind: 'text' },
-          compare: 'contains',
-          value: 'SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida',
-        },
-      },
-    })
 
   return objetivos
 }

@@ -23,7 +23,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "Espaço também é um acontecimento. Isso é diferente de repetir algo em todos os quadros enquanto o jogo está rodando.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "Esperar já faz sair um tiro?",
       "falaPersonagem": "Esperar já faz sair um tiro?",
       "tags": ["[curious]"]
@@ -34,7 +34,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "a parte do espaço que você consegue ver. Estar fora dessa janela e deixar de participar do grupo são coisas diferentes.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "Se eu não vejo mais o laser, ele já saiu do grupo?",
       "falaPersonagem": "Se eu não vejo mais o laser, ele já saiu do grupo?",
       "tags": ["[curious]"]
@@ -45,7 +45,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "momento de cada disparo. A caixa da nave tem um centro e uma beirada de cima que ajudam a encontrar a saída do laser.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "O laser vai acompanhar a nave se eu escrever só um número?",
       "falaPersonagem": "O laser vai acompanhar a nave se eu escrever só um número?",
       "tags": ["[curious]"]

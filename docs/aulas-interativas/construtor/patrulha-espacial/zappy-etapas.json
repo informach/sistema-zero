@@ -96,6 +96,65 @@
         }
       ]
     },
+    "aula-2/ritmo-das-pedras": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "spawn",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "pedra-segundos",
+            "unit": "seconds",
+            "intervals": [0.5, 1, 1.5, 2],
+            "falling": true
+          },
+          "goals": ["every-frame", "with-timer"],
+          "goalCopy": {
+            "every-frame": {
+              "label": "Em todo quadro, as pedras nasceram coladas",
+              "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+            },
+            "with-timer": {
+              "label": "Com uma espera, sobrou espaço entre as pedras",
+              "pedido": "Escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "spawn-start",
+          "text": "Neste jogo, as pedras nascem lá em cima e caem. Agora nasce uma pedra nova em todo quadro. Quantas pedras você acha que nascem em um segundo, e como elas ficam na tela? Clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+        },
+        {
+          "id": "spawn-wait",
+          "text": "Agora cada pedra nova espera um tempo para nascer. O que você acha que muda na tela? Deixe o tempo passar até nascerem duas pedras e observe onde cada uma aparece."
+        },
+        {
+          "id": "spawn-wall",
+          "text": "Em todo quadro nasceu uma pedra nova: em um segundo foram umas trinta, uma colada na outra, como uma parede. E se cada pedra nova esperar um pouco para nascer? Escolha A cada 1,5 segundos e deixe passar pelo menos 3 segundos. Observe as pedras e quantas nasceram."
+        },
+        {
+          "id": "spawn-gap",
+          "text": "Com a espera, nasceu uma pedra de cada vez, e sobrou espaço entre uma e outra. E se uma pedra nova nascer em todo quadro, sem esperar? Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras."
+        },
+        {
+          "id": "spawn-complete-two",
+          "text": "Você comparou os dois jeitos. Em todo quadro, nascem umas trinta pedras por segundo, coladas. Com uma espera, nasce uma, espera e nasce outra, com espaço entre elas. Experimente outros intervalos e compare quantas pedras nascem no mesmo tempo."
+        }
+      ]
+    },
     "aula-3/encontro-no-espaco": {
       "activity": {
         "type": "experimentation",
@@ -185,6 +244,83 @@
         {
           "id": "island-contact-complete",
           "text": "Parecer junto não basta: precisa encostar."
+        }
+      ]
+    },
+    "aula-4/respiro-da-nave": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "invincibility",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["no-shield", "window", "expires"],
+          "goalCopy": {
+            "no-shield": {
+              "label": "Sem proteção, cada pedra tirou uma vida",
+              "pedido": "Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas."
+            },
+            "window": {
+              "label": "Com 45 quadros, só a primeira pedra tirou vida",
+              "pedido": "Escolha 45 quadros e clique em Avançar até a próxima pedra até a terceira pedra bater. Compare as vidas."
+            },
+            "expires": {
+              "label": "Com 15 quadros, a proteção acabou antes da terceira pedra",
+              "pedido": "Escolha 15 quadros e avance pedra por pedra. Observe quando a proteção acaba e quantas vidas sobram."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "invincibility-start",
+          "text": "Três pedras vão bater na nave, nos quadros 1, 10 e 30. Agora a nave não ganha proteção nenhuma depois de bater. Quantas vidas você acha que sobram? Clique em Avançar até a próxima pedra, uma pedra de cada vez, e observe as vidas."
+        },
+        {
+          "id": "invincibility-try",
+          "text": "Agora, depois de bater, a nave ganha um tempinho de proteção, que conta para trás, um quadro de cada vez. Quantas vidas você acha que sobram depois das três pedras? Clique em Avançar até a próxima pedra e observe as vidas e a proteção."
+        },
+        {
+          "id": "invincibility-running",
+          "text": "Continue clicando em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas e quantos quadros de proteção ainda restam em cada batida."
+        },
+        {
+          "id": "invincibility-none",
+          "text": "Sem proteção, cada pedra tirou uma vida: as três batidas levaram as três vidas. E se a nave ganhar um tempinho de proteção depois de bater? Escolha 45 quadros e avance pedra por pedra, observando as vidas e a proteção."
+        },
+        {
+          "id": "invincibility-long",
+          "text": "Com 45 quadros de proteção, só a primeira pedra tirou vida: as outras chegaram com a nave ainda protegida. E sem proteção nenhuma, o que muda? Escolha Nenhuma e avance pedra por pedra, observando as vidas."
+        },
+        {
+          "id": "invincibility-short",
+          "text": "Com 15 quadros, a proteção acabou antes da terceira pedra, e ela tirou outra vida. E sem proteção nenhuma, o que muda? Escolha Nenhuma e avance pedra por pedra, observando as vidas."
+        },
+        {
+          "id": "invincibility-none-long",
+          "text": "Sem proteção, as três pedras levaram as três vidas; com 45 quadros, só a primeira tirou vida. E com uma proteção curta, de 15 quadros? A pedra do quadro 30 chega antes ou depois de a proteção acabar? Escolha 15 quadros e avance pedra por pedra."
+        },
+        {
+          "id": "invincibility-none-short",
+          "text": "Sem proteção, as três pedras levaram as três vidas; com 15 quadros, a proteção acabou antes da terceira pedra. E com uma proteção longa, de 45 quadros? Escolha 45 quadros e avance pedra por pedra, observando as vidas e a proteção."
+        },
+        {
+          "id": "invincibility-long-short",
+          "text": "Com 45 quadros, só a primeira pedra tirou vida; com 15, a proteção acabou antes da terceira pedra. E sem proteção nenhuma? Escolha Nenhuma e avance pedra por pedra, observando as vidas."
+        },
+        {
+          "id": "invincibility-complete",
+          "text": "Você comparou as três. Sem proteção, cada batida tira uma vida. Com proteção, a nave fica um tempinho sem perder vida depois de bater, e a proteção conta para trás: se ela acaba antes da próxima pedra, a nave perde outra vida. A proteção é um respiro com prazo, não um escudo para sempre. Pode continuar testando quando quiser."
         }
       ]
     }

@@ -25,9 +25,9 @@ Prepare o grupo e o relógio
 - Estúdio: projeto.
 - Conclusão: video-relogio.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
 - Use A cada 1,5 segundos com a guarda Se jogando.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
@@ -55,11 +55,11 @@ Crie os asteroides caindo
 - Estúdio: projeto.
 - Conclusão: video-asteroide.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
 - Crie um laser por toque em Espaço durante a partida.
@@ -77,11 +77,11 @@ Retire os asteroides que escapam
 - Estúdio: projeto.
 - Conclusão: video-retirada.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
 - Crie um laser por toque em Espaço durante a partida.
@@ -109,11 +109,11 @@ Teste e envie a chuva de asteroides
 - Estúdio: projeto.
 - Conclusão: video-entrega, projeto; envio atualizado.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
 - Crie um laser por toque em Espaço durante a partida.
