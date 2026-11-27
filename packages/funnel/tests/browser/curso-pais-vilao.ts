@@ -2,7 +2,7 @@
  * Run after `bun run build`: node --import tsx tests/browser/curso-pais-vilao.ts
  *
  * A página do guia para pais (`/kids/vilao-em-aliado`), desde 25/11/2026 a página de VENDA do funil
- * `kids/vilao-em-aliado` (R$ 27, sem prazo), que abre no modo presente pelos links de campanha e de
+ * `kids/vilao-em-aliado` (R$ 27, seis meses), que abre no modo presente pelos links de campanha e de
  * embaixador (`?presente=<código>`). Sobe o build com um catálogo e um referrals falsos (pelo
  * gateway falso, que não confere o HMAC) e confere, a 320, 390, 768 e 1440 px: um h1, tema Kids,
  * página indexável, sem rolagem lateral, imagens carregadas, o bloco de compra no topo com o preço
@@ -24,7 +24,7 @@ import { productResponse } from './helpers/page-primaries'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = process.env.QA_OUTPUT ?? resolve(cwd, '../../tmp/curso-pais-review')
-const OFERTA = 'transformando-o-vilao-em-aliado'
+const OFERTA = 'transformando-o-vilao-em-aliado-1-ano'
 const SLUG = 'transformando-o-vilao-em-aliado'
 const CODIGO = 'guia-pais'
 
@@ -46,7 +46,8 @@ const campanha = (extra: Record<string, unknown> = {}) => ({
     courseSlug: SLUG,
     courseTitle: 'Transformando o vilão em aliado',
     learner: 'parents',
-    accessDays: null,
+    accessDays: 183,
+    accessMonths: 6,
     includesMural: false,
   },
   ...extra,
@@ -261,6 +262,12 @@ try {
     assert.equal(await compra.locator('input[name="email"]').count(), 0, `${largura}: sem cadastro`)
     assert.equal(await page.locator('section.c9-fim a[href="#oferta"]').count(), 1)
     const corpo = await page.locator('body').innerText()
+    assert.match(corpo, /6 meses/, `${largura}: prazo da venda`)
+    assert.doesNotMatch(
+      corpo,
+      /1 ano|12 meses|183 dias/,
+      `${largura}: sem prazo antigo ou dias de calendário`,
+    )
     assert.match(
       corpo,
       /A tela que hoje vira briga em casa pode ser\s+sua aliada\s+no desenvolvimento do seu filho\./,
@@ -315,7 +322,7 @@ try {
     const cartao = page.locator('#oferta .c9-plano')
     assert.match(
       await cartao.innerText(),
-      /Um presente da campanha Encontro de pais para você[\s\S]*De R\$\s?27 por\s+R\$\s?0\s+sem custo e sem cartão\s+(?:Acesso ao guia|\d+ dias? de acesso ao guia)[^\n]*cadastro\.\s+Quero o meu presente/,
+      /Um presente da campanha Encontro de pais para você[\s\S]*De R\$\s?27 por\s+R\$\s?0\s+sem custo e sem cartão\s+6 meses de acesso ao guia, contados do cadastro\.\s+Quero o meu presente/,
       `presente ${largura}: cartão`,
     )
     // Um cartão só: nada de moldura do formulário dentro dele.
@@ -330,6 +337,13 @@ try {
       `presente ${largura}: janela fechada`,
     )
     assert.equal(await page.locator('[data-checkout-cta]').count(), 0, `presente ${largura}`)
+    const corpoPresente = await page.locator('body').innerText()
+    assert.match(corpoPresente, /6 meses/, `presente ${largura}: prazo em meses`)
+    assert.doesNotMatch(
+      corpoPresente,
+      /1 ano|12 meses|183 dias/,
+      `presente ${largura}: sem prazo antigo ou dias de calendário`,
+    )
     await page.screenshot({ path: resolve(output, `presente-${largura}.png`), fullPage: true })
   }
 
