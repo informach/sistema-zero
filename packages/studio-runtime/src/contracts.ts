@@ -9,6 +9,7 @@ import {
   type StudioProRemoteDependencies,
   type StudioProTemplateId,
   type StudioProVerifiedPlatformFiles,
+  studioProDigest,
   studioProTemplate,
   verifyStudioBuildPlatformFiles,
 } from '@sistemazero/core/studio'
@@ -187,6 +188,19 @@ export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries'])
         )
     }
   }
+}
+
+/** Exact platform bytes admitted by the same authority as the source budget.
+ * The compiler keeps their syntax and imports, while semantic author checks target authored code. */
+export async function verifiedValidationPlatformFiles(input: ProBuildRequest) {
+  await verifyBuildBinaries(input.binaries)
+  const known = await verifyStudioBuildPlatformFiles(input)
+  const entries = await Promise.all(
+    [...known].map(async ([path, source]) => [path, await studioProDigest(source)] as const),
+  )
+  const materials = input.binaries?.['public/sz-assets.js']
+  if (materials) entries.push(['public/sz-assets.js', materials.sha256])
+  return Object.fromEntries(entries)
 }
 
 /** O pedido traz algum dos arquivos derivados dos cenários do Molda. */

@@ -89,6 +89,22 @@ export async function convertClassicToProTree(project: Project): Promise<Project
   }
   convertModuleSources(tree, project, imports)
 
+  const { withProRuntimeDeclarations } = await import('../modes/pro/runtimeDeclarations')
+  for (const extension of project.installedExtensions ?? []) {
+    const sources = Object.fromEntries(
+      Object.entries(tree).flatMap(([path, node]) =>
+        node.kind === 'file' ? [[path, node.content]] : [],
+      ),
+    )
+    for (const [path, content] of Object.entries(
+      withProRuntimeDeclarations(sources, extension.id),
+    )) {
+      if (tree[path]?.kind === 'dir')
+        throw new Error('Um arquivo de tipos conflita com uma pasta do projeto.')
+      if (!tree[path]) tree[path] = { kind: 'file', content }
+    }
+  }
+
   // JavaScript and original typed extras share real npm resolution. Conversion
   // does not suppress diagnostics for dependencies or generated source.
   // Os arquivos de APOIO da plataforma (teclas, som e fonte do jogo, escritos pela própria

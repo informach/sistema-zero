@@ -100,6 +100,9 @@ jobs:
       - name: Verificar tipos do promotor operacional Python
         run: bun run --cwd packages/studio-runtime typecheck:promoter
 
+      - name: Conferir declarações portáteis da conversão Pro
+        run: bun run --cwd packages/studio check:pro-runtime-declarations
+
       - name: Verificar barreira de manutenção
         run: bun test scripts/release scripts/ci ./scripts/molda-cenarios-arte.test.ts
 

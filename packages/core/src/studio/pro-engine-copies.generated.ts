@@ -59,6 +59,8 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       'b0a9f6314b0f4dc454078e1daf0c09acf73404836f8f799ca27cd3282b4f27c4',
       '1cc95094f076a5bf9ac89bfa98e6e1a3e151769bdb98bcf7a467a05dba2adf05',
       'bf283b136662d5618b6ec41a0b77619677c90fb622847b79dc4b9147d551ff18',
+      'aea63e52477195af4539e404a7b38b92ad665c549fae85afaf7bd2265388ef81',
+      '3560e8cf24748d9ccd776349438c1143fb7d6dd99f72cd2e553b0dfc7dd97f1e',
     ],
     'sem-cenario-pinta': [
       'c359a40c6b02bb98a72ed8173cd3e084954f71440b76e93c1900255e175d2830',
@@ -70,6 +72,7 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       'd0884f13b554ba9c4207810e4ea49488e9c0d2f41531892dedbb327724396710',
       '5de61350cb902a91c3bf3156377c910b915fa108168e097a383d24a353a45188',
       'c0a4482a900a9d1f6ef005da91c8eddd1e4b2b0885ff307b8dc80555b900ce0d',
+      '8a9bccb260de8ffc03200e48c182cd2060c0540fcfbd0df5826d4df1e4162987',
     ],
   },
   'game-2d-advanced': {
