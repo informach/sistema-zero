@@ -1,0 +1,681 @@
+{
+  "course": "O Jardim Secreto",
+  "updatedAt": "2026-11-27T11:49:07.487Z",
+  "sourceFolder": "C:/Users/tocha/Downloads/Jardim Secreto",
+  "method": "Novas versões nos mesmos IDs do Vimeo, compartilhadas entre Kids e adulto em cada ambiente. Capas reenviadas e ativadas após o processamento.",
+  "contexts": [
+    {
+      "environment": "staging",
+      "audience": "kids",
+      "course": {
+        "id": "8183249d-3e2b-5105-a5da-8b8653f2d84a",
+        "slug": "jornada-faisca-missao",
+        "titulo": "O Jardim Secreto",
+        "status": "published",
+        "publico": "kids"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "4fa1db60-2b47-44f0-819e-f887950cb853",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "cb688ff3-9d28-4fb9-b7d0-87a579ea5dd2",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-5",
+        "2-5"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-5",
+          "id": "1249500085",
+          "status": "available",
+          "duracao": 45,
+          "arquivo": 45.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-5",
+          "id": "1249500155",
+          "status": "available",
+          "duracao": 25,
+          "arquivo": 25.3,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "staging",
+          "audience": "kids",
+          "key": "1-5",
+          "videoId": "1249500085",
+          "domain": "https://community-kids-staging.up.railway.app",
+          "version": "/videos/1249500085/versions/1258504862",
+          "picture": "/videos/1249500085/pictures/2231265667",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.516059,
+            "duration": 45.06666666666667,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 40.072177,
+            "duration": 45.066666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 136,
+            "audioDecodedBytes": 38467
+          },
+          "ok": true
+        },
+        {
+          "environment": "staging",
+          "audience": "kids",
+          "key": "2-5",
+          "videoId": "1249500155",
+          "domain": "https://community-kids-staging.up.railway.app",
+          "version": "/videos/1249500155/versions/1258504863",
+          "picture": "/videos/1249500155/pictures/2231265681",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.516218,
+            "duration": 25.266666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 20.271512,
+            "duration": 25.266666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 88,
+            "audioDecodedBytes": 38779
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "environment": "staging",
+      "audience": "adult",
+      "course": {
+        "id": "ab60dccb-ee4f-5f2f-a5e9-f146a981fe77",
+        "slug": "jornada-faisca-missao-adulto",
+        "titulo": "O Jardim Secreto",
+        "status": "published",
+        "publico": "adult"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "1604487a-27d5-47b1-8a35-1f6af48ce127",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "bdea0dcb-6d58-454d-9df1-727b7ba76018",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-5",
+        "2-5"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-5",
+          "id": "1249500085",
+          "status": "available",
+          "duracao": 45,
+          "arquivo": 45.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-5",
+          "id": "1249500155",
+          "status": "available",
+          "duracao": 25,
+          "arquivo": 25.3,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "staging",
+          "audience": "adult",
+          "key": "1-5",
+          "videoId": "1249500085",
+          "domain": "https://community-staging-66f2.up.railway.app",
+          "version": "/videos/1249500085/versions/1258504862",
+          "picture": "/videos/1249500085/pictures/2231265667",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.515202,
+            "duration": 45.06666666666667,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 40.086737,
+            "duration": 45.066666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 138,
+            "audioDecodedBytes": 38704
+          },
+          "ok": true
+        },
+        {
+          "environment": "staging",
+          "audience": "adult",
+          "key": "2-5",
+          "videoId": "1249500155",
+          "domain": "https://community-staging-66f2.up.railway.app",
+          "version": "/videos/1249500155/versions/1258504863",
+          "picture": "/videos/1249500155/pictures/2231265681",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.516445,
+            "duration": 25.266666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 20.281048,
+            "duration": 25.266666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 90,
+            "audioDecodedBytes": 38581
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "environment": "production",
+      "audience": "kids",
+      "course": {
+        "id": "8183249d-3e2b-5105-a5da-8b8653f2d84a",
+        "slug": "jornada-faisca-missao",
+        "titulo": "O Jardim Secreto",
+        "status": "published",
+        "publico": "kids"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "4a50f3af-8a6e-4bf6-bdb7-efbb3abeef13",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "5b914a7a-4760-4f58-879a-dc5404591242",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-5",
+        "2-5"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-5",
+          "id": "1249796974",
+          "status": "available",
+          "duracao": 45,
+          "arquivo": 45.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-5",
+          "id": "1249797159",
+          "status": "available",
+          "duracao": 25,
+          "arquivo": 25.3,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "production",
+          "audience": "kids",
+          "key": "1-5",
+          "videoId": "1249796974",
+          "domain": "https://kids.sistemazero.com.br",
+          "version": "/videos/1249796974/versions/1258506100",
+          "picture": "/videos/1249796974/pictures/2231266133",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.517337,
+            "duration": 45.06666666666667,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 40.073248,
+            "duration": 45.066666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 136,
+            "audioDecodedBytes": 38467
+          },
+          "ok": true
+        },
+        {
+          "environment": "production",
+          "audience": "kids",
+          "key": "2-5",
+          "videoId": "1249797159",
+          "domain": "https://kids.sistemazero.com.br",
+          "version": "/videos/1249797159/versions/1258506101",
+          "picture": "/videos/1249797159/pictures/2231266375",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.519277,
+            "duration": 25.266666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 20.274451,
+            "duration": 25.266666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 89,
+            "audioDecodedBytes": 38779
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "environment": "production",
+      "audience": "adult",
+      "course": {
+        "id": "ab60dccb-ee4f-5f2f-a5e9-f146a981fe77",
+        "slug": "jornada-faisca-missao-adulto",
+        "titulo": "O Jardim Secreto",
+        "status": "published",
+        "publico": "adult"
+      },
+      "lessons": [
+        {
+          "number": 1,
+          "id": "cb02e66e-2807-479a-8310-330e6f906144",
+          "published": true,
+          "draftMatchesPublished": true
+        },
+        {
+          "number": 2,
+          "id": "ed46aa45-158c-45ee-9c8c-0554a3de4d25",
+          "published": true,
+          "draftMatchesPublished": true
+        }
+      ],
+      "changedParts": [
+        "1-5",
+        "2-5"
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-5",
+          "id": "1249796974",
+          "status": "available",
+          "duracao": 45,
+          "arquivo": 45.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-5",
+          "id": "1249797159",
+          "status": "available",
+          "duracao": 25,
+          "arquivo": 25.3,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "sistemazero.com.br"
+          ],
+          "ok": true
+        }
+      ],
+      "playback": [
+        {
+          "environment": "production",
+          "audience": "adult",
+          "key": "1-5",
+          "videoId": "1249796974",
+          "domain": "https://comunidade.sistemazero.com.br",
+          "version": "/videos/1249796974/versions/1258506100",
+          "picture": "/videos/1249796974/pictures/2231266133",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.519348,
+            "duration": 45.06666666666667,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 40.075879,
+            "duration": 45.066666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 138,
+            "audioDecodedBytes": 38467
+          },
+          "ok": true
+        },
+        {
+          "environment": "production",
+          "audience": "adult",
+          "key": "2-5",
+          "videoId": "1249797159",
+          "domain": "https://comunidade.sistemazero.com.br",
+          "version": "/videos/1249797159/versions/1258506101",
+          "picture": "/videos/1249797159/pictures/2231266375",
+          "playerPictureMatches": true,
+          "hlsVerified": true,
+          "start": {
+            "time": 0.504018,
+            "duration": 25.266666666666666,
+            "error": null,
+            "paused": false
+          },
+          "tail": {
+            "time": 20.277995,
+            "duration": 25.266666,
+            "error": null,
+            "paused": false,
+            "decodedFrames": 89,
+            "audioDecodedBytes": 38581
+          },
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "environment": "staging",
+      "part": "1-5",
+      "videoId": "1249500085",
+      "version": "/videos/1249500085/versions/1258504862",
+      "coverUri": "/videos/1249500085/pictures/2231265667",
+      "coverSha256": "716c3892787e20a279780c6360baeddb28453fbb1e9df889f11b3cf4f88ab1e9",
+      "durationFile": 45.08802395209581,
+      "durationPublished": 45,
+      "sourceSha256": "707b5e52af5957c85dded47e642babca9d2622413a580aea417dd82b98cec4d9",
+      "sourceBytes": 26444048,
+      "transcript": {
+        "uri": "/videos/1249500085/texttracks/346471517",
+        "file": "transcricoes/2026-11-27/staging-aula-01-parte-05.vtt",
+        "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1249500085-346471517-abccc3619aa3599cdb85c7fa62b86eac85cf764ed9d4ee94e40337f298e9bb0c.vtt",
+        "sha256": "abccc3619aa3599cdb85c7fa62b86eac85cf764ed9d4ee94e40337f298e9bb0c",
+        "active": true,
+        "publishedForKidsAndAdult": true,
+        "downloadedHashMatches": true
+      },
+      "knowledge": {
+        "sourceRef": "block:6a2d8e13-0f94-57bc-a002-ec531c5fdeb3",
+        "status": "ready",
+        "contentHash": "abccc3619aa3599cdb85c7fa62b86eac85cf764ed9d4ee94e40337f298e9bb0c",
+        "blockRevision": "e547e69322a34b7a83313ddccba18ef1",
+        "chunks": 1,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "staging",
+      "part": "2-5",
+      "videoId": "1249500155",
+      "version": "/videos/1249500155/versions/1258504863",
+      "coverUri": "/videos/1249500155/pictures/2231265681",
+      "coverSha256": "dbc11cb3ad6e3db9544ae3779a6f950612f164acf04aa25e21852aabeb938d90",
+      "durationFile": 25.28802395209581,
+      "durationPublished": 25,
+      "sourceSha256": "1bc181c502c5e860581984e8f5f22c2ad3586145826a911f6ad40808cd6c25d7",
+      "sourceBytes": 16178393,
+      "transcript": {
+        "uri": "/videos/1249500155/texttracks/346471072",
+        "file": "transcricoes/2026-11-27/staging-aula-02-parte-05.vtt",
+        "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1249500155-346471072-9121e8ba2c42dd24d6371e207b3021d09a5af76869e4215410647eebf6e99df2.vtt",
+        "sha256": "9121e8ba2c42dd24d6371e207b3021d09a5af76869e4215410647eebf6e99df2",
+        "active": true,
+        "publishedForKidsAndAdult": true,
+        "downloadedHashMatches": true
+      },
+      "knowledge": {
+        "sourceRef": "block:7b83dba0-a11e-5085-a9c9-3e8f338fd534",
+        "status": "ready",
+        "contentHash": "9121e8ba2c42dd24d6371e207b3021d09a5af76869e4215410647eebf6e99df2",
+        "blockRevision": "ec76429227d94a56bf5fd77de70c58bb",
+        "chunks": 1,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "production",
+      "part": "1-5",
+      "videoId": "1249796974",
+      "version": "/videos/1249796974/versions/1258506100",
+      "coverUri": "/videos/1249796974/pictures/2231266133",
+      "coverSha256": "716c3892787e20a279780c6360baeddb28453fbb1e9df889f11b3cf4f88ab1e9",
+      "durationFile": 45.08802395209581,
+      "durationPublished": 45,
+      "sourceSha256": "707b5e52af5957c85dded47e642babca9d2622413a580aea417dd82b98cec4d9",
+      "sourceBytes": 26444048,
+      "transcript": {
+        "uri": "/videos/1249796974/texttracks/346471992",
+        "file": "transcricoes/2026-11-27/production-aula-01-parte-05.vtt",
+        "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1249796974-346471992-780c5f6886341c725c5a3791c1582689800effa76cca81964f4c89576b7338b9.vtt",
+        "sha256": "780c5f6886341c725c5a3791c1582689800effa76cca81964f4c89576b7338b9",
+        "active": true,
+        "publishedForKidsAndAdult": true,
+        "downloadedHashMatches": true
+      },
+      "knowledge": {
+        "sourceRef": "block:269b5eb3-ade0-5e9a-a0ec-119aa0af4090",
+        "status": "ready",
+        "contentHash": "780c5f6886341c725c5a3791c1582689800effa76cca81964f4c89576b7338b9",
+        "blockRevision": "7f1a539d84984b4caf808f386573a185",
+        "chunks": 1,
+        "transcriptHashMatches": true
+      }
+    },
+    {
+      "environment": "production",
+      "part": "2-5",
+      "videoId": "1249797159",
+      "version": "/videos/1249797159/versions/1258506101",
+      "coverUri": "/videos/1249797159/pictures/2231266375",
+      "coverSha256": "dbc11cb3ad6e3db9544ae3779a6f950612f164acf04aa25e21852aabeb938d90",
+      "durationFile": 25.28802395209581,
+      "durationPublished": 25,
+      "sourceSha256": "1bc181c502c5e860581984e8f5f22c2ad3586145826a911f6ad40808cd6c25d7",
+      "sourceBytes": 16178393,
+      "transcript": {
+        "uri": "/videos/1249797159/texttracks/346471827",
+        "file": "transcricoes/2026-11-27/production-aula-02-parte-05.vtt",
+        "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1249797159-346471827-9121e8ba2c42dd24d6371e207b3021d09a5af76869e4215410647eebf6e99df2.vtt",
+        "sha256": "9121e8ba2c42dd24d6371e207b3021d09a5af76869e4215410647eebf6e99df2",
+        "active": true,
+        "publishedForKidsAndAdult": true,
+        "downloadedHashMatches": true
+      },
+      "knowledge": {
+        "sourceRef": "block:daa7d606-9e91-5d56-a03a-071e2022754f",
+        "status": "ready",
+        "contentHash": "9121e8ba2c42dd24d6371e207b3021d09a5af76869e4215410647eebf6e99df2",
+        "blockRevision": "02d5439444f8481598e8e8af977e99c0",
+        "chunks": 1,
+        "transcriptHashMatches": true
+      }
+    }
+  ],
+  "zappy": [
+    {
+      "environment": "staging",
+      "videoSourcesUpdated": 10,
+      "notebookSourcesUpdated": 1,
+      "lessonsWithoutTranscript": 0,
+      "failedSources": 0,
+      "studentNotebookPresent": true,
+      "replacedVideoHashesMatchCurrentTranscripts": true,
+      "retiredInactiveCaptions": 3
+    },
+    {
+      "environment": "production",
+      "videoSourcesUpdated": 10,
+      "notebookSourcesUpdated": 1,
+      "lessonsWithoutTranscript": 0,
+      "failedSources": 0,
+      "studentNotebookPresent": true,
+      "replacedVideoHashesMatchCurrentTranscripts": true,
+      "retiredInactiveCaptions": 3
+    }
+  ],
+  "sourceFiles": [
+    {
+      "part": "1-5",
+      "file": "Aula01 - Parte 5.mp4",
+      "sizeBytes": 26444048,
+      "sha256": "707b5e52af5957c85dded47e642babca9d2622413a580aea417dd82b98cec4d9",
+      "identicalToPreviousStagingUpload": true,
+      "cover": "capas-das-aulas/aula-01-parte-05.png",
+      "coverSha256": "716c3892787e20a279780c6360baeddb28453fbb1e9df889f11b3cf4f88ab1e9"
+    },
+    {
+      "part": "2-5",
+      "file": "Aula02 - Parte 5.mp4",
+      "sizeBytes": 16178393,
+      "sha256": "1bc181c502c5e860581984e8f5f22c2ad3586145826a911f6ad40808cd6c25d7",
+      "identicalToPreviousStagingUpload": true,
+      "cover": "capas-das-aulas/aula-02-parte-05.png",
+      "coverSha256": "dbc11cb3ad6e3db9544ae3779a6f950612f164acf04aa25e21852aabeb938d90"
+    }
+  ],
+  "recoveredCovers": [],
+  "draftAlignment": null,
+  "notes": [
+    "Quatro vídeos Vimeo atualizados, atendendo às oito combinações de parte, público e ambiente.",
+    "Os arquivos MP4 continuam na pasta de origem. As capas existentes e as transcrições atuais ficam junto à documentação do curso.",
+    "A indexação didática automática do Zappy é dos cursos Kids. A conferência da base foi feita nos dois ambientes e o hash das duas fontes trocadas é idêntico ao VTT ativo de cada vídeo novo. As transcrições e os vídeos são compartilhados com o adulto.",
+    "Verificação no navegador por página local com o domínio de cada comunidade e player Vimeo real, sem criar conta, matrícula, progresso ou eventos de teste nas comunidades.",
+    "Nenhum código da aplicação alterado ou implantado nesta substituição."
+  ]
+}

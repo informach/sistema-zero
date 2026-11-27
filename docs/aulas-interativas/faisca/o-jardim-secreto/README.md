@@ -1,6 +1,14 @@
 # O Jardim Secreto
 
-**Missão do Faísca. Autoria implementada localmente em 28/10/2026.** Duas aulas, um jardim em 2D e outro em 3D. Manifestos, jogos, artes, roteiros, derivados de voz, quiz e caderno disponíveis. Gravação, escuta de voz e publicação ainda são etapas de produção.
+**Missão do Faísca. Autoria implementada localmente em 28/10/2026.** Duas aulas, um jardim em 2D e outro em 3D. Manifestos, jogos, artes, roteiros, derivados de voz, quiz e caderno disponíveis. Curso publicado em staging e produção, no Kids e no adulto.
+
+**Atualização de 27/11/2026:** os arquivos da Aula 1, Parte 5, e da Aula 2, Parte 5 foram
+reaplicados nos quatro contextos. Foram criadas novas versões nos mesmos vídeos do Vimeo, com as
+capas reenviadas e ativadas, e as transcrições atuais publicadas nas aulas e na base do Zappy.
+Os dois MP4 fornecidos são idênticos aos registrados no envio anterior de staging. Consulte o
+[registro da reaplicação](troca-videos-2026-11-27.md), o
+[comprovante técnico](troca-videos-2026-11-27.json) e as
+[transcrições atuais](transcricoes/2026-11-27/).
 
 A missão exige os conhecimentos investigados nas experiências e os blocos que a criança completou nos dois Faróis: movimento, limite 2D, coleta, memória, avisos, decisão e edição de posição. O personagem recolhe um regador e faz uma flor florescer somente depois da coleta. Ponto de vista e altura também entram na revisão. Câmera, iluminação, artes, áreas de caminhada 3D e reinício continuam preparados, pois não foram montados pela criança. Não exige Poder nem extra, não introduz um conceito de programação e não emite certificado.
 
