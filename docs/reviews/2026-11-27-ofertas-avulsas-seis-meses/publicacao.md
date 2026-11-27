@@ -68,6 +68,11 @@ duplicada, preservou os 17 resgates e suas datas. A oferta antiga `-presente` sa
 presentes dos embaixadores; links que citam esse slug continuam resolvendo a oferta atual do
 mesmo curso. O nome histórico `-1-ano` no endereço não representa mais o prazo de compra nova.
 
+Nos links pessoais, o endereço exato da oferta de venda continua abrindo a venda, mesmo que
+a oferta também esteja na lista de presentes. Os links novos da página do embaixador e dos
+convites informam `?tipo=indicacao` ou `?tipo=presente`. O endereço antigo com `-presente`
+continua gratuito pela correspondência com o mesmo curso; o checkout sempre abre venda.
+
 O presente permanente do Cadê dentro da última aula do guia continua no benefício
 `vilao-em-aliado-cade`, independente da data de encerramento de campanhas. Ele conserva a
 oferta especial do Cadê, com o Mural e sete dias anunciados. A origem de um resgate continua

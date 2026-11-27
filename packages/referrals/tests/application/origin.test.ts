@@ -454,7 +454,7 @@ describe('links de indicação', () => {
     )
   })
 
-  test('oferta única nas duas listas (27/11/2026): o tipo do link decide; sem tipo, presente', async () => {
+  test('oferta única nas duas listas: tipo explícito decide e o slug exato antigo continua venda', async () => {
     const { links, offers, catalog } = await ambassadorWithLists()
     const unica: GiftOffer = {
       ...DESAFIO,
@@ -478,7 +478,7 @@ describe('links de indicação', () => {
       items: [{ offerId: unica.offerId, enabled: true }],
     })
     expect(await links.resolve('mari-x7k2', 'desafio-6-meses', false)).toMatchObject({
-      link: { mode: 'gift' },
+      link: { mode: 'sale' },
     })
     expect(await links.resolve('mari-x7k2', 'desafio-6-meses', false, 'referral')).toMatchObject({
       link: { mode: 'sale', offerSlug: 'desafio-6-meses' },
