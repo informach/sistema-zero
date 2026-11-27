@@ -20,7 +20,7 @@ export const DESAFIO_ADULTO_LANDING: FunnelLanding = {
 export const DESAFIO_ADULTO_CHECKOUT: FunnelCheckoutIntro = {
   titulo: 'Falta pouco para o seu primeiro jogo começar',
   paragrafos: [
-    'Confira o valor, informe os seus dados e escolha a forma de pagamento. Depois da aprovação, você tem 30 dias para fazer, testar e publicar o primeiro jogo.',
+    'Confira o valor, informe os seus dados e escolha a forma de pagamento. Depois da aprovação, você tem 6 meses para fazer, testar e publicar o primeiro jogo.',
   ],
 }
 
@@ -33,7 +33,7 @@ export const DESAFIO_ADULTO_OBRIGADO: FunnelObrigado = {
   botao: 'Entrar no Sistema Zero →',
   entrega: [
     'A Chave do Farol: três fases e o certificado.',
-    '30 dias de curso, Estúdio das aulas e Mural completo, desde a aprovação.',
+    'Curso, Estúdio das aulas e Mural completo pelo prazo contratado, desde a aprovação.',
     'Caderno do Aluno, ajuda por mensagens e orientação para publicar.',
     'Depois do prazo, Mural visitante para ver e jogar.',
     'Pagamento único, sem renovação automática.',

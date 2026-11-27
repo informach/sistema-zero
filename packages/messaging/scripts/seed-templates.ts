@@ -531,7 +531,7 @@ export const seeds = [
         'Você recebeu este e-mail porque há um perfil de criança ativo na sua conta do Sistema Zero.',
     }),
   },
-  // Ciclo do Desafio do Primeiro Jogo (acesso fixo de 30 dias). O funil envia
+  // Ciclo do Desafio do Primeiro Jogo (acesso fixo de 6 meses desde 27/11/2026; antes, 30 dias). O funil envia
   // `challenge-access-approved` nos dois canais; o MEMBERS envia os demais por
   // e-mail, com dedupe por matrícula + vencimento + marco.
   {
@@ -590,7 +590,7 @@ export const seeds = [
       content: [
         p('Olá, {{nome}}! O acesso já foi liberado, mas a conta ainda não foi aberta.'),
         p(
-          'Como os 30 dias começaram na aprovação do pagamento, vale entrar agora. Não precisa de senha: use o botão abaixo, informe o e-mail da compra e digite o código de 6 números que chega no seu e-mail.',
+          'Como o prazo de acesso começou na aprovação do pagamento, vale entrar agora. Não precisa de senha: use o botão abaixo, informe o e-mail da compra e digite o código de 6 números que chega no seu e-mail.',
         ),
         ctaButton('Entrar com o código do e-mail', '{{link}}'),
         fallbackLink('{{link}}'),
@@ -796,7 +796,7 @@ export const seeds = [
       content: [
         p('Olá, {{nome}}. O acesso já foi liberado, mas a sua conta ainda não foi aberta.'),
         p(
-          'Os 30 dias começaram na aprovação do pagamento, então vale entrar agora. A senha é opcional. Use o botão abaixo, toque em <strong>Com código no e-mail</strong>, informe o e-mail da compra e digite o código de 6 números que chega para você.',
+          'O prazo de acesso começou na aprovação do pagamento, então vale entrar agora. A senha é opcional. Use o botão abaixo, toque em <strong>Com código no e-mail</strong>, informe o e-mail da compra e digite o código de 6 números que chega para você.',
         ),
         ctaButton('Entrar com o código do e-mail', '{{link}}'),
         fallbackLink('{{link}}'),

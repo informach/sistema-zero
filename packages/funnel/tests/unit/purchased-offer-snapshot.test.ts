@@ -13,8 +13,8 @@ function charge(patch: Partial<ResolvedCharge> = {}): ResolvedCharge {
     pricingMode: 'one_time',
     billingIntervalMonths: null,
     accessMode: 'fixed',
-    accessDurationValue: 30,
-    accessDurationUnit: 'days',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     listPriceCents: 6700,
     discountCents: 0,
     amountInCents: 6700,
@@ -26,7 +26,7 @@ function charge(patch: Partial<ResolvedCharge> = {}): ResolvedCharge {
 }
 
 describe('snapshot imutável da oferta comprada', () => {
-  test('congela prazo fixo de 30 dias e a versão do Termo do Desafio', () => {
+  test('congela prazo fixo de 6 meses e a versão do Termo do Desafio', () => {
     expect(
       createPurchasedOfferSnapshot(charge(), {
         termsVersion: termsVersionForFunnel('kids/desafio-primeiro-jogo'),
@@ -38,15 +38,15 @@ describe('snapshot imutável da oferta comprada', () => {
       pricingMode: 'one_time',
       billingIntervalMonths: null,
       accessMode: 'fixed',
-      accessDurationValue: 30,
-      accessDurationUnit: 'days',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
       listPriceCents: 6700,
       couponCode: null,
       discountCents: 0,
       chargedPriceCents: 6700,
       currency: 'BRL',
       guaranteeDays: 7,
-      termsVersion: 'desafio-2026-10-21',
+      termsVersion: 'desafio-2026-11-27',
     })
   })
 

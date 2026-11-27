@@ -22,7 +22,7 @@ Fazer um jogo é decidir as regras: quando o personagem encostar na chave, ela s
 
 #### Onde isso acontece
 
-No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
+No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 6 meses para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
 
 _[Tela: A Chave do Farol, o jogo que você monta nas 3 fases]_
 
@@ -32,7 +32,7 @@ Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Infor
 
 Você precisa de **um projeto que consiga terminar**. O Desafio é um jogo só, do começo ao fim, com o certificado no final. E você tem **de 1 a 3 horas por semana**: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.
 
-Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 30 dias e a resposta para quem tem receio de ser curso de criança.
+Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 6 meses e a resposta para quem tem receio de ser curso de criança.
 
 [Ver como é o primeiro jogo](/pro/desafio-primeiro-jogo/oferta)
 
@@ -58,7 +58,7 @@ Fazer um jogo é escrever as regras da ideia: quando o personagem encostar na ch
 
 #### Onde isso acontece
 
-No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
+No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 6 meses para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
 
 _[Tela: A Chave do Farol, o jogo que você monta nas 3 fases]_
 
@@ -68,7 +68,7 @@ Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Infor
 
 Você precisa de **um projeto que consiga terminar**. O Desafio é um jogo só, do começo ao fim, com o certificado no final. E você tem **de 1 a 3 horas por semana**: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.
 
-Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 30 dias e a resposta para quem tem receio de ser curso de criança.
+Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 6 meses e a resposta para quem tem receio de ser curso de criança.
 
 [Ver como a ideia sai do papel](/pro/desafio-primeiro-jogo/oferta)
 
@@ -94,7 +94,7 @@ Fazer um jogo é montar as regras uma a uma: quando o personagem encostar na cha
 
 #### Onde isso acontece
 
-No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
+No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 6 meses para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
 
 _[Tela: A Chave do Farol, o jogo que você monta nas 3 fases]_
 
@@ -104,7 +104,7 @@ Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Infor
 
 Você precisa de **um projeto que consiga terminar**. O Desafio é um jogo só, do começo ao fim, com o certificado no final. E você tem **de 1 a 3 horas por semana**: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.
 
-Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 30 dias e a resposta para quem tem receio de ser curso de criança.
+Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 6 meses e a resposta para quem tem receio de ser curso de criança.
 
 [Ver o jogo por dentro](/pro/desafio-primeiro-jogo/oferta)
 

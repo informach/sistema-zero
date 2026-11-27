@@ -350,7 +350,8 @@ export function resgateCopy(
   const base = RESGATE_COPY[audience]
   if (!gift) return base
   const adulto = audience === 'adult'
-  const dias = gift.accessDays === null ? null : giftDurationLabel(gift.accessDays)
+  const dias =
+    gift.accessDays === null ? null : giftDurationLabel(gift.accessDays, gift.accessMonths)
   const curso =
     variante === 'cade'
       ? adulto

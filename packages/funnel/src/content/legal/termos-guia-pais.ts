@@ -1,6 +1,6 @@
-// Termos de Uso do guia para pais "Transformando o vilão em aliado" (compra única, acesso sem
-// prazo), 25/11/2026. Modelados em `termos-desafio-adulto.ts` (pessoa maior de 18 anos que contrata
-// para si): o guia é assistido pelo próprio adulto, na área dos pais. Fundamentos: CDC (garantia de
+// Termos de Uso do guia para pais "Transformando o vilão em aliado" (compra única, 6 meses de
+// acesso desde 27/11/2026), 25/11/2026. Modelados em `termos-desafio-adulto.ts` (pessoa maior de
+// 18 anos que contrata para si): o guia é assistido pelo próprio adulto, na área dos pais. Fundamentos: CDC (garantia de
 // 7 dias, foro do domicílio do consumidor), LGPD e Leis nº 9.610/1998 e 9.609/1998.
 
 import { EMPRESA, type LegalDoc } from '../legal'
@@ -11,7 +11,7 @@ const PRODUTO = 'Transformando o vilão em aliado'
 export const TERMOS_GUIA_PAIS: LegalDoc = {
   titulo: 'Termos de Uso do guia Transformando o vilão em aliado',
   descricao: `Condições para a contratação e o uso do guia ${PRODUTO}, na área dos pais da plataforma da ${EMPRESA.razaoSocial}, contratado por pessoa maior de 18 anos para uso próprio.`,
-  atualizadoEm: '25 de novembro de 2026',
+  atualizadoEm: '27 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -27,7 +27,7 @@ export const TERMOS_GUIA_PAIS: LegalDoc = {
       titulo: '2. O que é e como funciona o Guia',
       paragrafos: [
         `O guia ${PRODUTO} é um material digital de caráter educacional: aulas curtas em vídeo, com apostila e certificado, para o Usuário assistir no seu ritmo. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito. O mesmo Guia também pode ser recebido de presente, por um link de convite ou de campanha, nas condições informadas na página do presente.`,
-        'Após a aprovação do pagamento, o Guia é liberado na área dos pais, no menu Cursos para pais, por 1 (um) ano contado da aprovação do pagamento. As instruções de primeiro acesso são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'Após a aprovação do pagamento, o Guia é liberado na área dos pais, no menu Cursos para pais, por 6 (seis) meses contados da aprovação do pagamento. As instruções de primeiro acesso são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
         'As aulas podem ser vistas e revistas a qualquer momento, no computador ou no celular.',
         'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento da compra.',
       ],
@@ -61,7 +61,7 @@ export const TERMOS_GUIA_PAIS: LegalDoc = {
       titulo: '6. Prazo de acesso',
       paragrafos: [
         'O acesso começa com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não libera o Guia.',
-        'O acesso ao Guia vale por 1 (um) ano, contado da aprovação do pagamento. Nesse período, o Usuário pode rever as aulas e consultar a apostila quantas vezes quiser.',
+        'O acesso ao Guia vale por 6 (seis) meses, contados da aprovação do pagamento. Nesse período, o Usuário pode rever as aulas e consultar a apostila quantas vezes quiser.',
         'O progresso nas aulas permanece armazenado conforme a Política de Privacidade.',
       ],
     },

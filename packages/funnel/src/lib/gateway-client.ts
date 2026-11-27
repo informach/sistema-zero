@@ -514,11 +514,14 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       code: string,
       offerSlug: string | null,
       checkout: boolean,
+      kind?: 'gift' | 'referral',
     ): Promise<GatewayResult> {
       const segments = [code, ...(offerSlug ? [offerSlug] : []), ...(checkout ? ['pagamento'] : [])]
       const path = `/referrals/internal/links/${segments.map(encodeURIComponent).join('/')}`
+      // O tipo vai na query, fora do pathname que o HMAC assina (27/11/2026).
+      const query = kind && offerSlug && !checkout ? `?kind=${kind}` : ''
       return requestJson(
-        `${opts.baseUrl}${path}`,
+        `${opts.baseUrl}${path}${query}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },
         timeoutMs,
       )

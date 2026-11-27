@@ -116,20 +116,27 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     expect(new Set(rows.map((row) => row.id))).toEqual(new Set(samePurchaseIds))
   })
 
-  test('fixed/days usa as faixas próprias e o mark torna cada aviso one-shot', async () => {
+  test.each([
+    { durationValue: 30, durationUnit: 'days', grantedAt: '2027-04-30T00:00:00Z' },
+    { durationValue: 6, durationUnit: 'months', grantedAt: '2026-11-30T00:00:00Z' },
+  ] as const)('Desafio de prazo fixo %p usa cadência própria sem lembrete genérico duplicado', async (policy) => {
     const accountId = randomUUID()
     const entitlementId = randomUUID()
     const snapshot = JSON.stringify({
       offerSlug: 'desafio-primeiro-jogo-30-dias',
       name: 'Desafio do Primeiro Jogo',
-      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+      accessPolicy: {
+        mode: 'fixed',
+        durationValue: policy.durationValue,
+        durationUnit: policy.durationUnit,
+      },
     })
     await conn.sql`
       insert into members.entitlements
         (id, user_id, product_id, snapshot, status, source_kind, subscription_id, expires_at,
          access_type, course_ref, granted_at)
       values (${entitlementId}, ${accountId}, ${randomUUID()}, ${snapshot}::jsonb, 'active', 'payment', null,
-        '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', '2027-04-30T00:00:00Z')
+        '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', ${policy.grantedAt})
     `
 
     const repo = new DrizzleRenewalReminderRepository(conn.db)

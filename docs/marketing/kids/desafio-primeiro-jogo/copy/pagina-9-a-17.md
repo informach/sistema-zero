@@ -6,7 +6,7 @@
 
 **cta**: Quero ajudar meu filho
 
-**condicoes**: Pagamento único · 30 dias de acesso · 7 dias de garantia
+**condicoes**: Pagamento único · 6 meses de acesso · 7 dias de garantia
 
 **topo.pular**: Ir para o conteúdo
 
@@ -42,7 +42,7 @@
 
 **hero.legenda**: A Chave do Farol: a aventura usada neste treinamento
 
-**hero.faixa**: 30 dias de acesso
+**hero.faixa**: 6 meses de acesso
 
 **jeitos.titulo**: Você quer que ele encontre um caminho quando a resposta ainda não está pronta.
 
@@ -200,7 +200,7 @@
 
 **oferta.sufixo**: pagamento único
 
-**oferta.porDia**: 30 dias de acesso a partir da aprovação do pagamento.
+**oferta.porDia**: 6 meses de acesso a partir da aprovação do pagamento.
 
 **oferta.inclui[0]**: A Chave do Farol, com 3 etapas guiadas de criação
 
@@ -278,7 +278,7 @@
 
 **faq[6].pergunta**: Como são as atividades e o prazo?
 
-**faq[6].resposta**: São 3 etapas guiadas da Chave do Farol, com aulas gravadas, para fazer dentro dos 30 dias de acesso. Vocês escolhem os momentos; não há turma com horário marcado nem obrigação de concluir em 3 dias. O prazo começa na aprovação do pagamento.
+**faq[6].resposta**: São 3 etapas guiadas da Chave do Farol, com aulas gravadas, para fazer dentro dos 6 meses de acesso. Vocês escolhem os momentos; não há turma com horário marcado nem obrigação de concluir em 3 dias. O prazo começa na aprovação do pagamento.
 
 **faq[7].pergunta**: Qual equipamento precisamos?
 
@@ -286,15 +286,15 @@
 
 **faq[8].pergunta**: É assinatura? O que acontece ao terminar o acesso?
 
-**faq[8].resposta**: É um pagamento único de {{preco}}, sem renovação automática. Depois dos 30 dias, o acesso às aulas termina; os projetos ficam guardados na conta. O link do jogo publicado continua acessível enquanto a publicação estiver disponível. A conta pode ver e jogar no Mural; novas publicações, comentários e reações dependem de um acesso ativo.
+**faq[8].resposta**: É um pagamento único de {{preco}}, sem renovação automática. Depois dos 6 meses, o acesso às aulas termina; os projetos ficam guardados na conta. O link do jogo publicado continua acessível enquanto a publicação estiver disponível. A conta pode ver e jogar no Mural; novas publicações, comentários e reações dependem de um acesso ativo.
 
 **faq[9].pergunta**: É o mesmo presente Cadê Todo Mundo?
 
-**faq[9].resposta**: São experiências diferentes. O presente usa o Cadê Todo Mundo, com 7 dias desde o resgate. Este treinamento usa A Chave do Farol, com compra separada e 30 dias de acesso. A Comunidade reúne outros projetos por assinatura. Comprar o Desafio não reinicia o presente nem contrata a Comunidade.
+**faq[9].resposta**: São experiências diferentes. O presente usa o Cadê Todo Mundo, com 7 dias desde o resgate. Este treinamento usa A Chave do Farol, com compra separada e 6 meses de acesso. A Comunidade reúne outros projetos por assinatura. Comprar o Desafio não reinicia o presente nem contrata a Comunidade.
 
 **fim.titulo**: Dê ao seu filho espaço para pensar, tentar e descobrir do que é capaz.
 
-**fim.texto**: Desafio do Primeiro Jogo · {{preco}}, pagamento único · 30 dias de acesso · 7 dias de garantia
+**fim.texto**: Desafio do Primeiro Jogo · {{preco}}, pagamento único · 6 meses de acesso · 7 dias de garantia
 
 **fim.cta**: Quero começar com meu filho
 
@@ -312,7 +312,7 @@
 
 **pratica.paraComecar[0]**: Vocês usam um computador ou notebook com internet, mouse e teclado. A aula e o Estúdio de criação ficam juntos no navegador. Na Área dos pais, você cria ou abre o perfil do seu filho e acompanha o primeiro acesso.
 
-**pratica.paraComecar[1]**: As aulas são gravadas. Ele pode pausar, rever uma parte e continuar em outro momento. São três etapas para realizar dentro dos 30 dias de acesso, contados da aprovação do pagamento; não é preciso concluir em três dias.
+**pratica.paraComecar[1]**: As aulas são gravadas. Ele pode pausar, rever uma parte e continuar em outro momento. São três etapas para realizar dentro dos 6 meses de acesso, contados da aprovação do pagamento; não é preciso concluir em três dias.
 
 **pratica.paraComecar[2]**: Você não precisa saber programar. A orientação mostra como montar cada parte, e sua presença acompanha a necessidade de apoio dele. O Caderno do Aluno ajuda a conferir os testes; dúvidas também podem ser enviadas por mensagens na plataforma. As respostas podem levar um tempo.
 

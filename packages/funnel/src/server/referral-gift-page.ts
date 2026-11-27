@@ -25,6 +25,9 @@ export type CadeGiftView = Omit<ReferralGiftView, 'gift'> & { gift?: CadeGiftOff
 export function isCadeGift(gift: ReferralGiftOfferView): gift is CadeGiftOffer {
   return (
     gift.accessDays !== null &&
+    // Presente em meses (27/11/2026: a oferta de 6 meses também é presente) vai para a variante
+    // `curso`: o texto do Cadê conta em dias.
+    !gift.accessMonths &&
     gift.courseSlug !== null &&
     CADE_COURSE_SLUGS.includes(gift.courseSlug)
   )
@@ -73,7 +76,14 @@ export function parseGiftOffer(raw: unknown): ReferralGiftOfferView | undefined 
         Number.isInteger(gift.accessDays) &&
         gift.accessDays > 0)
     ) ||
-    typeof gift.includesMural !== 'boolean'
+    typeof gift.includesMural !== 'boolean' ||
+    !(
+      gift.accessMonths === undefined ||
+      gift.accessMonths === null ||
+      (typeof gift.accessMonths === 'number' &&
+        Number.isInteger(gift.accessMonths) &&
+        gift.accessMonths > 0)
+    )
   )
     return null
   const courseTitle = typeof gift.courseTitle === 'string' ? gift.courseTitle.trim() : ''
@@ -89,6 +99,7 @@ export function parseGiftOffer(raw: unknown): ReferralGiftOfferView | undefined 
     courseTitle: courseTitle || null,
     learner: gift.learner,
     accessDays: gift.accessDays,
+    ...(typeof gift.accessMonths === 'number' ? { accessMonths: gift.accessMonths } : {}),
     includesMural: gift.includesMural,
   }
 }

@@ -1,10 +1,10 @@
 // Funil kids do guia para pais "Transformando o vilão em aliado" (`kids/vilao-em-aliado`,
-// 25/11/2026): curso pago normal, com 1 ano de acesso. A página pública `/kids/vilao-em-aliado` é a página de
+// 25/11/2026): curso pago normal, com 6 meses de acesso (27/11/2026; antes, 1 ano). A página pública `/kids/vilao-em-aliado` é a página de
 // venda dele (o mesmo corpo de `/kids/vilao-em-aliado/oferta`); o presente sai pelos links de
 // campanha e de embaixador, que abrem a página no modo presente (`?presente=`). Quem assiste é o
 // adulto, na área dos pais do app Kids.
 //
-// Oferta no catálogo: a principal do produto (marcada no Admin) (a oferta de 1 ano, R$ 27, do curso
+// Oferta no catálogo: a principal do produto (marcada no Admin) (a oferta de 6 meses, R$ 27, do curso
 // `transformando-o-vilao-em-aliado`). Registrado por último: a landing `/kids` segue abrindo o
 // Desafio.
 
@@ -48,7 +48,7 @@ const GUIA_OBRIGADO: FunnelObrigado = {
   entrega: [
     'Transformando o vilão em aliado: 7 aulas curtas em vídeo.',
     'Apostila para consultar e certificado no final.',
-    'O guia fica na sua conta por 1 ano, contado da aprovação do pagamento.',
+    'O guia fica na sua conta pelo prazo contratado, contado da aprovação do pagamento.',
     'Pagamento único, sem assinatura.',
   ],
   passos: [
@@ -85,18 +85,18 @@ export const VILAO_EM_ALIADO: FunnelDef = {
     'Guia para pais, em 7 aulas curtas em vídeo. A Helena mostra como a tela que hoje vira briga em casa pode ser sua aliada no desenvolvimento do seu filho.',
   theme: 'kids',
   lifetimeAccess: false,
-  // 1 ano de acesso (decisão de 25/11/2026: nada de prometer acesso vitalício).
+  // 6 meses de acesso (decisão de 27/11/2026: prazo único das compras avulsas; nada de vitalício).
   offerContract: {
     pricingMode: 'one_time',
     accessMode: 'fixed',
-    accessDurationValue: 12,
+    accessDurationValue: 6,
     accessDurationUnit: 'months',
     guaranteeDays: null,
     anyGuarantee: true,
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
   giftCourses: ['transformando-o-vilao-em-aliado'],
-  legal: { termos: TERMOS_GUIA_PAIS, termsVersion: 'guia-pais-2026-11-25' },
+  legal: { termos: TERMOS_GUIA_PAIS, termsVersion: 'guia-pais-2026-11-27' },
   content: {
     copy: GUIA_PRODUTO,
     landing: GUIA_LANDING,

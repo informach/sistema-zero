@@ -138,6 +138,7 @@ describe('RedeemScholarshipService', () => {
         offerRef: KIDS_GIFT_OFFER.offerId,
         sourceId: `scholarship:${r.id}`,
         anchorAt: r.createdAt.toISOString(),
+        accessPolicy: { mode: 'fixed', durationValue: 7, durationUnit: 'days' },
         audience: 'kids',
         deliveryId: `scholarship:offer:${KIDS_GIFT_OFFER.offerId}:${r.id}`,
       } satisfies GrantManualOfferInput,
@@ -189,17 +190,71 @@ describe('RedeemScholarshipService', () => {
     expect(email.variables.mural).toBe('')
   })
 
-  test('oferta com prazo em meses ou arquivada: presente indisponível, sem conta', async () => {
-    for (const offer of [
-      { ...KIDS_GIFT_OFFER, accessDurationValue: 2, accessDurationUnit: 'months' as const },
-      { ...KIDS_GIFT_OFFER, status: 'archived' as const },
-    ]) {
-      catalog.offers = [offer]
-      expect((await service.execute(input)).kind).toBe('gift_unavailable')
-      expect((await service.publicGift(null, 'kids')).availability).toBe('unavailable')
-    }
+  test('oferta arquivada: presente indisponível, sem conta', async () => {
+    catalog.offers = [{ ...KIDS_GIFT_OFFER, status: 'archived' as const }]
+    expect((await service.execute(input)).kind).toBe('gift_unavailable')
+    expect((await service.publicGift(null, 'kids')).availability).toBe('unavailable')
     expect(repo.redemptions).toHaveLength(0)
     expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+  })
+
+  test('oferta de 6 meses (27/11/2026) vira presente: grava os dias do calendário e diz "6 meses"', async () => {
+    catalog.offers = [
+      {
+        ...KIDS_GIFT_OFFER,
+        accessDurationValue: 6,
+        accessDurationUnit: 'months' as const,
+        advertisedAccessDays: null,
+      },
+    ]
+    const publico = await service.publicGift(null, 'kids')
+    expect(publico.availability).toBe('available')
+    expect(publico.gift?.accessMonths).toBe(6)
+    const result = await service.execute(input)
+    expect(result.kind).toBe('completed')
+    const r = repo.redemptions[0]!
+    const fim = new Date(r.createdAt)
+    fim.setUTCMonth(fim.getUTCMonth() + 6)
+    const dias = Math.round((fim.getTime() - r.createdAt.getTime()) / DAY_MS)
+    expect(Math.abs((r.accessDurationDays ?? 0) - dias)).toBeLessThanOrEqual(1)
+    expect(r.advertisedDays).toBeNull()
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.variables.prazo).toStartWith('por 6 meses, até ')
+  })
+
+  test('presente de 30 dias conserva os dias, sem inferir um mês de calendário', async () => {
+    catalog.offers = [{ ...KIDS_GIFT_OFFER, accessDurationValue: 30, advertisedAccessDays: null }]
+    await service.execute(input)
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.variables.prazo).toStartWith('por 30 dias, até ')
+  })
+
+  test('retomada conserva a política de seis meses capturada antes da mudança do catálogo', async () => {
+    catalog.offers = [
+      {
+        ...KIDS_GIFT_OFFER,
+        accessDurationValue: 6,
+        accessDurationUnit: 'months',
+        advertisedAccessDays: null,
+      },
+    ]
+    gateway.grantResult = { status: 502, body: {} }
+    expect((await service.execute(input)).kind).toBe('upstream_error')
+    catalog.offers = [
+      {
+        ...KIDS_GIFT_OFFER,
+        accessDurationValue: 12,
+        accessDurationUnit: 'months',
+        advertisedAccessDays: null,
+      },
+    ]
+    gateway.grantResult = { status: 200, body: {} }
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(gateway.callsOf('grantManualOffer').at(-1)!.input).toMatchObject({
+      accessPolicy: { mode: 'fixed', durationValue: 6, durationUnit: 'months' },
+    })
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.variables.prazo).toStartWith('por 6 meses, até ')
   })
 
   test('oferta pausada continua servindo de presente', async () => {

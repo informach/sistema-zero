@@ -331,7 +331,7 @@ export const PAGINA_ADULTO = {
       {
         pergunta: 'Preciso fazer o Desafio antes? Qual é a diferença?',
         resposta:
-          'Você pode entrar diretamente na Comunidade. O Desafio é uma compra única, com 30 dias de acesso à Chave do Farol e aos recursos incluídos nessa oferta. A Comunidade dá continuidade por assinatura, com cursos, ferramentas e espaços de participação conforme o percurso. Comprar o Desafio não cria uma assinatura.',
+          'Você pode entrar diretamente na Comunidade. O Desafio é uma compra única, com 6 meses de acesso à Chave do Farol e aos recursos incluídos nessa oferta. A Comunidade dá continuidade por assinatura, com cursos, ferramentas e espaços de participação conforme o percurso. Comprar o Desafio não cria uma assinatura.',
       },
       {
         pergunta: 'Todos os cursos e ferramentas abrem no primeiro dia?',

@@ -16,19 +16,19 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   byline: 'Helena e Júlio · Sistema Zero',
   seoTitle: 'Desafio do Primeiro Jogo | Sistema Zero',
   seoDescription:
-    'Seu filho programa A Chave do Farol na plataforma do Sistema Zero Kids: aulas gravadas com o Estúdio ao lado, ajuda por mensagens e Mural completo por 30 dias. Para 5 a 17 anos; abaixo de 9, com acompanhante. Pagamento único, sem assinatura.',
+    'Seu filho programa A Chave do Farol na plataforma do Sistema Zero Kids: aulas gravadas com o Estúdio ao lado, ajuda por mensagens e Mural completo por 6 meses. Para 5 a 17 anos; abaixo de 9, com acompanhante. Pagamento único, sem assinatura.',
   theme: 'kids',
   lifetimeAccess: false,
   offerContract: {
     pricingMode: 'one_time',
     accessMode: 'fixed',
-    accessDurationValue: 30,
-    accessDurationUnit: 'days',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   giftCourses: ['desafio-primeiro-jogo'],
-  legal: { termos: TERMOS_DESAFIO, termsVersion: 'desafio-2026-10-21' },
+  legal: { termos: TERMOS_DESAFIO, termsVersion: 'desafio-2026-11-27' },
   content: {
     copy: DESAFIO_PRODUTO,
     landing: DESAFIO_LANDING,

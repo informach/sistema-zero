@@ -36,6 +36,8 @@ export interface CartaoDoPresente {
   cta: string
   /** O prazo do presente em dias (`null` sem prazo), para a copy em volta do cartão. */
   dias: number | null
+  /** O prazo em meses quando o presente é por meses (27/11/2026), que vence os dias no texto. */
+  meses: number | null
   /** Formulário aberto: o botão abre a janela do cadastro. */
   aberto: boolean
   /** Pausada ou encerrada: quem já começou o cadastro pode concluir. */
@@ -83,6 +85,7 @@ export function cartaoDoPresente(
             : P.estados[kind].titulo.replace('{{data}}', quando ? dataBrasilia(quando, false) : ''),
       }
   const dias = gift.gift.accessDays
+  const meses = gift.gift.accessMonths ?? null
   const pais = variante === 'pais' && !adulto
   const alvo =
     opts.formulario === 'guia'
@@ -93,7 +96,7 @@ export function cartaoDoPresente(
   const texto =
     dias === null
       ? `Acesso ${alvo}, a partir do cadastro.`
-      : `${giftDurationLabel(dias)} de acesso ${alvo}, contados do cadastro.`
+      : `${giftDurationLabel(dias, meses)} de acesso ${alvo}, contados do cadastro.`
   const frase =
     dias === null
       ? `Acesso ${alvo}, sem custo e sem cartão.`
@@ -115,6 +118,7 @@ export function cartaoDoPresente(
     frase,
     cta: CTA_DO_PRESENTE,
     dias,
+    meses,
     aberto,
     retomavel,
     estado,

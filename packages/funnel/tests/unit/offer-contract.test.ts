@@ -2,22 +2,22 @@ import { describe, expect, test } from 'bun:test'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../src/funnels/desafio-primeiro-jogo'
 import { checkOfferContract } from '../../src/server/offer-contract'
 
-const fixedThirtyDays = {
+const fixedSixMonths = {
   pricingMode: 'one_time' as const,
   accessMode: 'fixed' as const,
-  accessDurationValue: 30,
-  accessDurationUnit: 'days' as const,
+  accessDurationValue: 6,
+  accessDurationUnit: 'months' as const,
   guaranteeDays: 7,
 }
 
 describe('contrato entre a copy do funil e a oferta configurada', () => {
-  test('o Desafio declara em código a promessa de 30 dias mostrada na página', () => {
-    expect(DESAFIO_PRIMEIRO_JOGO.offerContract).toEqual(fixedThirtyDays)
+  test('o Desafio declara em código a promessa de 6 meses mostrada na página', () => {
+    expect(DESAFIO_PRIMEIRO_JOGO.offerContract).toEqual(fixedSixMonths)
   })
 
   test('aceita somente a política de acesso declarada pelo funil', () => {
     const contract = DESAFIO_PRIMEIRO_JOGO.offerContract
-    expect(checkOfferContract(contract, fixedThirtyDays)).toEqual({ ok: true })
+    expect(checkOfferContract(contract, fixedSixMonths)).toEqual({ ok: true })
     expect(
       checkOfferContract(contract, {
         pricingMode: 'one_time',
@@ -27,7 +27,7 @@ describe('contrato entre a copy do funil e a oferta configurada', () => {
         guaranteeDays: 7,
       }),
     ).toMatchObject({ ok: false, reason: 'policy_mismatch' })
-    expect(checkOfferContract(contract, { ...fixedThirtyDays, guaranteeDays: 14 })).toMatchObject({
+    expect(checkOfferContract(contract, { ...fixedSixMonths, guaranteeDays: 14 })).toMatchObject({
       ok: false,
       reason: 'policy_mismatch',
     })

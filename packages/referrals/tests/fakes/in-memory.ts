@@ -6,6 +6,7 @@ import type {
   ReferralBonusAmounts,
 } from '@sistemazero/core/referrals'
 import type { AcquisitionRecord } from '../../src/domain/acquisition'
+import { monthsSpanDays } from '../../src/domain/gift-policy'
 import type {
   EnsureBuyerInput,
   GatewayResult,
@@ -382,6 +383,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
         (r.giftSlot ?? 'main') === giftSlot,
     )
     if (existing) return { created: false, redemption: existing }
+    const acceptedAt = new Date()
     const redemption: RedemptionRecord = {
       id: randomUUID(),
       codeId: input.codeId,
@@ -405,13 +407,20 @@ export class InMemoryReferralRepository implements ReferralRepository {
       completedAt: null,
       // Com `gift` (o serviço, desde 15/11/2026): presente por oferta. Sem ele, a linha nasce
       // na forma ANTIGA (`trial` de sete dias), para semear resgates antigos em andamento.
-      accessDurationDays: input.gift ? input.gift.accessDurationDays : 7,
+      accessDurationDays:
+        input.gift?.accessPolicy?.mode === 'fixed' &&
+        input.gift.accessPolicy.durationUnit === 'months'
+          ? monthsSpanDays(acceptedAt, input.gift.accessPolicy.durationValue)
+          : input.gift
+            ? input.gift.accessDurationDays
+            : 7,
+      giftAccessPolicy: input.gift?.accessPolicy ?? null,
       advertisedDays: input.gift?.advertisedDays ?? null,
       muralVisitorPolicy: input.gift ? 'offer' : 'trial',
       muralVisitorGrantedAt: null,
       giftOfferId: input.gift?.offerId ?? null,
       giftSlot,
-      createdAt: new Date(),
+      createdAt: acceptedAt,
     }
     this.redemptions.push(redemption)
     return { created: true, redemption }

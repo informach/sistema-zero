@@ -77,6 +77,12 @@ export function parseReferralLinkView(body: unknown): ReferralLinkView | null {
  *   campanha); a irmã do alternador vai ao checkout, onde o plano se escolhe.
  * Código inexistente ou oferta fora da lista do público: 404 uniforme. Referrals fora: 502.
  */
+/** `?tipo=presente|indicacao` do link por slug (convites, 27/11/2026); outro valor = sem tipo. */
+function linkKind(url: URL): 'gift' | 'referral' | undefined {
+  const tipo = url.searchParams.get('tipo')
+  return tipo === 'presente' ? 'gift' : tipo === 'indicacao' ? 'referral' : undefined
+}
+
 export async function referralLinkRedirect(
   url: URL,
   params: { code?: string; offer?: string; target?: string },
@@ -106,7 +112,7 @@ export async function referralLinkRedirect(
           pages.map((f) => f.productSku),
           checkout,
         )
-      : await deps.gateway.resolveReferralLink(code, offer, checkout)
+      : await deps.gateway.resolveReferralLink(code, offer, checkout, linkKind(url))
   // 4xx do referrals (404, validação) é link que não existe; só 5xx/timeout é "tente de novo".
   if (status >= 400 && status < 500)
     return text('Este link não existe ou não está mais ativo.', 404)

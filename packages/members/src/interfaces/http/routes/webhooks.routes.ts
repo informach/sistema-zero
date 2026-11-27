@@ -194,6 +194,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
                   expiresAt,
                   sourceId: body.sourceId,
                   useOfferAccessPolicy: body.useOfferAccessPolicy,
+                  accessPolicy: body.accessPolicy,
                   anchorAt: body.anchorAt ? new Date(body.anchorAt) : undefined,
                   audience: body.audience,
                 }

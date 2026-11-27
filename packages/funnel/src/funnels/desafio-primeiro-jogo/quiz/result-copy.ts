@@ -136,7 +136,7 @@ export const WISH_917: Record<DesafioProfile, string> = {
 }
 
 export const WHERE_917 =
-  'No Desafio do Primeiro Jogo, ele faz A Chave do Farol: o personagem anda, pega a chave e acende o farol. São 3 etapas, com 30 dias para fazer no ritmo dele. No fim, ele escolhe o personagem, o cenário e onde a chave fica escondida, e o jogo fica com a cara dele.'
+  'No Desafio do Primeiro Jogo, ele faz A Chave do Farol: o personagem anda, pega a chave e acende o farol. São 3 etapas, com 6 meses para fazer no ritmo dele. No fim, ele escolhe o personagem, o cenário e onde a chave fica escondida, e o jogo fica com a cara dele.'
 export const LEGENDA_917 = 'A Chave do Farol, o jogo que ele monta'
 
 /** O relato de cada perfil: o André (já jogava um monte) no A e no D; o Rafael no B e no C. */
@@ -175,7 +175,7 @@ export const COMPUTADOR_917: Record<string, string> = {
 }
 
 export const CTA_TEXT_917 =
-  'Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 30 dias.'
+  'Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 6 meses.'
 export const CTA_LABEL_917: Record<DesafioProfile, string> = {
   A: 'Ver como ele faz o primeiro jogo',
   B: 'Ver como a ideia vira jogo',
@@ -277,7 +277,7 @@ export const WISH_M9: Record<string, string> = {
 }
 
 export const WHERE_M9 =
-  'No Desafio do Primeiro Jogo, vocês fazem juntos A Chave do Farol: o personagem anda, pega a chave e acende o farol. São 3 etapas, com 30 dias para fazer no ritmo de vocês. Cada aula é dividida em partes curtas, e tudo fica salvo para continuar outro dia. No fim, vocês mostram o jogo para a família.'
+  'No Desafio do Primeiro Jogo, vocês fazem juntos A Chave do Farol: o personagem anda, pega a chave e acende o farol. São 3 etapas, com 6 meses para fazer no ritmo de vocês. Cada aula é dividida em partes curtas, e tudo fica salvo para continuar outro dia. No fim, vocês mostram o jogo para a família.'
 export const LEGENDA_M9 = 'A Chave do Farol, o jogo que vocês montam juntos'
 /** A Débora, filha dos fundadores: "aluna, 7 anos" (decisão da dona, 19/10/2026). */
 export const RELATO_M9 = {
@@ -302,7 +302,7 @@ export const COMPUTADOR_M9: Record<string, string> = {
 export const TEMPO_NAO_SEI = `Você disse que ${m('ainda não sabe quantas vezes vão conseguir sentar juntos')}: o projeto espera por vocês, e cada parte é curta.`
 
 export const CTA_TEXT_M9 =
-  'Na próxima página, você vê como é uma sessão de vocês, as 3 etapas e o que acontece depois dos 30 dias.'
+  'Na próxima página, você vê como é uma sessão de vocês, as 3 etapas e o que acontece depois dos 6 meses.'
 export const CTA_LABEL_M9: Record<M9Profile, string> = {
   A: 'Ver como é uma sessão de vocês',
   B: 'Ver como criar o primeiro jogo de vocês',

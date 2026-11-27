@@ -1,4 +1,4 @@
-import type { GiftAudience } from '@sistemazero/core/referrals'
+import type { GiftAccessPolicy, GiftAudience } from '@sistemazero/core/referrals'
 
 /**
  * Porta do api-gateway (BFF S2S). Todas as integrações do referrals passam pelo
@@ -47,6 +47,8 @@ export interface GrantManualOfferInput {
   sourceId: string
   /** Início do prazo: a data do resgate (ISO), estável nas re-entregas. */
   anchorAt: string
+  /** Política congelada no resgate, antes de uma eventual mudança no catálogo. */
+  accessPolicy?: GiftAccessPolicy
   audience: GiftAudience
   deliveryId: string
 }

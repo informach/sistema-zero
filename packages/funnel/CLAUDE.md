@@ -273,7 +273,18 @@ nenhum valor de venda chega ao embaixador. Testes: `referral-gift-copy.test.tsx`
 página de venda no modo presente) e `curso-pais-vilao.ts` (a página de venda do guia, o modo
 presente com a oferta no resgate, pausada e presente de outra oferta).
 
-**Prazos (decisão de 25/11/2026).** Guia dos pais e Cadê VENDIDO: 1 ano (oferta de venda
+**Prazo único de 6 meses (decisão de 27/11/2026, substitui os prazos abaixo).** Toda compra avulsa
+(fora as assinaturas) tem UMA oferta com 6 meses de acesso: Desafio Kids e adulto (R$ 67,
+contrato rígido 6/`months`, Termos `desafio-2026-11-27`/`desafio-adulto-2026-11-27`), guia dos
+pais (R$ 27, contrato rígido 6/`months`, Termo `guia-pais-2026-11-27`), Cadê vendido, curso da
+Vivianne e as ferramentas Pinta, Pensa, Molda e Estúdio completo. O presente desses cursos é a
+MESMA oferta (o referrals aceita presente em meses desde então e manda `gift.accessMonths`, que
+vence os dias no texto: `giftDurationLabel(dias, meses)`). Única exceção: o presente do Cadê
+segue na oferta `-7-dias` (15 reais, 7 divulgados), porta de entrada da Comunidade. Os slugs
+antigos (`-30-dias`, `-1-ano`) ficam, porque links e pagamentos os citam. `copyDoPresente` troca
+"6 meses" (e os "30 dias" antigos) pelo prazo do presente.
+
+**Prazos (decisão de 25/11/2026, histórico).** Guia dos pais e Cadê VENDIDO: 1 ano (oferta de venda
 `fixed`/12/`months`; o guia tem contrato rígido e o Cadê lê os meses da oferta). Desafio: 30 dias.
 Presentes: 7 dias divulgados e 15 reais (`advertisedAccessDays` no catálogo; a copy do presente
 usa `gift.accessDays`, o divulgado). Comunidade: enquanto a assinatura estiver ativa. Nada promete

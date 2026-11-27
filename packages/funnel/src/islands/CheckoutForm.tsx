@@ -103,7 +103,7 @@ export default function CheckoutForm({
   initialChoice?: 'main' | 'alt'
   /** Estado vindo da cotação SSR do cupom presente na URL. */
   initialCoupon?: CouponPresentation
-  /** Duração publicada pela oferta (`30 dias`, por exemplo). */
+  /** Duração publicada pela oferta (`6 meses`, por exemplo). */
   accessLabel?: string | null
   /** Estimativa se o pagamento for aprovado agora; a confirmação usa a data real. */
   estimatedAccessEnd?: string | null

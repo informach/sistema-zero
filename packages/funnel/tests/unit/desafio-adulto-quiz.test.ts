@@ -58,8 +58,9 @@ const cta = (r: ResultadoConversa) => r.blocos.find((b) => b.tipo === 'cta')
 const PALAVRA_PROIBIDA = new RegExp(['car', 'reira'].join(''), 'i')
 /** O produto antes do resultado (a nota "Uma orientação do Sistema Zero" é a assinatura da página). */
 const produto =
-  /Desafio|Farol|Comunidade|Estúdio|[Pp]lataforma|Mural|preço|R\$|assinatura|prazo|30 dias|(?<![\p{L}])aulas?(?![\p{L}])|(?<![\p{L}])cursos?(?![\p{L}])/u
-const produtoNaCarta = /Desafio|Farol|Comunidade|Estúdio|[Pp]lataforma|Mural|preço|R\$|30 dias/u
+  /Desafio|Farol|Comunidade|Estúdio|[Pp]lataforma|Mural|preço|R\$|assinatura|prazo|30 dias|6 meses|(?<![\p{L}])aulas?(?![\p{L}])|(?<![\p{L}])cursos?(?![\p{L}])/u
+const produtoNaCarta =
+  /Desafio|Farol|Comunidade|Estúdio|[Pp]lataforma|Mural|preço|R\$|30 dias|6 meses/u
 
 function* combinacoes(): Generator<QuizAnswers> {
   let seed = 20261021
@@ -231,7 +232,7 @@ describe('Desafio adulto v1: o resultado em conversa', () => {
       'Você contou que tem uma ideia de jogo há anos e nunca começou, que, quando tentou, abriu um programa e fechou no mesmo dia e que sobram de 1 a 3 horas por semana para um projeto seu. A gente ouve essa história com frequência, e ela tem uma explicação simples.',
       'A ideia costuma ser grande, com mundo, história e muitas fases. E o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava.',
       'Fazer um jogo é escrever as regras da ideia: quando o personagem encostar na chave, ela some e o jogo guarda que você pegou. Num primeiro jogo pequeno de propósito, você monta essas regras em blocos, testa cada uma e termina. Como você nunca programou, os blocos tiram a digitação do caminho, e a lógica é a mesma do código. A cena que você quer, a sua ideia funcionando na tela, começa assim: depois de um jogo pronto, a próxima ideia já cabe no tamanho certo.',
-      'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.',
+      'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 6 meses para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.',
       'Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Informação, com mais de dez anos criando sistemas em empresas como Banco do Brasil, Tractebel e InCeres. O Sistema Zero começou com os jogos que fizemos com os nossos filhos.',
       'Você precisa de um projeto que consiga terminar. O Desafio é um jogo só, do começo ao fim, com o certificado no final. E você tem de 1 a 3 horas por semana: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.',
     ])
@@ -241,7 +242,7 @@ describe('Desafio adulto v1: o resultado em conversa', () => {
     expect(cta(r)).toEqual({
       tipo: 'cta',
       texto:
-        'Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 30 dias e a resposta para quem tem receio de ser curso de criança.',
+        'Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 6 meses e a resposta para quem tem receio de ser curso de criança.',
       rotulo: 'Ver como a ideia sai do papel',
       href: '/pro/desafio-primeiro-jogo/oferta',
       nota: 'O preço aparece na próxima página.',

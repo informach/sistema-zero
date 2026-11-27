@@ -610,7 +610,7 @@ describe('campanhas institucionais', () => {
     expect(() => validateCampaignInput({ ...input, giftOfferId: 'nao-e-uuid' })).toThrow()
   })
 
-  test('oferta com prazo em meses ou arquivada não vira presente; pausada serve', async () => {
+  test('oferta em meses vira presente (27/11/2026); arquivada não; pausada serve', async () => {
     const { admin, catalog } = await setup()
     const emMeses = catalog.add({
       ...KIDS_GIFT_OFFER,
@@ -619,9 +619,11 @@ describe('campanhas institucionais', () => {
       accessDurationValue: 1,
       accessDurationUnit: 'months',
     })
-    await expect(
-      admin.create({ ...input, code: 'oferta-em-meses', giftOfferId: emMeses.offerId }, 'Op'),
-    ).rejects.toThrow(/prazo do presente precisa ser em dias/)
+    const emMesesCriada = await admin.create(
+      { ...input, code: 'oferta-em-meses', giftOfferId: emMeses.offerId },
+      'Op',
+    )
+    expect(emMesesCriada?.giftOfferId).toBe(emMeses.offerId)
     const arquivada = catalog.add({
       ...KIDS_GIFT_OFFER,
       offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d08',
@@ -694,6 +696,35 @@ describe('campanhas institucionais', () => {
       ),
     ).rejects.toBeInstanceOf(CampaignGiftOfferLockedError)
     expect(referrals.redemptions[0]!.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+  })
+
+  test('outra oferta do MESMO curso troca com a campanha no ar e com resgates (27/11/2026)', async () => {
+    const { admin, campaign, catalog, referrals, redeem } = await setup()
+    expect((await redeem.execute(family)).kind).toBe('completed')
+    const seisMeses = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d0a',
+      offerSlug: 'cade-todo-mundo-6-meses',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
+      advertisedAccessDays: null,
+    })
+    const trocada = await admin.update(
+      campaign.id,
+      { ...input, giftOfferId: seisMeses.offerId, expectedUpdatedAt: campaign.updatedAt },
+      'Operador',
+    )
+    expect(trocada?.giftOfferId).toBe(seisMeses.offerId)
+    // Quem já resgatou fica com a oferta que recebeu.
+    expect(referrals.redemptions[0]!.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+    // Outro curso continua travado.
+    await expect(
+      admin.update(
+        campaign.id,
+        { ...input, giftOfferId: PARENTS_OFFER.offerId, expectedUpdatedAt: trocada!.updatedAt },
+        'Operador',
+      ),
+    ).rejects.toBeInstanceOf(CampaignGiftOfferLockedError)
   })
 
   test('resgate da campanha concede a oferta DELA: vitalícia sem Mural, curso para pais', async () => {

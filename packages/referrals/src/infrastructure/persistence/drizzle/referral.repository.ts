@@ -14,6 +14,7 @@ import {
 } from '../../../domain/campaign'
 import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
 import { CourseBenefitUnavailableError } from '../../../domain/course-benefit'
+import { monthsSpanDays } from '../../../domain/gift-policy'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
@@ -162,6 +163,7 @@ export function toRedemption(row: RedemptionRow): RedemptionRecord {
     attemptCount: row.attemptCount,
     completedAt: row.completedAt,
     accessDurationDays: row.accessDurationDays,
+    giftAccessPolicy: row.giftAccessPolicy,
     advertisedDays: row.advertisedDays ?? null,
     muralVisitorPolicy: row.muralVisitorPolicy,
     muralVisitorGrantedAt: row.muralVisitorGrantedAt,
@@ -784,7 +786,12 @@ export class DrizzleReferralRepository implements ReferralRepository {
           createdAt: acceptedAt,
           // Presente por oferta: curso, prazo e Mural vêm da oferta gravada. Sem `gift` (só
           // usos internos/testes), a linha nasce na forma histórica sem prazo.
-          accessDurationDays: input.gift?.accessDurationDays ?? null,
+          accessDurationDays:
+            input.gift?.accessPolicy?.mode === 'fixed' &&
+            input.gift.accessPolicy.durationUnit === 'months'
+              ? monthsSpanDays(acceptedAt, input.gift.accessPolicy.durationValue)
+              : (input.gift?.accessDurationDays ?? null),
+          giftAccessPolicy: input.gift?.accessPolicy ?? null,
           advertisedDays: input.gift?.advertisedDays ?? null,
           muralVisitorPolicy: input.gift ? 'offer' : null,
           giftOfferId: input.gift?.offerId ?? null,

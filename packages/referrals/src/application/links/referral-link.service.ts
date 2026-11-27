@@ -51,6 +51,8 @@ export class ReferralLinkService {
     codeValue: string,
     offerRef: string | null,
     checkout: boolean,
+    /** O tipo explícito (`?tipo=`); sem ele, preservar vendas exatas e presentes legados. */
+    kind?: 'gift' | 'referral',
   ): Promise<LinkResult> {
     const code = await this.repo.findCodeByCode(codeValue)
     if (code?.status !== 'active') return { kind: 'not_found' }
@@ -116,15 +118,29 @@ export class ReferralLinkService {
       if (offer.kind !== 'ok') return offer
       return { kind: 'ok', link: this.ambassadorLink(code.code, audience, 'gift', offer, false) }
     }
-    const gift = await this.offers.allowed(audience, 'gift', offerRef)
-    if (gift)
-      return { kind: 'ok', link: this.ambassadorLink(code.code, audience, 'gift', gift, false) }
-    const referral = await this.offers.allowed(audience, 'referral', offerRef)
-    if (referral)
-      return {
-        kind: 'ok',
-        link: this.ambassadorLink(code.code, audience, 'sale', referral, checkout),
+    // A mesma oferta pode estar nas duas listas (27/11/2026: a oferta única de cada curso é venda
+    // e presente): o tipo explícito decide. Sem tipo, o slug exato que antes era de venda
+    // continua vendendo. O alias de uma oferta retirada (como o antigo -presente do guia)
+    // conserva a precedência de presente na busca pelo MESMO curso.
+    const explicitKind = checkout ? 'referral' : kind
+    for (const sameCourse of [false, true]) {
+      const kinds: ('gift' | 'referral')[] = explicitKind
+        ? [explicitKind]
+        : sameCourse
+          ? ['gift', 'referral']
+          : ['referral', 'gift']
+      for (const listKind of kinds) {
+        const option = await this.offers.allowed(audience, listKind, offerRef, { sameCourse })
+        if (!option) continue
+        return {
+          kind: 'ok',
+          link:
+            listKind === 'gift'
+              ? this.ambassadorLink(code.code, audience, 'gift', option, false)
+              : this.ambassadorLink(code.code, audience, 'sale', option, checkout),
+        }
       }
+    }
     return { kind: 'not_found' }
   }
 
