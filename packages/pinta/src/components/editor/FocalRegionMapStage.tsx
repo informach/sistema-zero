@@ -35,7 +35,13 @@ import { useMapKeyboard } from './mapTools/useMapKeyboard'
 import { useMapLevel } from './mapTools/useMapLevel'
 import { useMapSheets } from './mapTools/useMapSheets'
 import { stageCursor } from './stageCursor'
-import { MAP_SELECT_CLASS, MapLevelSelect, type MapTool, TilemapToolbar } from './TilemapPanels'
+import {
+  MAP_SELECT_CLASS,
+  MapLevelSelect,
+  MapSidePanels,
+  type MapTool,
+  TilemapToolbar,
+} from './TilemapPanels'
 import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
@@ -457,7 +463,7 @@ export function FocalRegionMapStage({
             </div>
           ) : null}
         </div>
-        <aside className="max-h-72 w-full shrink-0 overflow-y-auto bg-pin-surface md:max-h-none md:w-64">
+        <MapSidePanels>
           <Panel title={COPY.scene.criarDoMeuJeito}>
             <MapLevelSelect level={level} onChange={setLevel} />
           </Panel>
@@ -503,10 +509,10 @@ export function FocalRegionMapStage({
               />
             </>
           ) : null}
-        </aside>
+        </MapSidePanels>
       </div>
-      <div className="pin-band flex shrink-0 items-center justify-between gap-2 px-4 py-2">
-        <div className="flex gap-2">
+      <div className="pin-band grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 md:flex md:justify-between md:px-4">
+        <div className="col-span-2 flex flex-wrap items-center gap-2">
           <Button
             variant="barOutline"
             disabled={!canUndo || saving}
