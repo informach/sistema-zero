@@ -2,6 +2,13 @@
 
 Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **Cursos para pais** na área dos pais do Kids. Refação de 18/11/2026: o curso passa a ser o conteúdo integral do encontro de 13/11/2026, na voz da Helena, organizado em sete aulas na mesma ordem em que foi apresentado.
 
+**Vídeos atualizados em 27/11/2026:** Aula 1, Parte 2; Aula 2, Parte 4; Aula 3, Parte 3;
+Aula 4, Parte 3; Aula 5, Parte 4; Aula 6, Parte 4; e Aula 7, Parte 3. Os arquivos corrigidos foram
+publicados em staging e produção, com as capas originais reenviadas e ativadas, durações corrigidas
+e legendas atuais anexadas às aulas. Consulte o [registro da atualização](troca-videos-2026-11-27.md),
+o [comprovante técnico](troca-videos-2026-11-27.json), as [capas](capas-das-aulas/) e as
+[transcrições atuais](transcricoes/2026-11-27/).
+
 **Regra desta versão:** tudo o que foi dito no encontro está no curso, com os mesmos exemplos, argumentos e jeito de explicar. Saíram apenas as repetições, as perguntas a quem assistia ao vivo, a logística do encontro e a segunda oferta. A ordem foi corrigida onde o encontro se adiantou ou deixou uma promessa sem fechar; as correções estão listadas em Fontes. As explicações da psicóloga que participou do encontro viraram fala da Helena; os casos de consultório são contados como relatos da psicóloga que acompanha o André, sem nome. O detalhamento está em [Fontes](fontes.md).
 
 **Convite único:** o Cadê Todo Mundo por sete dias, na Aula 7. Nenhuma outra aula oferece nada, e nenhum outro projeto, cupom ou plano é oferecido.

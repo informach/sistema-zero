@@ -1,0 +1,1196 @@
+{
+  "course": "Transformando o vilão em aliado",
+  "updatedAt": "2026-11-27T12:06:36.027Z",
+  "learner": "parents",
+  "sourceFolder": "C:/Users/tocha/Downloads/Vilão em Aliado",
+  "sourceFiles": [
+    {
+      "part": "1-2",
+      "file": "Aula01 - Parte 2.mp4",
+      "sizeBytes": 117814168,
+      "sha256": "2240a2d6c73830843c827a76f95dc2c9a53f6d2b6e77744b6d10e233de5abd51",
+      "durationSeconds": 166.10938123752496,
+      "cover": "capas-das-aulas/aula-01-parte-02.png",
+      "coverSha256": "42091ebb03ffb7b550e42a37fede4262dad6d4b2a1e079e05b44fd5d33a9eb5f",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/42091ebb03ffb7b550e42a37fede4262dad6d4b2a1e079e05b44fd5d33a9eb5f.png"
+    },
+    {
+      "part": "2-4",
+      "file": "Aula 02 - Parte 4.mp4",
+      "sizeBytes": 94655764,
+      "sha256": "c35db50bf6df1ee4f4da30380854ef4c3a31eb2dfed6e9029bfce0a999cb99a5",
+      "durationSeconds": 129.7880239520958,
+      "cover": "capas-das-aulas/aula-02-parte-04.png",
+      "coverSha256": "616ee7e8f7f068eada1a9974fb7e310c7c276e102124994641eb7dc130c7b307",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/616ee7e8f7f068eada1a9974fb7e310c7c276e102124994641eb7dc130c7b307.png"
+    },
+    {
+      "part": "3-3",
+      "file": "Aula03 - Parte 3.mp4",
+      "sizeBytes": 196995809,
+      "sha256": "a0ad5ff031d1f7799d78f60f8abfb3ef731d87668994995ffd2f1ec8a8b0b47f",
+      "durationSeconds": 230.0880239520958,
+      "cover": "capas-das-aulas/aula-03-parte-03.png",
+      "coverSha256": "a6ff6a69ff34cb161b38d975b2c8c96965bf2d9294395fc02c778cb02c3477fd",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/a6ff6a69ff34cb161b38d975b2c8c96965bf2d9294395fc02c778cb02c3477fd.png"
+    },
+    {
+      "part": "4-3",
+      "file": "Aula 04 - Parte 3.mp4",
+      "sizeBytes": 178640403,
+      "sha256": "33863535e5580c094fcfa786831115cd2514338aad054b52f97fe64b1da29d47",
+      "durationSeconds": 233.7880239520958,
+      "cover": "capas-das-aulas/aula-04-parte-03.png",
+      "coverSha256": "8a30229d0b4eb869e953fa56097d79e99e5b97d43934f1692a8717e5e5c7bd1a",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/8a30229d0b4eb869e953fa56097d79e99e5b97d43934f1692a8717e5e5c7bd1a.png"
+    },
+    {
+      "part": "5-4",
+      "file": "Aula 05 - Parte 4.mp4",
+      "sizeBytes": 181175326,
+      "sha256": "e0cb9900cb4e3a57723ea9cc577fd87f734007316239f33cd1f327221494da18",
+      "durationSeconds": 217.68802395209582,
+      "cover": "capas-das-aulas/aula-05-parte-04.png",
+      "coverSha256": "ad0d4a9d13a84ac5f42fc413068ed9797255981646d95b2a54d80f43ff61d8db",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/ad0d4a9d13a84ac5f42fc413068ed9797255981646d95b2a54d80f43ff61d8db.png"
+    },
+    {
+      "part": "6-4",
+      "file": "Aula 06 - Parte 4.mp4",
+      "sizeBytes": 216758809,
+      "sha256": "de013b57e1d7961113816ffc855909f4f9cf61efb7d14d79d19bdb951f9df781",
+      "durationSeconds": 277.48802395209583,
+      "cover": "capas-das-aulas/aula-06-parte-04.png",
+      "coverSha256": "3b7401ffa64873b97557517bfdf8f7a61bc826e078191a6086dfd570e75ac713",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/3b7401ffa64873b97557517bfdf8f7a61bc826e078191a6086dfd570e75ac713.png"
+    },
+    {
+      "part": "7-3",
+      "file": "Aula 07 - Parte 3.mp4",
+      "sizeBytes": 221161615,
+      "sha256": "59430fa529f5846f1d9d9ed942a9507b0941398452ce7160c42361db140d7b98",
+      "durationSeconds": 338.48802395209583,
+      "cover": "capas-das-aulas/aula-07-parte-03.png",
+      "coverSha256": "c861ee077e25044c81ec34746b931073cc8e758e499de052e31282b23c48a20a",
+      "originalCoverUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/c861ee077e25044c81ec34746b931073cc8e758e499de052e31282b23c48a20a.png"
+    }
+  ],
+  "method": "Novas versões nos mesmos IDs do Vimeo, com capas originais reenviadas e ativadas, duração e legendas atualizadas nas aulas.",
+  "environments": [
+    {
+      "environment": "staging",
+      "course": {
+        "id": "780b2167-c74a-4f87-8dc7-305455b0230c",
+        "slug": "transformando-o-vilao-em-aliado",
+        "titulo": "Transformando o vilão em aliado",
+        "status": "published",
+        "publico": "kids"
+      },
+      "learner": "parents",
+      "configurationPreserved": true,
+      "media": [
+        {
+          "part": "1-2",
+          "lessonId": "c6290aa0-6cff-436f-8446-360a163d14c4",
+          "blockId": "e40f1ce6-6430-5aed-a60b-e1886c98f14d",
+          "videoId": "1248938120",
+          "version": "/videos/1248938120/versions/1258509928",
+          "sourceSha256": "2240a2d6c73830843c827a76f95dc2c9a53f6d2b6e77744b6d10e233de5abd51",
+          "sourceBytes": 117814168,
+          "durationFile": 166.10938123752496,
+          "durationPublished": 166,
+          "coverUri": "/videos/1248938120/pictures/2231270580",
+          "coverSha256": "42091ebb03ffb7b550e42a37fede4262dad6d4b2a1e079e05b44fd5d33a9eb5f",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/42091ebb03ffb7b550e42a37fede4262dad6d4b2a1e079e05b44fd5d33a9eb5f.png",
+          "transcript": {
+            "uri": "/videos/1248938120/texttracks/346475252",
+            "file": "transcricoes/2026-11-27/staging-aula-01-parte-02.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248938120-346475252-3c823ba312dc15d59e20491851f0b766c2e0416bbf774707af6f42b941519abf.vtt",
+            "sha256": "3c823ba312dc15d59e20491851f0b766c2e0416bbf774707af6f42b941519abf",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "1-2",
+            "videoId": "1248938120",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248938120/versions/1258509928",
+            "picture": "/videos/1248938120/pictures/2231270580",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.515529,
+              "duration": 166.06666666666666,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 161.08904,
+              "duration": 166.066666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 148,
+              "audioDecodedBytes": 38671
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "2-4",
+          "lessonId": "34a8ff48-cd3f-4815-a712-49e5788dffa9",
+          "blockId": "05e8b042-4f6e-5ef4-a01e-a531a315febe",
+          "videoId": "1248949991",
+          "version": "/videos/1248949991/versions/1258509929",
+          "sourceSha256": "c35db50bf6df1ee4f4da30380854ef4c3a31eb2dfed6e9029bfce0a999cb99a5",
+          "sourceBytes": 94655764,
+          "durationFile": 129.7880239520958,
+          "durationPublished": 130,
+          "coverUri": "/videos/1248949991/pictures/2231270589",
+          "coverSha256": "616ee7e8f7f068eada1a9974fb7e310c7c276e102124994641eb7dc130c7b307",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/616ee7e8f7f068eada1a9974fb7e310c7c276e102124994641eb7dc130c7b307.png",
+          "transcript": {
+            "uri": "/videos/1248949991/texttracks/346475105",
+            "file": "transcricoes/2026-11-27/staging-aula-02-parte-04.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248949991-346475105-62ef8ef43db89448fc9f04bdbaaed2625c7aeacebab73da7c5568742f82cc682.vtt",
+            "sha256": "62ef8ef43db89448fc9f04bdbaaed2625c7aeacebab73da7c5568742f82cc682",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "2-4",
+            "videoId": "1248949991",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248949991/versions/1258509929",
+            "picture": "/videos/1248949991/pictures/2231270589",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.513976,
+              "duration": 129.76666666666668,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 124.777534,
+              "duration": 129.76666666666668,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 150,
+              "audioDecodedBytes": 38565
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "3-3",
+          "lessonId": "0e36ddf8-4a63-4704-bbf9-ac6f68cce181",
+          "blockId": "1bf0c6c0-b3fc-5fb0-aac4-076cd76a9bd7",
+          "videoId": "1248938427",
+          "version": "/videos/1248938427/versions/1258509933",
+          "sourceSha256": "a0ad5ff031d1f7799d78f60f8abfb3ef731d87668994995ffd2f1ec8a8b0b47f",
+          "sourceBytes": 196995809,
+          "durationFile": 230.0880239520958,
+          "durationPublished": 230,
+          "coverUri": "/videos/1248938427/pictures/2231270627",
+          "coverSha256": "a6ff6a69ff34cb161b38d975b2c8c96965bf2d9294395fc02c778cb02c3477fd",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/a6ff6a69ff34cb161b38d975b2c8c96965bf2d9294395fc02c778cb02c3477fd.png",
+          "transcript": {
+            "uri": "/videos/1248938427/texttracks/346475118",
+            "file": "transcricoes/2026-11-27/staging-aula-03-parte-03.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248938427-346475118-634fdf23eb40598136a1fca3f1f6dc71b122b6608bc94115af8f53ae060530c9.vtt",
+            "sha256": "634fdf23eb40598136a1fca3f1f6dc71b122b6608bc94115af8f53ae060530c9",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "3-3",
+            "videoId": "1248938427",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248938427/versions/1258509933",
+            "picture": "/videos/1248938427/pictures/2231270627",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.519011,
+              "duration": 230.06666666666666,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 225.074754,
+              "duration": 230.066666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 87,
+              "audioDecodedBytes": 38652
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "4-3",
+          "lessonId": "060797eb-05b2-4125-bfdd-ccc7261c983f",
+          "blockId": "02df507f-3f3e-5815-a7ec-1a26293c6349",
+          "videoId": "1248938547",
+          "version": "/videos/1248938547/versions/1258509999",
+          "sourceSha256": "33863535e5580c094fcfa786831115cd2514338aad054b52f97fe64b1da29d47",
+          "sourceBytes": 178640403,
+          "durationFile": 233.7880239520958,
+          "durationPublished": 234,
+          "coverUri": "/videos/1248938547/pictures/2231270664",
+          "coverSha256": "8a30229d0b4eb869e953fa56097d79e99e5b97d43934f1692a8717e5e5c7bd1a",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/8a30229d0b4eb869e953fa56097d79e99e5b97d43934f1692a8717e5e5c7bd1a.png",
+          "transcript": {
+            "uri": "/videos/1248938547/texttracks/346475189",
+            "file": "transcricoes/2026-11-27/staging-aula-04-parte-03.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248938547-346475189-4d0d887c63bef31698f40ba3a044b74f7eb9a2d3786ee5f849744e0ce29813b1.vtt",
+            "sha256": "4d0d887c63bef31698f40ba3a044b74f7eb9a2d3786ee5f849744e0ce29813b1",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "4-3",
+            "videoId": "1248938547",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248938547/versions/1258509999",
+            "picture": "/videos/1248938547/pictures/2231270664",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.51428,
+              "duration": 233.76666666666668,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 228.790973,
+              "duration": 233.76666666666668,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 107,
+              "audioDecodedBytes": 38560
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "5-4",
+          "lessonId": "053e85ea-27ea-450b-9a68-59fa7bfe6d60",
+          "blockId": "fee0d1c3-47c6-5177-a73a-3a07363b60ad",
+          "videoId": "1248938793",
+          "version": "/videos/1248938793/versions/1258510017",
+          "sourceSha256": "e0cb9900cb4e3a57723ea9cc577fd87f734007316239f33cd1f327221494da18",
+          "sourceBytes": 181175326,
+          "durationFile": 217.68802395209582,
+          "durationPublished": 218,
+          "coverUri": "/videos/1248938793/pictures/2231270683",
+          "coverSha256": "ad0d4a9d13a84ac5f42fc413068ed9797255981646d95b2a54d80f43ff61d8db",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/ad0d4a9d13a84ac5f42fc413068ed9797255981646d95b2a54d80f43ff61d8db.png",
+          "transcript": {
+            "uri": "/videos/1248938793/texttracks/346475147",
+            "file": "transcricoes/2026-11-27/staging-aula-05-parte-04.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248938793-346475147-89564ea7d17ce627841a4a800c3001bfcbe6aad62e273648e5c63647e5706487.vtt",
+            "sha256": "89564ea7d17ce627841a4a800c3001bfcbe6aad62e273648e5c63647e5706487",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "5-4",
+            "videoId": "1248938793",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248938793/versions/1258510017",
+            "picture": "/videos/1248938793/pictures/2231270683",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.512044,
+              "duration": 217.66666666666666,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 212.674608,
+              "duration": 217.666666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 168,
+              "audioDecodedBytes": 38323
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "6-4",
+          "lessonId": "2d84f2a1-aa91-43ac-9024-c1572049c684",
+          "blockId": "14e4f6a0-821d-52a2-a107-b5921533f306",
+          "videoId": "1248939071",
+          "version": "/videos/1248939071/versions/1258510032",
+          "sourceSha256": "de013b57e1d7961113816ffc855909f4f9cf61efb7d14d79d19bdb951f9df781",
+          "sourceBytes": 216758809,
+          "durationFile": 277.48802395209583,
+          "durationPublished": 277,
+          "coverUri": "/videos/1248939071/pictures/2231270706",
+          "coverSha256": "3b7401ffa64873b97557517bfdf8f7a61bc826e078191a6086dfd570e75ac713",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/3b7401ffa64873b97557517bfdf8f7a61bc826e078191a6086dfd570e75ac713.png",
+          "transcript": {
+            "uri": "/videos/1248939071/texttracks/346475224",
+            "file": "transcricoes/2026-11-27/staging-aula-06-parte-04.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248939071-346475224-13234573fd9e3da47dd5a80478f5e8aae870e3f8f635801a15be58aa47cb39be.vtt",
+            "sha256": "13234573fd9e3da47dd5a80478f5e8aae870e3f8f635801a15be58aa47cb39be",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "6-4",
+            "videoId": "1248939071",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248939071/versions/1258510032",
+            "picture": "/videos/1248939071/pictures/2231270706",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.511443,
+              "duration": 277.46666666666664,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 272.480956,
+              "duration": 277.466666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 162,
+              "audioDecodedBytes": 38263
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "7-3",
+          "lessonId": "15b1dd95-c98c-40ab-b9ad-d078888af6a2",
+          "blockId": "d1d02a73-2d66-52bf-a53a-0bd3b59a1190",
+          "videoId": "1248939286",
+          "version": "/videos/1248939286/versions/1258510127",
+          "sourceSha256": "59430fa529f5846f1d9d9ed942a9507b0941398452ce7160c42361db140d7b98",
+          "sourceBytes": 221161615,
+          "durationFile": 338.48802395209583,
+          "durationPublished": 338,
+          "coverUri": "/videos/1248939286/pictures/2231270717",
+          "coverSha256": "c861ee077e25044c81ec34746b931073cc8e758e499de052e31282b23c48a20a",
+          "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/vilao-20261121/c861ee077e25044c81ec34746b931073cc8e758e499de052e31282b23c48a20a.png",
+          "transcript": {
+            "uri": "/videos/1248939286/texttracks/346475381",
+            "file": "transcricoes/2026-11-27/staging-aula-07-parte-03.vtt",
+            "publicUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/captions/2026-11-27/1248939286-346475381-5cdd98555e1ce8e903119a8aea3549f13581103700d7bd412ba2e7e58f7908ce.vtt",
+            "sha256": "5cdd98555e1ce8e903119a8aea3549f13581103700d7bd412ba2e7e58f7908ce",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "staging",
+            "audience": "parents",
+            "key": "7-3",
+            "videoId": "1248939286",
+            "domain": "https://community-kids-staging.up.railway.app",
+            "version": "/videos/1248939286/versions/1258510127",
+            "picture": "/videos/1248939286/pictures/2231270717",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.51348,
+              "duration": 338.46666666666664,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 333.479637,
+              "duration": 338.466666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 102,
+              "audioDecodedBytes": 38481
+            },
+            "ok": true
+          }
+        }
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-2",
+          "id": "1248938120",
+          "status": "available",
+          "duracao": 166,
+          "arquivo": 166.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-4",
+          "id": "1248949991",
+          "status": "available",
+          "duracao": 130,
+          "arquivo": 129.8,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "3-3",
+          "id": "1248938427",
+          "status": "available",
+          "duracao": 230,
+          "arquivo": 230.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "4-3",
+          "id": "1248938547",
+          "status": "available",
+          "duracao": 234,
+          "arquivo": 233.8,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "5-4",
+          "id": "1248938793",
+          "status": "available",
+          "duracao": 218,
+          "arquivo": 217.7,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "6-4",
+          "id": "1248939071",
+          "status": "available",
+          "duracao": 277,
+          "arquivo": 277.5,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "7-3",
+          "id": "1248939286",
+          "status": "available",
+          "duracao": 338,
+          "arquivo": 338.5,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app",
+            "funnel-staging-c4a5.up.railway.app",
+            "palco-gravacao-staging.up.railway.app"
+          ],
+          "ok": true
+        }
+      ],
+      "retiredInactiveCaptions": 14,
+      "zappy": {
+        "scope": "Curso para pais, fora da base didática infantil por configuração de learner.",
+        "childTutorKnowledgeSources": 0,
+        "videoTranscriptsUpdated": 7
+      }
+    },
+    {
+      "environment": "production",
+      "course": {
+        "id": "3edc936c-5b72-4dd9-9c33-0b66e44d5a8b",
+        "slug": "transformando-o-vilao-em-aliado",
+        "titulo": "Transformando o vilão em aliado",
+        "status": "published",
+        "publico": "kids"
+      },
+      "learner": "parents",
+      "configurationPreserved": true,
+      "media": [
+        {
+          "part": "1-2",
+          "lessonId": "c067c094-36fc-474e-8733-489c1d7e4427",
+          "blockId": "cf20b9db-cc8b-5187-ab37-3c37770d3580",
+          "videoId": "1248939860",
+          "version": "/videos/1248939860/versions/1258510776",
+          "sourceSha256": "2240a2d6c73830843c827a76f95dc2c9a53f6d2b6e77744b6d10e233de5abd51",
+          "sourceBytes": 117814168,
+          "durationFile": 166.10938123752496,
+          "durationPublished": 166,
+          "coverUri": "/videos/1248939860/pictures/2231271349",
+          "coverSha256": "42091ebb03ffb7b550e42a37fede4262dad6d4b2a1e079e05b44fd5d33a9eb5f",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/42091ebb03ffb7b550e42a37fede4262dad6d4b2a1e079e05b44fd5d33a9eb5f.png",
+          "transcript": {
+            "uri": "/videos/1248939860/texttracks/346475831",
+            "file": "transcricoes/2026-11-27/production-aula-01-parte-02.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248939860-346475831-8bedcd2c8a6c9a3dbe8db8909ee28cac76d7c9b2ea677cb12feb29145f897d97.vtt",
+            "sha256": "8bedcd2c8a6c9a3dbe8db8909ee28cac76d7c9b2ea677cb12feb29145f897d97",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "1-2",
+            "videoId": "1248939860",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248939860/versions/1258510776",
+            "picture": "/videos/1248939860/pictures/2231271349",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.505481,
+              "duration": 166.06666666666666,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 161.072026,
+              "duration": 166.06666666666666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 147,
+              "audioDecodedBytes": 38448
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "2-4",
+          "lessonId": "0a07f7ca-4aac-4387-95d4-c68f9bc85791",
+          "blockId": "f0ce224a-4ec3-5807-a606-334364e04c7e",
+          "videoId": "1248949992",
+          "version": "/videos/1248949992/versions/1258510777",
+          "sourceSha256": "c35db50bf6df1ee4f4da30380854ef4c3a31eb2dfed6e9029bfce0a999cb99a5",
+          "sourceBytes": 94655764,
+          "durationFile": 129.7880239520958,
+          "durationPublished": 130,
+          "coverUri": "/videos/1248949992/pictures/2231271374",
+          "coverSha256": "616ee7e8f7f068eada1a9974fb7e310c7c276e102124994641eb7dc130c7b307",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/616ee7e8f7f068eada1a9974fb7e310c7c276e102124994641eb7dc130c7b307.png",
+          "transcript": {
+            "uri": "/videos/1248949992/texttracks/346475902",
+            "file": "transcricoes/2026-11-27/production-aula-02-parte-04.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248949992-346475902-217e38352f483b6a9c3180b8d4315d3ddbbe7ba497a0862350c9a96296f4f54b.vtt",
+            "sha256": "217e38352f483b6a9c3180b8d4315d3ddbbe7ba497a0862350c9a96296f4f54b",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "2-4",
+            "videoId": "1248949992",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248949992/versions/1258510777",
+            "picture": "/videos/1248949992/pictures/2231271374",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.517974,
+              "duration": 129.76666666666668,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 124.774416,
+              "duration": 129.76666666666668,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 151,
+              "audioDecodedBytes": 38791
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "3-3",
+          "lessonId": "baed77b4-9bd2-46ef-88fd-b277d724303f",
+          "blockId": "1b61d61d-1804-5103-a88a-63c56441323f",
+          "videoId": "1248940072",
+          "version": "/videos/1248940072/versions/1258510779",
+          "sourceSha256": "a0ad5ff031d1f7799d78f60f8abfb3ef731d87668994995ffd2f1ec8a8b0b47f",
+          "sourceBytes": 196995809,
+          "durationFile": 230.0880239520958,
+          "durationPublished": 230,
+          "coverUri": "/videos/1248940072/pictures/2231271576",
+          "coverSha256": "a6ff6a69ff34cb161b38d975b2c8c96965bf2d9294395fc02c778cb02c3477fd",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/a6ff6a69ff34cb161b38d975b2c8c96965bf2d9294395fc02c778cb02c3477fd.png",
+          "transcript": {
+            "uri": "/videos/1248940072/texttracks/346476026",
+            "file": "transcricoes/2026-11-27/production-aula-03-parte-03.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248940072-346476026-6062b893f854630cfe5e10a55ba6785636f71de9a599a574da62fa190f02a166.vtt",
+            "sha256": "6062b893f854630cfe5e10a55ba6785636f71de9a599a574da62fa190f02a166",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "3-3",
+            "videoId": "1248940072",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248940072/versions/1258510779",
+            "picture": "/videos/1248940072/pictures/2231271576",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.510327,
+              "duration": 230.06666666666666,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 225.080594,
+              "duration": 230.066666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 86,
+              "audioDecodedBytes": 38289
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "4-3",
+          "lessonId": "ed5ec627-7313-491c-8b37-f101e1484ef3",
+          "blockId": "7af33e49-6797-5e89-a8e9-dcf07379157b",
+          "videoId": "1248940126",
+          "version": "/videos/1248940126/versions/1258510848",
+          "sourceSha256": "33863535e5580c094fcfa786831115cd2514338aad054b52f97fe64b1da29d47",
+          "sourceBytes": 178640403,
+          "durationFile": 233.7880239520958,
+          "durationPublished": 234,
+          "coverUri": "/videos/1248940126/pictures/2231271597",
+          "coverSha256": "8a30229d0b4eb869e953fa56097d79e99e5b97d43934f1692a8717e5e5c7bd1a",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/8a30229d0b4eb869e953fa56097d79e99e5b97d43934f1692a8717e5e5c7bd1a.png",
+          "transcript": {
+            "uri": "/videos/1248940126/texttracks/346475897",
+            "file": "transcricoes/2026-11-27/production-aula-04-parte-03.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248940126-346475897-d5db560593de5831e08ab053ab9eb3095e55d96fb051796a9656f6392074ad11.vtt",
+            "sha256": "d5db560593de5831e08ab053ab9eb3095e55d96fb051796a9656f6392074ad11",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "4-3",
+            "videoId": "1248940126",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248940126/versions/1258510848",
+            "picture": "/videos/1248940126/pictures/2231271597",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.514649,
+              "duration": 233.76666666666668,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 228.7735,
+              "duration": 233.76666666666668,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 106,
+              "audioDecodedBytes": 38350
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "5-4",
+          "lessonId": "5b068437-a929-4941-bc2c-c5146ce8cf7e",
+          "blockId": "e0909e60-3f8d-503b-aefa-71b0fd84bf09",
+          "videoId": "1248940208",
+          "version": "/videos/1248940208/versions/1258510855",
+          "sourceSha256": "e0cb9900cb4e3a57723ea9cc577fd87f734007316239f33cd1f327221494da18",
+          "sourceBytes": 181175326,
+          "durationFile": 217.68802395209582,
+          "durationPublished": 218,
+          "coverUri": "/videos/1248940208/pictures/2231271623",
+          "coverSha256": "ad0d4a9d13a84ac5f42fc413068ed9797255981646d95b2a54d80f43ff61d8db",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/ad0d4a9d13a84ac5f42fc413068ed9797255981646d95b2a54d80f43ff61d8db.png",
+          "transcript": {
+            "uri": "/videos/1248940208/texttracks/346476127",
+            "file": "transcricoes/2026-11-27/production-aula-05-parte-04.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248940208-346476127-d89cfc10118c89c07e922827e7e85f90b2bea8e307ab59b2745034d6753ec16a.vtt",
+            "sha256": "d89cfc10118c89c07e922827e7e85f90b2bea8e307ab59b2745034d6753ec16a",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "5-4",
+            "videoId": "1248940208",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248940208/versions/1258510855",
+            "picture": "/videos/1248940208/pictures/2231271623",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.520684,
+              "duration": 217.66666666666666,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 212.682155,
+              "duration": 217.666666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 169,
+              "audioDecodedBytes": 38596
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "6-4",
+          "lessonId": "cda285e5-acbb-4b69-b08c-a7c7226cbfb6",
+          "blockId": "ec999562-35d4-573f-aabc-e93c793ec1ab",
+          "videoId": "1248940307",
+          "version": "/videos/1248940307/versions/1258510944",
+          "sourceSha256": "de013b57e1d7961113816ffc855909f4f9cf61efb7d14d79d19bdb951f9df781",
+          "sourceBytes": 216758809,
+          "durationFile": 277.48802395209583,
+          "durationPublished": 277,
+          "coverUri": "/videos/1248940307/pictures/2231271700",
+          "coverSha256": "3b7401ffa64873b97557517bfdf8f7a61bc826e078191a6086dfd570e75ac713",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/3b7401ffa64873b97557517bfdf8f7a61bc826e078191a6086dfd570e75ac713.png",
+          "transcript": {
+            "uri": "/videos/1248940307/texttracks/346476147",
+            "file": "transcricoes/2026-11-27/production-aula-06-parte-04.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248940307-346476147-77a2f01ba9aba64467435894036ef3e4687b41969d097552208a0b37757c2b65.vtt",
+            "sha256": "77a2f01ba9aba64467435894036ef3e4687b41969d097552208a0b37757c2b65",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "6-4",
+            "videoId": "1248940307",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248940307/versions/1258510944",
+            "picture": "/videos/1248940307/pictures/2231271700",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.521398,
+              "duration": 277.46666666666664,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 272.479666,
+              "duration": 277.466666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 164,
+              "audioDecodedBytes": 38467
+            },
+            "ok": true
+          }
+        },
+        {
+          "part": "7-3",
+          "lessonId": "0947bc6e-ec79-4a8b-a390-e58764ab4cf6",
+          "blockId": "88bfbcac-aa6e-55b9-a245-5ca85a7a90ae",
+          "videoId": "1248940373",
+          "version": "/videos/1248940373/versions/1258510978",
+          "sourceSha256": "59430fa529f5846f1d9d9ed942a9507b0941398452ce7160c42361db140d7b98",
+          "sourceBytes": 221161615,
+          "durationFile": 338.48802395209583,
+          "durationPublished": 338,
+          "coverUri": "/videos/1248940373/pictures/2231271720",
+          "coverSha256": "c861ee077e25044c81ec34746b931073cc8e758e499de052e31282b23c48a20a",
+          "posterUrl": "https://cdn.sistemazero.com.br/admin/vilao-20261121/c861ee077e25044c81ec34746b931073cc8e758e499de052e31282b23c48a20a.png",
+          "transcript": {
+            "uri": "/videos/1248940373/texttracks/346476059",
+            "file": "transcricoes/2026-11-27/production-aula-07-parte-03.vtt",
+            "publicUrl": "https://cdn.sistemazero.com.br/admin/captions/2026-11-27/1248940373-346476059-b8bff78af57a97f698d5229e25614f051bc0ee18021137cefb616e7cd1092295.vtt",
+            "sha256": "b8bff78af57a97f698d5229e25614f051bc0ee18021137cefb616e7cd1092295",
+            "active": true,
+            "downloadedHashMatches": true
+          },
+          "publishedDocumentOnlyVideoMetadataChanged": true,
+          "authoringPlannedVideosExcludedFromComparison": true,
+          "playback": {
+            "environment": "production",
+            "audience": "parents",
+            "key": "7-3",
+            "videoId": "1248940373",
+            "domain": "https://kids.sistemazero.com.br",
+            "version": "/videos/1248940373/versions/1258510978",
+            "picture": "/videos/1248940373/pictures/2231271720",
+            "playerPictureMatches": true,
+            "hlsVerified": true,
+            "start": {
+              "time": 0.51827,
+              "duration": 338.46666666666664,
+              "error": null,
+              "paused": false
+            },
+            "tail": {
+              "time": 333.477875,
+              "duration": 338.466666,
+              "error": null,
+              "paused": false,
+              "decodedFrames": 103,
+              "audioDecodedBytes": 38688
+            },
+            "ok": true
+          }
+        }
+      ],
+      "videoAndCoverVerification": [
+        {
+          "parte": "1-2",
+          "id": "1248939860",
+          "status": "available",
+          "duracao": 166,
+          "arquivo": 166.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "2-4",
+          "id": "1248949992",
+          "status": "available",
+          "duracao": 130,
+          "arquivo": 129.8,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "3-3",
+          "id": "1248940072",
+          "status": "available",
+          "duracao": 230,
+          "arquivo": 230.1,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "4-3",
+          "id": "1248940126",
+          "status": "available",
+          "duracao": 234,
+          "arquivo": 233.8,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "5-4",
+          "id": "1248940208",
+          "status": "available",
+          "duracao": 218,
+          "arquivo": 217.7,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "6-4",
+          "id": "1248940307",
+          "status": "available",
+          "duracao": 277,
+          "arquivo": 277.5,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        },
+        {
+          "parte": "7-3",
+          "id": "1248940373",
+          "status": "available",
+          "duracao": 338,
+          "arquivo": 338.5,
+          "versaoNovaAtiva": true,
+          "capa": true,
+          "privado": true,
+          "dominios": [
+            "informach.com.br",
+            "localhost",
+            "programandocomdiversao.com.br",
+            "programandocomdiversao.com",
+            "sistemazero.com.br",
+            "community-kids-staging.up.railway.app",
+            "admin-staging-f8fe.up.railway.app",
+            "kids.sistemazero.com.br",
+            "admin.sistemazero.com.br",
+            "comunidade.sistemazero.com.br",
+            "community-staging-66f2.up.railway",
+            "community-staging-66f2.up.railway.app"
+          ],
+          "ok": true
+        }
+      ],
+      "retiredInactiveCaptions": 11,
+      "zappy": {
+        "scope": "Curso para pais, fora da base didática infantil por configuração de learner.",
+        "childTutorKnowledgeSources": 0,
+        "videoTranscriptsUpdated": 7
+      }
+    }
+  ],
+  "notes": [
+    "Sete partes atualizadas em cada ambiente, com quatorze versões e quatorze reproduções verificadas.",
+    "As capas e as transcrições atuais ficam nesta pasta. Os MP4 continuam na pasta de origem, identificados por nome, tamanho e SHA-256.",
+    "A comparação dos documentos publicados confirmou que só a duração e as legendas dos sete vídeos foram atualizadas. Materiais, textos, presente e certificado permanecem no mesmo documento.",
+    "A verificação no navegador usa player Vimeo real e domínio da área Kids, por página local sem criar contas, acessos, progresso, eventos ou resgates de teste.",
+    "Nenhum código da aplicação foi alterado ou implantado."
+  ]
+}
