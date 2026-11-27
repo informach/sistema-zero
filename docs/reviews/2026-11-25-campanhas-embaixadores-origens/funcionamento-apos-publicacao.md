@@ -92,4 +92,4 @@ As cinco aplicações da etapa final no Railway passaram pela saúde, pela retir
 
 Os dois resgates preservados na conversão eram sintéticos e foram excluídos, com suas aquisições e os demais dados de teste identificados. O relatório real do benefício agora mostra zero resgates e zero pessoas. A responsável excluiu os três cursos de QA; a ausência deles foi conferida. Os cursos reais “Testes de regras” foram preservados. O benefício passou a se chamar “Cadê Todo Mundo”, sem travessão.
 
-A correção visual está integrada à staging local e com publicação seletiva do Admin em andamento. O CI e a regularização do PR 297 ainda estão em andamento. [Conferência e regra para novas validações](limpeza-qa-2026-11-27.md). [Recibo atualizado](limpeza-qa-2026-11-27.json).
+A correção visual da aba Benefícios está publicada em produção. O CI e a regularização do PR 297 ainda estão em andamento. [Conferência e regra para novas validações](limpeza-qa-2026-11-27.md). [Recibo atualizado](limpeza-qa-2026-11-27.json).

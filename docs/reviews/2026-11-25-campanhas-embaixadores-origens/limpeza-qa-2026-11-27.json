@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-11-27T09:13:02.797Z",
+  "updatedAt": "2026-11-27T09:17:20.819Z",
   "environment": "production",
   "cleanupVerified": true,
   "verification": {
     "state": "QA_CLEANUP_VERIFIED",
-    "verifiedAt": "2026-11-27T09:09:07.744Z",
+    "verifiedAt": "2026-11-27T09:17:18.487Z",
     "environment": "production",
     "counts": {
       "qa_accounts": 0,
@@ -132,7 +132,7 @@
         "productionDataCreatedByBrowserTests": false
       }
     },
-    "state": "PREPARING",
+    "state": "PRODUCTION_WAVE_PASSED",
     "startedAt": "2026-11-27T09:08:46.411Z",
     "events": [
       {
@@ -164,7 +164,19 @@
         "deployment": "98331666-5568-449c-8007-1c25b2f5f569",
         "at": "2026-11-27T09:09:22.928Z"
       }
-    ]
+    ],
+    "sha": "6f28e4a39f4429190a8e3e2f4e8931f34a0abb50",
+    "target": "production",
+    "environment": "19c212a5-85c0-493c-9630-a7a0569e8412",
+    "publishedVersion": 4,
+    "deployments": [
+      {
+        "name": "admin",
+        "id": "98331666-5568-449c-8007-1c25b2f5f569"
+      }
+    ],
+    "initialApplications": [],
+    "completedAt": "2026-11-27T09:17:03.543Z"
   },
   "normal": {
     "pr": 297,
@@ -190,15 +202,31 @@
         "passed": 6,
         "plan": "success",
         "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:13:59.156Z",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:17:18.555Z",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
       }
     ],
     "ci": "in_progress",
-    "passed": 6,
+    "passed": 8,
     "plan": "success",
-    "manual": "PREPARING"
+    "manual": "PRODUCTION_WAVE_PASSED"
   },
   "official": null,
-  "productionUiPublished": false,
+  "productionUiPublished": true,
   "normalRegularizationComplete": false,
   "firstManualPreflight": {
     "state": "FAILED_BEFORE_DEPLOYMENT",
