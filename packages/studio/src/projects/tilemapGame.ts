@@ -1,3 +1,5 @@
+import type { PintaProjectedScene } from '@sistemazero/core/studio/pinta-projected-scene'
+import { createProjectedSceneQueries } from '@sistemazero/core/studio/pinta-projected-scene-query'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaRegionalMarker } from '@sistemazero/core/studio/pinta-regional-marker'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
@@ -5,6 +7,7 @@ import {
   sceneObjectIntersectsBox,
   sceneVisitColliders,
 } from '@sistemazero/core/studio/pinta-scene-geometry'
+import { createRegionSceneQueries } from '@sistemazero/core/studio/pinta-scene-query'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
@@ -277,7 +280,10 @@ export function assembleTilemapGameProject(payload: TilemapGamePayload): Project
   }
 }
 
-function buildSceneIR(image: string, scene: PintaScene | PintaRegionScene): SZIR {
+function buildSceneIR(
+  image: string,
+  scene: PintaScene | PintaRegionScene | PintaProjectedScene,
+): SZIR {
   const str = (value: string) => ({ type: 'str' as const, value }),
     variable = (name: string) => ({ type: 'var' as const, name }),
     // O ponto de início e o tamanho do mundo são LIDOS do cenário quando o jogo roda
@@ -288,29 +294,27 @@ function buildSceneIR(image: string, scene: PintaScene | PintaRegionScene): SZIR
       method,
       args: [str('mapa'), str(axis)],
     })
-  const world = {
-    x: 0,
-    y: 0,
-    width: scene.cols * scene.tileSize,
-    height: scene.rows * scene.tileSize,
-  }
-  // The opt-in scene uses actual visible pieces, including transformed sets.
-  // Keep the previous generation rule for scenes 1/2 and existing game programs.
+  const structured =
+    scene.version === 5
+      ? createProjectedSceneQueries(scene).context
+      : scene.version === 4
+        ? createRegionSceneQueries(scene).context
+        : undefined
+  const world =
+    structured && 'worldBounds' in structured
+      ? structured.worldBounds
+      : {
+          x: 'origin' in scene ? scene.origin.col * scene.tileSize : 0,
+          y: 'origin' in scene ? scene.origin.row * scene.tileSize : 0,
+          width: scene.cols * scene.tileSize,
+          height: scene.rows * scene.tileSize,
+        }
+  // One collider traversal sees visible platforms in groups and transformed sets, on either grid.
+  // Existing scene-1/2 game programs keep their original generation rule.
   const platformer =
-    scene.version === 4
-      ? scene.layers.some(
-          (layer) =>
-            layer.kind === 'tiles' &&
-            layer.visible &&
-            layer.cells.chunks.some((chunk) =>
-              chunk.cells.some(
-                (cell) =>
-                  cell >= 0 &&
-                  scene.tilesets
-                    .find((tileset) => tileset.id === layer.tilesetId)
-                    ?.platform.includes(cell & 4095),
-              ),
-            ),
+    scene.version === 4 || scene.version === 5
+      ? sceneVisitColliders(structured!, world, 'platform', (tile) =>
+          sceneObjectIntersectsBox(tile, world),
         )
       : scene.version === 3
         ? sceneVisitColliders(scene, world, 'platform', (tile) =>

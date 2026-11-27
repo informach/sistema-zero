@@ -14,9 +14,27 @@ import {
 import { loadSanitizedProjectById } from '../state/projectStore'
 import {
   installPngImageBitmap,
+  projectedSceneMaterial,
   regionalSceneMaterial,
 } from '../testing/pintaRegionalMaterialFixture'
 import { buildTilemapGameProject } from './tilemapGame'
+
+for (const projection of ['hexagonal', 'isometric'] as const) {
+  test(`o botão Jogar cria e reabre um projeto ${projection} com o PNG 6 original`, async () => {
+    const material = await projectedSceneMaterial(projection)
+    const namespace = `game-projected-${crypto.randomUUID()}`
+    const project = await buildTilemapGameProject(
+      { ...material, id: material.regional.sourceId },
+      { namespace },
+    )
+    expect(project).not.toBeNull()
+    expect(project?.assets?.[0]?.regional?.dataVersion).toBe(6)
+    expect(project?.assets?.[0]?.dataUrl).toBe(material.dataUrl)
+    const reopened = await loadSanitizedProjectById(project!.id, getProjectStorageScope(namespace))
+    expect(reopened?.assets?.[0]?.dataUrl).toBe(material.dataUrl)
+    expect(reopened?.assets?.[0]?.regional).toEqual(material.regional)
+  })
+}
 
 const originals = ['indexedDB', 'IDBKeyRange'].map(
   (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,

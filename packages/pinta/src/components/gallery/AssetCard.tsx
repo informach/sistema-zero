@@ -14,7 +14,12 @@
  */
 import type { JSX } from 'react'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import {
+  isPintaMemoryAsset,
+  isWorkshopProjectedMap,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from '../../core/assetMemory'
 import { thumbnailBitmap, thumbnailShapes } from '../../core/assetThumb'
 import { COPY } from '../../core/copy'
 import { perfSpan } from '../../core/perf'
@@ -32,6 +37,7 @@ import { loadVectorSheet, pixelSheetCanvas } from '../../tiles/sheetCanvas'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { readStoredRegionMapViewport } from '../editor/mapTools/storedRegionMapCanvas'
 import { Check, Copy, Pencil, Trash2 } from '../ui/icons'
+import { ProjectedMapThumb } from './ProjectedMapThumb'
 
 // Os dois extratores da "cara" do asset mudaram de casa para `core/assetThumb`
 // (são puros e o seletor "Trazer um desenho" do vetor também precisa deles).
@@ -138,7 +144,7 @@ function PixelThumb({
   bitmap,
   paint,
 }: {
-  asset: PintaMemoryAsset
+  asset: PintaWorkshopAsset
   bitmap: PintaBitmap
   /** Pinta o canvas (false = ainda longe da janela; fica no emoji de fundo). */
   paint: boolean
@@ -307,8 +313,8 @@ export function AssetThumb({
   paint = true,
   surface = 'checker',
 }: {
-  asset: PintaMemoryAsset
-  findAsset?: (id: string) => PintaMemoryAsset | null
+  asset: PintaWorkshopAsset
+  findAsset?: (id: string) => PintaWorkshopAsset | null
   /** `false` = o canvas do pixel ainda não é pintado (card longe da janela). */
   paint?: boolean
   /** O fundo por trás do desenho (ver `THUMB_SURFACE_CLASSES`). */
@@ -333,8 +339,27 @@ export function AssetThumb({
           className="relative h-full w-full"
         />
       ) : null}
-      {asset.kind === 'tilemap' ? <TilemapThumb asset={asset} findAsset={findAsset} /> : null}
-      {asset.kind === 'map-set' ? <TilemapThumb asset={asset.map} findAsset={findAsset} /> : null}
+      {isWorkshopProjectedMap(asset) && paint ? (
+        <ProjectedMapThumb asset={asset} findAsset={findAsset} />
+      ) : null}
+      {isPintaMemoryAsset(asset) && asset.kind === 'tilemap' ? (
+        <TilemapThumb
+          asset={asset}
+          findAsset={(id) => {
+            const found = findAsset?.(id)
+            return found && isPintaMemoryAsset(found) ? found : null
+          }}
+        />
+      ) : null}
+      {asset.kind === 'map-set' ? (
+        <TilemapThumb
+          asset={asset.map}
+          findAsset={(id) => {
+            const found = findAsset?.(id)
+            return found && isPintaMemoryAsset(found) ? found : null
+          }}
+        />
+      ) : null}
     </div>
   )
 }
@@ -359,7 +384,7 @@ export const AssetCard = memo(function AssetCard({
   asset: PintaGalleryEntry
   justCreated?: boolean
   /** Resolve outros assets do perfil (o tilemap precisa das peças p/ a thumb). */
-  findAsset?: (id: string) => PintaMemoryAsset | null
+  findAsset?: (id: string) => PintaWorkshopAsset | null
   onOpen: (id: string) => void
   onRename: (id: string) => void
   onDuplicate: (id: string) => Promise<void> | void

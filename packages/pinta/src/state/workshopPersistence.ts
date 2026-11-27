@@ -3,23 +3,19 @@
 import { pintaWriteFormatVersion } from '@sistemazero/core/creations'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaWorkshopAsset } from '../core/assetMemory'
+import { COPY } from '../core/copy'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import { pintaAssetSchema, sanitizePintaAsset, sanitizeRegionTilemapAsset } from '../core/project'
-import { galleryBackupByteLength } from '../export/projectJson'
-import type { RegionBackupSizeCache } from '../export/regionBackupSize'
+import { workshopBackupSize } from '../export/workshopBackupSize'
 import {
   attachWorkshopBook,
-  isLegacyWorkshopAsset,
   isWorkshopNativeMap,
   isWorkshopProjectedMap,
   pintaWorkshopAssetFromJson,
   pintaWorkshopAssetToJson,
-  pintaWorkshopBody,
 } from '../export/workshopDocument'
 import { sanitizeWorkshopProjectedMap } from '../export/workshopProjection'
-import { type AutomapBook, readAutomapBook } from '../tiles/automapping/book'
-import { isPintaAuthoredMap } from '../tiles/automapping/model'
-import { automapDocumentEnvelope } from '../tiles/automapping/native'
+import { readAutomapBook } from '../tiles/automapping/book'
 import {
   createLocalRegionAssetAuthority,
   isLocalRegionAsset,
@@ -73,8 +69,7 @@ export function sanitizeWorkshopAsset(raw: unknown): PintaWorkshopAsset | null {
  */
 export type WorkshopNativeCeiling = 8 | 9
 
-export const WORKSHOP_NATIVE_CEILING_MESSAGE =
-  'Este mapa tem regras ou formas que esta versão do Pinta ainda não guarda. Nada foi alterado.'
+export const WORKSHOP_NATIVE_CEILING_MESSAGE = COPY.editor.nativeWriterUnavailable
 
 function stampFor(ceiling: WorkshopNativeCeiling) {
   return (asset: PintaWorkshopAsset): PintaWorkshopAsset => {
@@ -89,27 +84,9 @@ function stampFor(ceiling: WorkshopNativeCeiling) {
     return asset
   }
 }
-/** The gallery backup this policy writes: one envelope per native-9 map, in the same order. */
-export function workshopBackupSize(
-  sizing: RegionBackupSizeCache,
-  assets: readonly PintaWorkshopAsset[],
-) {
-  const books = new Map<string, AutomapBook>()
-  const bodies: PintaWorkshopAsset[] = []
-  for (const asset of assets) {
-    if (isWorkshopProjectedMap(asset)) {
-      bodies.push(asset)
-      continue
-    }
-    if (isPintaAuthoredMap(asset)) books.set(asset.id, asset.automapping)
-    bodies.push(pintaWorkshopBody(asset))
-  }
-  if (books.size || bodies.some(isWorkshopProjectedMap))
-    return sizing.byteLength(bodies, (items) => automapDocumentEnvelope(items, books))
-  return assets.every(isLegacyWorkshopAsset)
-    ? galleryBackupByteLength(assets)
-    : sizing.byteLength(assets)
-}
+
+export { workshopBackupSize } from '../export/workshopBackupSize'
+
 function workshopPolicy(
   ceiling: WorkshopNativeCeiling = 9,
 ): LocalPersistenceFormat<PintaWorkshopAsset> {
@@ -176,6 +153,7 @@ export function createWorkshopPintaPersistence(
   return {
     ...local,
     workshopReader: true as const,
+    nativeWriterVersion: nativeCeiling ?? 9,
     observesReferences: true as const,
     persistRevision,
     openRegionSession: (id: string, signal?: AbortSignal, causal?: LocalRegionCausalBinding) =>

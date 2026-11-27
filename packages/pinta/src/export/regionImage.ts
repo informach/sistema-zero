@@ -33,7 +33,7 @@ export function preparePintaRegionImageData(
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !('name' in raw)) invalid()
   const wire = {
     format: 'pinta',
-    version: 5,
+    version: 'version' in raw && raw.version === 5 ? 6 : 5,
     kind: 'map',
     name: raw.name,
     scale: options.scale ?? 1,

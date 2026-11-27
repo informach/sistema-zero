@@ -27,6 +27,7 @@ import {
   type ProjectedTileCells,
   type ProjectedTilemapAsset,
 } from '../core/projectedDocument'
+import { pintaWorkshopBody } from '../core/workshopAsset'
 import { prepareMapRegions } from '../tiles/regionMap'
 import { preparePintaSceneResources, type SceneMapSource, sceneLayersWithCells } from './scene'
 
@@ -56,7 +57,7 @@ export async function exportPintaProjectedScene(
   const projected = new Map<SceneMapSource, ProjectedTilemapAsset>()
   const captured = new Map<string, PintaMemoryAsset | null>()
   function metadataOnly(raw: ProjectedTilemapAsset): RegionTilemapAsset {
-    const map = decodeProjectedTilemapDocument(raw)
+    const map = decodeProjectedTilemapDocument(pintaWorkshopBody(raw))
     if (!map) invalid()
     const { projection: _projection, growth: _growth, ...body } = map
     const header: RegionTilemapAsset = {

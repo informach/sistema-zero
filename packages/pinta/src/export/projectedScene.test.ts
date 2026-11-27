@@ -4,11 +4,42 @@ import {
   PINTA_REGION_CHUNK_BYTES,
   PINTA_REGION_LIMITS,
 } from '@sistemazero/core/creations'
+import { readPngDataUrl } from '@sistemazero/core/studio/pinta-png-binary'
 import { PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES } from '@sistemazero/core/studio/pinta-projected-scene'
+import { PINTA_REGION_IMAGE_PNG_LIMITS } from '@sistemazero/core/studio/pinta-region-image-limits'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
 import { isTileLayer, type RegionMapSetAsset, type RegionTilemapAsset } from '../core/project'
+import { nativeNineGallery } from '../testing/nativeNineFixtures'
 import { regionVila } from '../testing/regionVila'
 import { exportPintaProjectedScene } from './projectedScene'
+import { embedPintaRegionImage } from './regionImage'
+import { readPintaRegionImageWorld } from './regionImageWorld'
+import { pintaWorkshopAssetToJson } from './workshopDocument'
+
+test('a projeção com livro usa a mesma cena e o mesmo PNG 6 sem confundir o livro autoral com o corpo executável', async () => {
+  const { sheet, hex, iso } = await nativeNineGallery()
+  for (const map of [hex, iso]) {
+    const before = pintaWorkshopAssetToJson(map)
+    const exported = await exportPintaProjectedScene(
+      map,
+      (id) => (id === sheet.id ? sheet : null),
+      nativeImageOf,
+    )
+    expect(exported.scene.projection).toEqual(map.projection)
+    const cover = readPngDataUrl(
+      exported.wire.tilesets[0]!.image,
+      PINTA_REGION_IMAGE_PNG_LIMITS,
+    ).bytes
+    const { png, metadata } = await embedPintaRegionImage(cover, exported.json)
+    expect(metadata.data.version).toBe(6)
+    const world = readPintaRegionImageWorld(png)
+    expect(world.maps.get(map.id)?.data.scene).toEqual(exported.scene)
+    expect(pintaWorkshopAssetToJson(map)).toBe(before)
+    expect(map === hex ? map.automapping?.rules.length : !map.automapping).toBe(
+      map === hex ? 1 : true,
+    )
+  }
+})
 
 /** Adds occupied chunks far from the Vila until the map holds `total` chunks in all layers. */
 function growTo<Map extends RegionTilemapAsset>(map: Map, total: number): Map {

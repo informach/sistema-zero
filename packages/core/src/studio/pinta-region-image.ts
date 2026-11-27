@@ -1,6 +1,7 @@
-/** Private PNG-5 metadata reader. Public recipes/runtime feature declarations stay unchanged. */
+/** Bounded PNG-5/6 reader. Recipes and destination capabilities are admitted separately. */
 import { z } from 'zod'
 import { PINTA_IMAGE_WORLD_LIMITS, PintaImageWorldSchema } from './pinta-image'
+import { type PintaProjectedScene, preparePintaProjectedScene } from './pinta-projected-scene'
 import {
   PINTA_REGION_WORLD_BUDGET,
   type PintaRegionImageMetadataBudget,
@@ -14,7 +15,7 @@ export const PINTA_REGION_IMAGE_MAX_INDEX_BYTES = PINTA_REGION_WORLD_BUDGET.inde
 
 const header = z.strictObject({
   format: z.literal('pinta'),
-  version: z.literal(PINTA_REGION_IMAGE_DATA_VERSION),
+  version: z.union([z.literal(PINTA_REGION_IMAGE_DATA_VERSION), z.literal(6)]),
   kind: z.literal('map'),
   name: z.string().max(48),
   scale: z.number().positive().max(PINTA_IMAGE_WORLD_LIMITS.dimension),
@@ -27,7 +28,7 @@ const header = z.strictObject({
 export const PintaRegionImageHeaderSchema = header
 
 export type PintaRegionImageData = Omit<z.infer<typeof header>, 'scene'> & {
-  scene: PintaRegionScene
+  scene: PintaRegionScene | PintaProjectedScene
 }
 
 export interface PintaRegionImagePlan {
@@ -91,7 +92,10 @@ export function preparePintaRegionImageData(
       Math.abs(size - Math.round(size)) > 1e-9
     )
       return null
-    const scene = preparePintaRegionScene(JSON.stringify(raw), maxIndexBytes)
+    const scene =
+      data.version === 6
+        ? preparePintaProjectedScene(JSON.stringify(raw), maxIndexBytes)
+        : preparePintaRegionScene(JSON.stringify(raw), maxIndexBytes)
     if (!scene) return null
     return Object.freeze({
       id: scene.id,

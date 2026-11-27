@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import type { PintaWorkshopAsset } from '../../core/assetMemory'
 import { dependentTilemaps } from '../../core/dependentTilemaps'
 import type { PintaHostAdapter, PintaStudioResyncResult } from '../../core/types'
 import { buildStudioMapBundle } from '../../export/studioMapBundle'
@@ -11,7 +11,7 @@ const RESYNC_IDLE_MS = 1500
 type ResyncToStudio = NonNullable<PintaHostAdapter['resyncToStudio']>
 
 interface ResyncJob {
-  asset: PintaMemoryAsset
+  asset: PintaWorkshopAsset
   animationId: string | null
   frameIndex: number
   gallery: PintaGalleryStore
@@ -31,8 +31,8 @@ async function sendResync(job: ResyncJob): Promise<PintaStudioResyncResult> {
  * inventário completo lido do armazenamento, porque a galeria focal não carrega os mapas grandes.
  */
 export async function resyncStudioCopies(job: {
-  asset: PintaMemoryAsset
-  catalog: readonly PintaMemoryAsset[]
+  asset: PintaWorkshopAsset
+  catalog: readonly PintaWorkshopAsset[]
   animationId: string | null
   frameIndex: number
   send: ResyncToStudio
@@ -63,7 +63,7 @@ export async function resyncStudioCopies(job: {
 }
 
 export function useStudioResync(options: {
-  asset: PintaMemoryAsset
+  asset: PintaWorkshopAsset
   animationId: string | null
   frameIndex: number
   gallery: PintaGalleryStore

@@ -1,4 +1,4 @@
-/** Reader A transport. The active legacy writer and its declared cloud version remain independent. */
+/** Canonical workshop codecs, including compatible admission of earlier editable files. */
 import type { PintaMemoryAsset, PintaWorkshopAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
 import type { WorkshopProjectedMap } from '../core/projectedDocument'

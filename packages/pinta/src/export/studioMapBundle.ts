@@ -2,7 +2,7 @@ import { readPngDataUrl } from '@sistemazero/core/studio/pinta-png-binary'
 import { PINTA_REGION_IMAGE_PNG_LIMITS } from '@sistemazero/core/studio/pinta-region-image-limits'
 import { readPintaRegionImageWorld } from '@sistemazero/core/studio/pinta-region-image-world'
 import type { ActiveFrameRef } from '../core/assetEdit'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import { isWorkshopProjectedMap, type PintaWorkshopAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import { sceneMapClosure } from '../core/sceneMapClosure'
 import type { PintaExportedAsset } from '../core/types'
@@ -18,8 +18,8 @@ export class StudioMapBundleError extends Error {
 
 /** One structured export for push, pull and the playable project. Never returns a partial world. */
 export async function buildStudioMapBundle(
-  source: PintaMemoryAsset,
-  assets: readonly PintaMemoryAsset[],
+  source: PintaWorkshopAsset,
+  assets: readonly PintaWorkshopAsset[],
   frame: ActiveFrameRef = { animationId: null, frameIndex: 0 },
   options: { includeSceneMaps?: boolean } = {},
 ): Promise<PintaExportedAsset | null> {
@@ -88,7 +88,7 @@ export async function buildStudioMapBundle(
       width: original.width,
       height: original.height,
       regional: {
-        dataVersion: 5 as const,
+        dataVersion: isWorkshopProjectedMap(source) ? (6 as const) : (5 as const),
         sourceId: root.id,
         sha256: Array.from(new Uint8Array(digest), (byte) =>
           byte.toString(16).padStart(2, '0'),

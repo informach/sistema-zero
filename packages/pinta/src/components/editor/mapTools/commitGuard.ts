@@ -3,7 +3,7 @@
  * desfazer que não desfaz nada e sujaria o salvamento sem motivo.
  */
 import { pintaValuesEqual } from '../../../core/assetEquality'
-import type { PintaMemoryAsset } from '../../../core/assetMemory'
+import type { PintaWorkshopAsset } from '../../../core/assetMemory'
 import type { PintaEditorState } from '../../../state/editorStore'
 
 function sameValue(a: unknown, b: unknown): boolean {
@@ -23,7 +23,7 @@ function sameShallow(a: object, b: object): boolean {
 }
 
 /** O mesmo desenho, mesmo que o objeto seja outro (compara as casas das camadas de peças). */
-export function sameAssetContent(a: PintaMemoryAsset, b: PintaMemoryAsset): boolean {
+export function sameAssetContent(a: PintaWorkshopAsset, b: PintaWorkshopAsset): boolean {
   if (a === b) return true
   if (a.kind !== 'tilemap' || b.kind !== 'tilemap') return false
   if ('origin' in a || 'origin' in b) return pintaValuesEqual(a, b)
@@ -40,7 +40,7 @@ export function sameAssetContent(a: PintaMemoryAsset, b: PintaMemoryAsset): bool
 }
 
 /** Grava com desfazer só quando mudou de verdade. Devolve se gravou. */
-export function commitIfChanged<Asset extends PintaMemoryAsset>(
+export function commitIfChanged<Asset extends PintaWorkshopAsset>(
   state: PintaEditorState<Asset>,
   next: Asset,
 ): boolean {

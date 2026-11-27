@@ -271,6 +271,7 @@ function schemaStampOf(asset: PintaWorkshopAsset): number {
 
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
 export interface PintaPersistenceLike<Asset extends PintaWorkshopAsset = PintaAsset> {
+  readonly nativeWriterVersion?: number
   readonly workshopReader?: true
   persistAsset(asset: Asset, context?: PintaEditorWriteContext): Promise<void>
   persistAssets(assets: readonly Asset[], context?: PintaEditorWriteContext): Promise<void>
@@ -2153,6 +2154,9 @@ export function createCloudMirroredPintaPersistence(
       : undefined
   return {
     ...(local.workshopReader ? { workshopReader: true } : {}),
+    ...(local.nativeWriterVersion !== undefined
+      ? { nativeWriterVersion: local.nativeWriterVersion }
+      : {}),
     ...(causalLocal && causalCloud && options.causal
       ? {
           observesReferences: true as const,

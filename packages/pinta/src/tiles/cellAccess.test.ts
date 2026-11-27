@@ -17,6 +17,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'tiles/projectedSelection.ts':
+    'copia e cola os valores inteiros dos leitores canônicos em uma seleção limitada; conserva o vazio hexagonal e todos os bits de giro e espelho, sem converter para Int16Array',
   'tiles/automapping/book.ts':
     'confere as células completas de padrões importados pelo validador comum de índices e transformações',
   'tiles/automapping/engine.ts':

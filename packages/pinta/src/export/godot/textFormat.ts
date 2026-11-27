@@ -4,6 +4,16 @@
  * nem abre a cena. Pega o que dá para pegar lendo o texto: seção malformada, recurso citado e
  * não declarado, arquivo `res://` que não veio no pacote e peça fora da folha.
  */
+
+import { pintaHexCellTile } from '@sistemazero/core/creations'
+import {
+  type PintaProjectedSceneWire,
+  readPintaProjectedScene,
+} from '@sistemazero/core/studio/pinta-projected-scene'
+import {
+  type PintaRegionSceneWire,
+  readPintaRegionScene,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import { cellTile } from '../../tiles/cell'
 
@@ -123,11 +133,21 @@ export function pngSize(bytes: Uint8Array): { width: number; height: number } | 
  * folha e caber na imagem PNG gravada no pacote.
  */
 export function validateAtlasCoordinates(
-  scenes: Record<string, PintaScene>,
+  scenes: Record<string, PintaScene | PintaRegionSceneWire | PintaProjectedSceneWire>,
   files: Record<string, string | Uint8Array>,
 ): string[] {
   const problems: string[] = []
-  for (const [name, scene] of Object.entries(scenes)) {
+  for (const [name, source] of Object.entries(scenes)) {
+    const scene =
+      source.version === 5
+        ? readPintaProjectedScene(JSON.stringify(source))
+        : source.version === 4
+          ? readPintaRegionScene(JSON.stringify(source))
+          : source
+    if (!scene) {
+      problems.push(`${name}: os dados da cena são incompatíveis ou inválidos`)
+      continue
+    }
     const sheets = new Map(
       scene.tilesets.map((ts) => {
         const file = files[ts.image],
@@ -158,9 +178,19 @@ export function validateAtlasCoordinates(
     }
     for (const group of [scene, ...(scene.sets ?? [])])
       for (const layer of group.layers) {
-        if (layer.kind === 'tiles')
-          for (const cell of new Set(layer.cells))
-            if (cell >= 0) check(cellTile(cell), layer.tilesetId, `a camada ${layer.name}`)
+        if (layer.kind === 'tiles') {
+          const grid = layer.cells
+          function* values() {
+            if (Array.isArray(grid)) yield* grid
+            else for (const chunk of grid.chunks) yield* chunk.cells
+          }
+          const tileOf =
+            !Array.isArray(grid) && grid.kind === 'hex-regions' ? pintaHexCellTile : cellTile
+          for (const cell of new Set(values())) {
+            const tile = tileOf(cell)
+            if (tile >= 0) check(tile, layer.tilesetId, `a camada ${layer.name}`)
+          }
+        }
         if (layer.kind === 'objects')
           for (const o of layer.objects)
             if (o.art && sheets.has(o.art.assetId))

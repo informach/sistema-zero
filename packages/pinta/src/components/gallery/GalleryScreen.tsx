@@ -182,7 +182,6 @@ export function GalleryScreen(): JSX.Element {
   const loaded = usePintaGallery((state) => state.loaded)
   const syncing = usePintaGallery((state) => state.syncing)
   const readIssues = usePintaGallery((state) => state.readIssues)
-  const projected = usePintaGallery((state) => state.projected)
   const needsRetainedRecovery = usePintaGallery((state) => state.needsRetainedRecovery)
   // Medição: do início da leitura da galeria até a primeira renderização com os cards.
   useEffect(() => {
@@ -380,9 +379,7 @@ export function GalleryScreen(): JSX.Element {
       const snapshot = gallery.getState()
       // The complete backup also carries the projected maps this version keeps but cannot open.
       const bytes = await zipGallery(
-        snapshot.regionCards.length
-          ? await persistence.listAllAssets()
-          : [...snapshot.assets, ...snapshot.projected],
+        snapshot.regionCards.length ? await persistence.listAllAssets() : snapshot.assets,
       )
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
@@ -703,17 +700,6 @@ export function GalleryScreen(): JSX.Element {
                 // Com o selo do host no cabeçalho ("Buscando…"), a linha some: seria dito 2×.
                 <p className="mb-5 font-semibold text-pin-muted text-sm">{COPY.gallery.syncing}</p>
               ) : null}
-              {projected.length > 0 ? (
-                // Guardado inteiro e no backup; nenhum editor desta versão o abre ainda.
-                <div
-                  role="alert"
-                  className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"
-                >
-                  <p className="min-w-0 flex-1 font-semibold text-pin-text text-sm">
-                    {COPY.gallery.projectedUnavailable(projected.map(({ name }) => name))}
-                  </p>
-                </div>
-              ) : null}
               {readIssues.length > 0 ? (
                 // O desenho segue inteiro na conta: este código não o abre para não o cortar.
                 <div
@@ -955,6 +941,7 @@ export function GalleryScreen(): JSX.Element {
         open={createOpen}
         tilesets={tilesets}
         takenNames={takenNames}
+        nativeWriterVersion={persistence.nativeWriterVersion}
         creating={creating}
         initialStyle={intent?.style && intent.style !== 'either' ? intent.style : lastStyle}
         initialRole={intent?.artKind ?? null}
@@ -1006,7 +993,11 @@ export function GalleryScreen(): JSX.Element {
         // de uma missão (que entrega o desenho pelo caminho de sempre).
         {...(persistence.workshopReader && !intent
           ? {
-              onCreateRegionMap: (input: { name: string; tilesetId: string }) => {
+              onCreateRegionMap: (input: {
+                name: string
+                tilesetId: string
+                projection?: 'isometric' | 'hexagonal'
+              }) => {
                 setCreating(true)
                 void gallery
                   .getState()

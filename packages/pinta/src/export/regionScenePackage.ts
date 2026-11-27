@@ -12,13 +12,13 @@ import type {
   PintaRegionScene,
   PintaRegionSceneWire,
 } from '@sistemazero/core/studio/pinta-region-scene'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaMemoryAsset, PintaWorkshopAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
 import type { RegionTilemapAsset, VersionablePintaAsset } from '../core/project'
 import type { ProjectedMapSetAsset, ProjectedTilemapAsset } from '../core/projectedDocument'
+import { pintaWorkshopBody } from '../core/workshopAsset'
 import { prepareMapRegions } from '../tiles/regionMap'
 import { exportPintaProjectedScene, type ProjectedSceneAsset } from './projectedScene'
-import { encodeRegionGalleryBackup } from './regionBackup'
 import { exportPintaRegionScene } from './regionScene'
 import type { ScenePackageTarget } from './scenePackage'
 import {
@@ -29,6 +29,7 @@ import {
   tiledTilesetXml,
 } from './tiled/export'
 import { TILED_PACKAGE_LIMITS } from './tiled/package'
+import { pintaWorkshopBackup } from './workshopDocument'
 
 type PackageFile = Uint8Array | string
 type MapAsset = Extract<ProjectedSceneAsset, { kind: 'tilemap' }>
@@ -61,8 +62,10 @@ function projectedIndexBytes(scene: PintaProjectedSceneWire): number {
 }
 
 function asRegional(map: Exclude<MapAsset, ProjectedTilemapAsset>): RegionTilemapAsset {
-  if ('origin' in map) return map
-  const converted = prepareMapRegions(map)
+  const body = pintaWorkshopBody(map)
+  if (body.kind !== 'tilemap') throw new Error('O cenário não veio como um mapa completo.')
+  if ('origin' in body) return body
+  const converted = prepareMapRegions(body)
   if (!converted.ok) throw new Error('Um dos mapas ligados não pôde ser preparado em regiões.')
   return converted.map
 }
@@ -95,7 +98,7 @@ export async function prepareRegionScenePackage(captured: ScenePackageSource, im
       const { projection: _projection, growth: _growth, ...identity } = asset
       return { ...identity, schema: 8, layers: [] }
     }
-    return asset
+    return pintaWorkshopBody(asset)
   }
   for (const map of captured.maps) {
     if ('projection' in map) {
@@ -127,17 +130,21 @@ export async function prepareRegionScenePackage(captured: ScenePackageSource, im
       decoded: exported.scene,
     })
   }
-  // Projected maps are native 9; the regional backup reader does not open them yet.
   const projected = captured.assets.some(isProjectedAsset)
-  if (!projected) {
-    const native = encodeRegionGalleryBackup(captured.assets as readonly PintaMemoryAsset[])
+  const workshopAssets = captured.assets.filter(
+    (asset): asset is PintaWorkshopAsset =>
+      !(asset.kind === 'map-set' && 'projection' in asset.map),
+  )
+  const editableBackup = workshopAssets.length === captured.assets.length
+  if (editableBackup) {
+    const native = await pintaWorkshopBackup(workshopAssets)
     if (!native) throw new Error('Não consegui reunir os desenhos editáveis deste cenário.')
-    put('desenhos.pinta.json', native.text)
+    put('desenhos.pinta.json', native)
   }
 
   const root = captured.maps[0]
   if (!root) throw new Error('O cenário inicial não veio no pacote.')
-  return { rootId: root.id, rootName: root.name, maps, files, put, projected }
+  return { rootId: root.id, rootName: root.name, maps, files, put, projected, editableBackup }
 }
 
 type Prepared = Awaited<ReturnType<typeof prepareRegionScenePackage>>
@@ -287,9 +294,9 @@ export async function buildRegionScenePackage(
       '',
       `Mapa inicial: ${world.rootName}`,
       ...instructions,
-      world.projected
-        ? 'Os mapas projetados ainda não saem num arquivo editável do Pinta. Guarde a galeria do Pinta para editá-los.'
-        : 'desenhos.pinta.json conserva os desenhos originais editáveis.',
+      world.editableBackup
+        ? 'desenhos.pinta.json conserva os desenhos originais editáveis, incluindo projeções e livros de regras.'
+        : 'Este pacote inclui conjuntos projetados experimentais fora do formato editável da oficina. Guarde os documentos de origem para editá-los.',
       'maps.json conserva os dados do cenário e start.json indica o ID do mapa inicial.',
       'Leia COMPATIBILIDADE-TILED.txt para conferir o que o editor e o runtime interpretam.',
     ].join('\n'),
