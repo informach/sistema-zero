@@ -8,6 +8,10 @@ Mapas ortogonais, isométricos e hexagonais e livros de autorregras usam o catá
 
 Arquivos anteriores continuam legíveis/importáveis e migram pela mesma autoridade; o codec conserva o envelope mínimo exigido pelo conteúdo. O contexto de aula mantém seu isolamento e suas permissões. Os registros de 23/11 abaixo são históricos: recusas de editor projetado, PNG 6 e teto público 8 não descrevem este contrato. Python e seus catálogos continuam na LG08.
 
+## Painéis da oficina regional — revisão visual de 27/11/2026
+
+`MapSidePanels` em `TilemapPanels.tsx` é a coluna compartilhada do editor regional, janela focal e mapas projetados: 12 px internos, 12 px entre grupos, largura 272 px em desktop e rolagem própria no celular. O `Panel` continua usando o visual existente. A janela focal usa `.pin-bar`, `.pin-bar-name` e o `SaveBadge` compartilhado (`EditorSaveBadge.tsx`), preservando as mensagens anteriores de falha. Seu rodapé usa duas linhas em tela estreita para manter desfazer/refazer, dimensões e zoom inteiros. Provas: 37 testes focados, tipos Pinta e oito percursos de projeção em desktop/toque; medidas reais em 390 px sem transbordamento e alvos de 44 px. Publicação da fonte é conferida no plano LG05, não inferida por este registro.
+
 ## Oficina de cenários: como está em 23/11/2026
 
 Estado e próximos passos: `docs/superpowers/plans/2026-11-23-pinta-estado-da-retomada.md`. Os

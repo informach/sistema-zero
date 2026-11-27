@@ -15,6 +15,7 @@ import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChro
 import { Button, IconButton } from '../ui/Button'
 import { ArrowLeft, Download, Map as MapIcon } from '../ui/icons'
 import { useToast } from '../ui/Toast'
+import { SaveBadge } from './EditorSaveBadge'
 import { TilemapEditor } from './TilemapEditor'
 
 export function FocalEditorScreen({
@@ -67,20 +68,23 @@ export function FocalEditorScreen({
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="pin-band flex shrink-0 items-center gap-2 px-3 py-2">
+      <header className="pin-bar shrink-0">
         {chrome?.menu ? <HostMenuButton menu={chrome.menu} /> : null}
         <IconButton
+          tone="quiet"
           aria-label={COPY.editor.back}
           disabled={busy}
           onClick={() => void finish(closeEditor, true)}
         >
           <ArrowLeft aria-hidden="true" className="size-5" />
         </IconButton>
-        <MapIcon aria-hidden="true" className="size-5 shrink-0" />
-        <span className="min-w-0 flex-1 truncate font-bold">{document.name}</span>
-        <span aria-live="polite" role="status">
-          {error ? COPY.editor.saveError : saving ? COPY.editor.saving : COPY.editor.saved}
+        <span className="pin-bar-name" style={{ flex: '1 1 8rem' }}>
+          <MapIcon aria-hidden="true" className="text-pin-kind-tilemap" />
+          <span className="pin-bar-name__text" title={document.name}>
+            {document.name}
+          </span>
         </span>
+        <SaveBadge saveState={error ? 'error' : saving ? 'saving' : 'saved'} saveError={null} />
         {error ? (
           <Button variant="barOutline" disabled={busy || saving} onClick={closeEditor}>
             {COPY.scene.focal.exitWithoutChange}
@@ -94,8 +98,8 @@ export function FocalEditorScreen({
         >
           {COPY.scene.avancado}
         </Button>
-        <IconButton
-          aria-label={COPY.editor.download}
+        <Button
+          variant="barPrimary"
           disabled={busy || saving}
           onClick={() =>
             void finish(async () => {
@@ -116,7 +120,8 @@ export function FocalEditorScreen({
           }
         >
           <Download aria-hidden="true" className="size-5" />
-        </IconButton>
+          {COPY.editor.download}
+        </Button>
       </header>
       <div inert={busy} className="flex min-h-0 flex-1 flex-col">
         <TilemapEditor regional={{ focal, session }} />
