@@ -1,4 +1,4 @@
-import type { GiftAudience } from '@sistemazero/core/referrals'
+import type { GiftAccessPolicy, GiftAudience } from '@sistemazero/core/referrals'
 import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import type { GatewayResult } from './ports/gateway.port'
 import type { GiftOffer } from './ports/gift-offer-catalog.port'
@@ -34,8 +34,7 @@ export function scholarshipExpiresAt(createdAt: Date, durationDays: number | nul
  * vitalícia = null (sem prazo). Desde 27/11/2026 o presente aceita prazo em MESES (a oferta única
  * de 6 meses de cada curso também é o presente): os meses viram os dias do calendário contados de
  * `from` (o instante do resgate), a mesma conta do members (`addUtcCalendarMonths`), que concede
- * com a política da própria oferta. O fim mostrado pode diferir em um dia só se o resgate cruzar a
- * meia-noite UTC entre a conta e a gravação.
+ * com a política gravada no resgate. O repositório usa o mesmo instante da aceitação para a conta.
  */
 export function giftAccessDays(offer: GiftOffer, from: Date = new Date()): number | null {
   if (offer.accessMode !== 'fixed' || offer.accessDurationValue === null) return null
@@ -58,17 +57,17 @@ export function monthsSpanDays(from: Date, months: number): number {
   return Math.round((addUtcCalendarMonths(from, months).getTime() - from.getTime()) / DAY_MS)
 }
 
-/**
- * Os meses de um resgate gravado em dias (e-mails e retomadas): o número de meses cujo calendário,
- * contado do resgate, dá esses dias (tolerância de um dia, ver `giftAccessDays`). Null = prazo em
- * dias (presente do Cadê) ou sem prazo.
- */
-export function monthsOfRedemption(createdAt: Date, days: number | null): number | null {
-  if (days === null || days < 28) return null
-  for (let months = 1; months <= 36; months++) {
-    if (Math.abs(monthsSpanDays(createdAt, months) - days) <= 1) return months
-  }
-  return null
+/** Congela a unidade da oferta, sem inferir meses a partir de um prazo em dias. */
+export function giftAccessPolicy(offer: GiftOffer): GiftAccessPolicy {
+  if (offer.accessMode === 'lifetime')
+    return { mode: 'lifetime', durationValue: null, durationUnit: null }
+  if (offer.accessMode === 'fixed' && offer.accessDurationValue && offer.accessDurationUnit)
+    return {
+      mode: 'fixed',
+      durationValue: offer.accessDurationValue,
+      durationUnit: offer.accessDurationUnit,
+    }
+  throw new Error('Oferta de presente sem política de acesso válida')
 }
 
 /**

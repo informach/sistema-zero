@@ -29,6 +29,7 @@ import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
   giftAccessMonths,
+  giftAccessPolicy,
   giftAdvertisedDays,
   giftGuidanceText,
   giftMuralText,
@@ -36,7 +37,6 @@ import {
   giftOfferRef,
   giftWelcomeLink,
   isMuralTrialGranted,
-  monthsOfRedemption,
   scholarshipExpiresAt,
 } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
@@ -573,6 +573,7 @@ export class RedeemScholarshipService {
               gift: {
                 offerId: plan.offer.offerId,
                 accessDurationDays: giftAccessDays(plan.offer, this.now()),
+                accessPolicy: giftAccessPolicy(plan.offer),
                 // O divulgado de AGORA fica no resgate: mudar a oferta depois não muda a data
                 // que esta pessoa já viu (nem a do members, que gravou o seu na concessão).
                 advertisedDays: shownAdvertised(plan.offer),
@@ -698,7 +699,10 @@ export class RedeemScholarshipService {
   /** Os meses do presente gravado em dias de calendário (oferta por meses), ou null. */
   private shownMonthsOf(redemption: RedemptionRecord): number | null {
     if (redemption.advertisedDays !== null) return null
-    return monthsOfRedemption(redemption.createdAt, redemption.accessDurationDays)
+    const policy = redemption.giftAccessPolicy
+    return policy?.mode === 'fixed' && policy.durationUnit === 'months'
+      ? policy.durationValue
+      : null
   }
 
   /** A data de fim que as pessoas VEEM (a do prazo divulgado). */
@@ -803,6 +807,7 @@ export class RedeemScholarshipService {
               offerRef,
               sourceId: `scholarship:${redemption.id}`,
               anchorAt: redemption.createdAt.toISOString(),
+              ...(redemption.giftAccessPolicy ? { accessPolicy: redemption.giftAccessPolicy } : {}),
               audience: redemption.audience,
               deliveryId: `scholarship:offer:${offerRef}:${redemption.id}`,
             })

@@ -10,6 +10,7 @@ import {
   CampaignConflictError,
   CampaignUnavailableError,
 } from '../../src/domain/campaign'
+import { monthsSpanDays } from '../../src/domain/gift-policy'
 import { DrizzleAcquisitionRepository } from '../../src/infrastructure/persistence/drizzle/acquisition.repository'
 import { DrizzleCampaignRepository } from '../../src/infrastructure/persistence/drizzle/campaign.repository'
 import {
@@ -135,6 +136,120 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     if (created.kind !== 'created') throw new Error('seed falhou')
     return created
   }
+
+  test('claim grava a política e calcula os meses no mesmo instante da aceitação', async () => {
+    const { code } = await seedCode()
+    const input = {
+      codeId: code.id,
+      audience: 'kids' as const,
+      email: 'months@example.com',
+      name: 'Meses',
+      phone: null,
+      gift: {
+        offerId: KIDS_GIFT_OFFER.offerId,
+        accessDurationDays: 999,
+        accessPolicy: { mode: 'fixed' as const, durationValue: 6, durationUnit: 'months' as const },
+      },
+    }
+    const first = await repo.insertRedemption(input)
+    const saved = await repo.findRedemptionByEmail(input.email, input.audience)
+    expect(saved?.giftAccessPolicy).toEqual(input.gift.accessPolicy)
+    expect(saved?.accessDurationDays).toBe(monthsSpanDays(first.redemption.createdAt, 6))
+    const again = await repo.insertRedemption({
+      ...input,
+      gift: { ...input.gift, accessPolicy: { ...input.gift.accessPolicy, durationValue: 12 } },
+    })
+    expect(again.created).toBe(false)
+    expect(again.redemption.giftAccessPolicy).toEqual(input.gift.accessPolicy)
+    expect(again.redemption.createdAt).toEqual(first.redemption.createdAt)
+  })
+
+  test('campanha ativa troca a oferta do mesmo curso com histórico sem mudar o resgate anterior', async () => {
+    const campaigns = new DrizzleCampaignRepository(connection.db)
+    const catalog = new FakeGiftOfferCatalog()
+    const replacement = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: crypto.randomUUID(),
+      offerSlug: 'mesmo-curso-seis-meses',
+      accessDurationValue: 6,
+      accessDurationUnit: 'months',
+    })
+    const admin = new CampaignAdminService(
+      campaigns,
+      repo,
+      'https://funil.test',
+      undefined,
+      undefined,
+      catalog,
+    )
+    const campaign = await admin.create(
+      {
+        name: 'Guia',
+        publicTitle: 'Guia',
+        description: '',
+        context: 'other',
+        code: 'guia-troca',
+        channel: 'site',
+        audience: 'kids',
+        giftOfferId: KIDS_GIFT_OFFER.offerId,
+        status: 'active',
+        startsAt: new Date(Date.now() - 60_000).toISOString(),
+        endsAt: new Date(Date.now() + 3_600_000).toISOString(),
+        ambassadorId: null,
+        commissionEnabled: false,
+      },
+      'Teste',
+    )
+    if (!campaign) throw new Error('campanha não criada')
+    const code = await repo.findCodeByCode(campaign.code)
+    if (!code) throw new Error('código da campanha ausente')
+    const previous = await repo.insertRedemption({
+      codeId: code.id,
+      audience: 'kids',
+      email: 'old@example.test',
+      name: 'Anterior',
+      phone: null,
+      gift: { offerId: KIDS_GIFT_OFFER.offerId, accessDurationDays: 15, advertisedDays: 7 },
+    })
+    await repo.markRedemptionGranted(previous.redemption.id, new Date())
+    await acquisition({
+      email: 'old@example.test',
+      kind: 'gift',
+      redemptionId: previous.redemption.id,
+      campaignId: campaign.id,
+      codeId: code.id,
+      originKind: 'campaign',
+    })
+    expect(await campaigns.hasAcquisitions(campaign.id)).toBe(true)
+    const updated = await admin.update(
+      campaign.id,
+      { ...campaign, giftOfferId: replacement.offerId, expectedUpdatedAt: campaign.updatedAt },
+      'Teste',
+    )
+    expect(updated?.giftOfferId).toBe(replacement.offerId)
+    expect(await repo.findRedemptionByEmail('old@example.test', 'kids')).toMatchObject({
+      giftOfferId: KIDS_GIFT_OFFER.offerId,
+      accessDurationDays: 15,
+      advertisedDays: 7,
+      status: 'completed',
+    })
+    const next = await repo.insertRedemption({
+      codeId: code.id,
+      audience: 'kids',
+      email: 'new@example.test',
+      name: 'Nova',
+      phone: null,
+      gift: {
+        offerId: replacement.offerId,
+        accessDurationDays: null,
+        accessPolicy: { mode: 'fixed', durationValue: 6, durationUnit: 'months' },
+      },
+    })
+    expect(next.redemption.giftAccessPolicy).toMatchObject({
+      durationValue: 6,
+      durationUnit: 'months',
+    })
+  })
 
   test('campanha congela beneficiário e acordo; edição e novo link não reatribuem cadastro', async () => {
     const { ambassador } = await seedCode()

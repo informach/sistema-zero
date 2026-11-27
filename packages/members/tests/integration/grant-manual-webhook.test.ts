@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { EntitlementAggregate } from '../../src/domain/entitlement/entitlement.aggregate'
+import type { PurchasedAccessPolicy } from '../../src/domain/entitlement/entitlement-snapshot'
 import {
   buildApp,
   offerWithCourse,
@@ -411,6 +412,40 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
       durationValue: 7,
       durationUnit: 'days',
     })
+  })
+
+  test('presente retoma com os meses aceitos mesmo quando a oferta passou a outro prazo', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    catalog.set('curso-seis-meses', {
+      ...offerWithMural('curso-seis-meses', course.slug),
+      accessPolicy: { mode: 'fixed', durationValue: 12, durationUnit: 'months' },
+    })
+    const policy: PurchasedAccessPolicy = {
+      mode: 'fixed',
+      durationValue: 6,
+      durationUnit: 'months',
+    }
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'offer',
+      offerRef: 'curso-seis-meses',
+      sourceId: 'scholarship:frozen-policy',
+      useOfferAccessPolicy: true,
+      accessPolicy: policy,
+      anchorAt: '2026-08-31T12:00:00.000Z',
+      audience: 'kids',
+    })
+    expect((await post(app, raw, 'gm-frozen-policy')).status).toBe(200)
+    const all = (await entitlements.listByUserId(USER)).map((e) => e.toSnapshot())
+    for (const ref of [course.slug, 'mural-dos-criadores']) {
+      const grant = all.find((e) => e.courseRef === ref)
+      expect(grant?.expiresAt?.toISOString()).toBe('2027-02-28T12:00:00.000Z')
+      expect(grant?.snapshot.accessPolicy).toEqual(policy)
+    }
+    expect(all.find((e) => e.courseRef === 'mural-dos-criadores-visitante')?.expiresAt).toBeNull()
+    expect((await post(app, raw, 'gm-frozen-policy-retry')).status).toBe(200)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(3)
   })
 
   test('presente com prazo divulgado: o acesso vai até o prazo real e o snapshot guarda o divulgado', async () => {
