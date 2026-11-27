@@ -45,7 +45,7 @@ await gerarPoder({
     title: 'Jogue O baú dos símbolos',
     instrucoes: {
       '2d': 'Clique no jogo e use as setas do teclado. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.',
-      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.',
+      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú. R começa outra partida. Você pode seguir sem terminar.',
     },
   },
   experiencia: {

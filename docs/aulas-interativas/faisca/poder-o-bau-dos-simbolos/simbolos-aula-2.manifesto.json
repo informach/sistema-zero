@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Os símbolos chegaram à ilha\n\nMaster integral da professora. Roteiro: simbolos-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que na ilha o baú também só abre na ordem certa?\",\"falaPersonagem\":\"Será que na ilha o baú também só abre na ordem certa?\",\"ancoraAntes\":\"o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: abra o baú da ilha.\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+      "plannedVideo": "Título: Os símbolos chegaram à ilha\n\nMaster integral da professora. Roteiro: simbolos-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que o baú está no mesmo lugar do jogo 2D?\",\"falaPersonagem\":\"Será que o baú está no mesmo lugar do jogo 2D?\",\"ancoraAntes\":\"o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: abra o baú da ilha.\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue O baú dos símbolos",
         "required": true,
-        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú. R começa outra partida. Você pode seguir sem terminar.",
         "hints": [],
         "activity": {
           "type": "project-play",

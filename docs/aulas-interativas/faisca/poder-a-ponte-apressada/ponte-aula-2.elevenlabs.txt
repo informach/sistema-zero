@@ -1,16 +1,18 @@
-[upbeat, welcoming voice] Oi! A ponte apressada chegou à Ilha do Farol, em três dimensões! No gramado da frente tem um laguinho, com a pedra do sino no meio da água, a ponte levadiça e a alavanca.
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou a ponte apressada no jogo 2D. Agora ela chegou à Ilha do Farol, em três dimensões! No gramado da frente tem um laguinho, com a pedra do sino no meio da água e a ponte levadiça.
+
+[engaging, energetic, conversational voice] A regra continua a mesma: quando o personagem encosta na alavanca, a ponte baixa, e 4 segundos depois ela sobe de novo.
 
 [engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
 [interested, animated voice] Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho.
 
-[curious] A ponte da ilha também é apressada?
+[engaging, energetic, conversational voice] Repare também no aviso aqui em cima: ele diz o que fazer na partida.
 
-[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida.
+[curious] Será que dá tempo de atravessar a ponte da ilha antes de ela subir?
 
-[engaging, energetic, conversational voice] Para começar outra partida, toque na tecla R.
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
 
-[upbeat, encouraging voice] Explore a ilha. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez: atravesse a ponte até a pedra do sino. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

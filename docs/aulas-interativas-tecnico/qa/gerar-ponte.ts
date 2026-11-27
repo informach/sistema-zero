@@ -40,8 +40,9 @@ await gerarPoder({
     title: 'Jogue A ponte apressada',
     instrucoes: {
       // ⭐ 23/11/2026: como o vídeo da abertura, o que a alavanca faz fica para a criança descobrir.
+      // Na ilha (27/11/2026), a regra já é da Aula 1: a criança só atravessa a tempo.
       '2d': 'Use as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.',
-      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.',
+      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Encoste na alavanca e atravesse a ponte até a pedra do sino antes que ela suba. A tecla R começa outra partida.',
     },
   },
   experiencia: {

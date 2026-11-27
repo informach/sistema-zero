@@ -8,20 +8,22 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 **Clipe:** `video-abertura`
 
-**Na tela:** Do "Oi" até o "em três dimensões", a tela mostra o título O baú dos símbolos sobre a cena inicial do jogo pronto [na edição: título O baú dos símbolos]. No "No gramado da frente ficam as três pedras", ampliar o jogo pronto [ampliar jogo]. No "Para andar, clique dentro do jogo", clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: quando eu levo o personagem até o sol", segurar a seta de baixo do teclado até o personagem encostar no sol [segurar tecla ArrowDown por 0,4 s]. No "Repare também no aviso aqui em cima", apontar o aviso [apontar jogo 480 24]. No "Será que na ilha o baú", manter a cena parada, sem tocar outra pedra. No "Agora é a sua vez", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não tocar a lua nem a estrela e não abrir o baú: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
+**Na tela:** Do "Oi" até o "em três dimensões", a tela mostra o título O baú dos símbolos sobre a cena inicial do jogo pronto [na edição: título O baú dos símbolos]. No "No gramado da frente ficam as pedras", ampliar o jogo pronto [ampliar jogo]. No "Para andar, clique dentro do jogo", clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: quando eu levo o personagem até o sol", segurar a seta de baixo do teclado até o personagem encostar no sol [segurar tecla ArrowDown por 0,4 s]. No "Repare também no aviso aqui em cima", apontar o aviso [apontar jogo 480 24]. No "Será que o baú está no mesmo lugar", manter a cena parada, sem tocar outra pedra. No "Agora é a sua vez", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não tocar a lua nem a estrela e não abrir o baú: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
 
 **Fala para ElevenLabs:**
 
 ```text
 [upbeat, welcoming voice] Oi! Na Aula 1, você programou a senha do baú no jogo 2D. Agora o baú dos símbolos chegou à Ilha do Farol, em três dimensões!
 
-[engaging, energetic, conversational voice] No gramado da frente ficam as três pedras: o sol, a lua e a estrela. E a placa ao lado delas mostra a ordem certa.
+[engaging, energetic, conversational voice] A regra continua a mesma: o baú só abre quando o personagem toca as três pedras na ordem certa.
+
+[engaging, energetic, conversational voice] No gramado da frente ficam as pedras: o sol, a lua e a estrela. E a placa ao lado delas mostra a ordem.
 
 [engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
 [interested, animated voice] Olha aqui: quando eu levo o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua.
 
-[curious] Será que na ilha o baú também só abre na ordem certa?
+[curious] Será que o baú está no mesmo lugar do jogo 2D?
 
 [engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
 
@@ -32,7 +34,7 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-abertura-K1 | Dedé | 1 | o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua. | Será que na ilha o baú também só abre na ordem certa? | Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: abra o baú da ilha. | [curious] |
+| video-abertura-K1 | Dedé | 1 | o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua. | Será que o baú está no mesmo lugar do jogo 2D? | Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: abra o baú da ilha. | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

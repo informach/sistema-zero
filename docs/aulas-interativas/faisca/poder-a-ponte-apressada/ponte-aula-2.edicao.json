@@ -20,10 +20,10 @@
       "clipe": "video-abertura",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "letras W, A, S e D também funcionam. Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho.",
-      "ancoraDepois": "Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar",
-      "falaPrincipal": "A ponte da ilha também é apressada?",
-      "falaPersonagem": "A ponte da ilha também é apressada?",
+      "ancoraAntes": "o personagem vem para a frente, perto do laguinho. Repare também no aviso aqui em cima: ele diz o que fazer na partida.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: atravesse a ponte",
+      "falaPrincipal": "Será que dá tempo de atravessar a ponte da ilha antes de ela subir?",
+      "falaPersonagem": "Será que dá tempo de atravessar a ponte da ilha antes de ela subir?",
       "tags": ["[curious]"]
     },
     {
