@@ -1,3 +1,4 @@
+import { verifyStudioProPlatformFiles } from '@sistemazero/core/studio/pro-revision'
 import libraries from '../pro/defaultLibraries.json'
 import { createProLanguageService } from '../pro/languageService'
 import type { ProLanguageRequest, ProLanguageResponse } from '../pro/protocol'
@@ -5,7 +6,7 @@ import type { ProLanguageRequest, ProLanguageResponse } from '../pro/protocol'
 const service = createProLanguageService(libraries)
 const files: Record<string, string> = {}
 let availableFiles: readonly string[] = []
-self.onmessage = (event: MessageEvent<ProLanguageRequest>) => {
+self.onmessage = async (event: MessageEvent<ProLanguageRequest>) => {
   const message = event.data
   try {
     let result: unknown
@@ -19,9 +20,12 @@ self.onmessage = (event: MessageEvent<ProLanguageRequest>) => {
         service.update(files, availableFiles)
         result = service.version
         break
-      case 'diagnostics':
-        result = service.diagnostics(...message.args)
+      case 'diagnostics': {
+        const path = message.args[0]
+        const platform = await verifyStudioProPlatformFiles({ [path]: files[path] })
+        result = service.diagnostics(path, platform)
         break
+      }
       case 'completions':
         result = service.completions(...message.args)
         break
