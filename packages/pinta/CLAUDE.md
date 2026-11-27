@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## LG05 leitor A (27/11/2026, implementação local)
+
+Plano vigente: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`.
+O core prepara leitor causal 8 e o BFF admite o nativo 9 integral. O host público continua
+com teto nativo 8 e gravador nuvem 7. A autoridade de instalação de um pull canônico é separada
+da autoridade de escrita local: a conta pode baixar e preservar nativo 9 sem permitir sua
+edição/importação/enfileiramento por um gravador 7. Não subir o teto público por isso.
+A autoria projetada, PNG 6/destinos e o gravador público 8 continuam na entrega B da LG05;
+produção ainda depende da qualificação e implantação próprias. As seções datadas de 23/11
+abaixo são o corte anterior; o leitor 7 citado ali é histórico.
+
 ## Oficina de cenários: como está em 23/11/2026
 
 Estado e próximos passos: `docs/superpowers/plans/2026-11-23-pinta-estado-da-retomada.md`. Os

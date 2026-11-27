@@ -597,6 +597,9 @@ export interface LocalPersistenceFormat<Asset extends PintaWorkshopAsset> {
     | 'applyAssetTransitions'
     | 'checkLocalBudget'
   >
+  /** Canonical account pulls can be readable before this client may author that format.
+   * Used only by applyPull; local edits, imports and staging retain the writer's authority. */
+  applyReadTransitions?: LocalPersistenceFormat<Asset>['authority']['applyAssetTransitions']
   stamp(asset: Asset): Asset
   encodeCandidate(asset: Asset): { json: string; formatVersion: number }
   decodeCandidate(json: string): Asset | null
@@ -841,7 +844,12 @@ export function createLocalPintaPersistence<Asset extends PintaWorkshopAsset>(
             const before = localCausalBytes(records)
             const returned = localRemovalsReturnedByPull(readLocalCausalState(records), pull)
             const applied = installLocalCausalPull(records, pull, (authorize) =>
-              applyAssetTransitions(records, pull.transitions, false, authorize),
+              (format.applyReadTransitions ?? applyAssetTransitions)(
+                records,
+                pull.transitions,
+                false,
+                authorize,
+              ),
             )
             if (applied) checkCombined(records, applied, before)
             if (!applied) return null

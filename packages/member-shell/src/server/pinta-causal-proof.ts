@@ -52,10 +52,9 @@ export function isPintaPointer(
 }
 
 /**
- * Capacidade, não flag (23/11/2026). O corpo nativo 9 (nuvem 8: autorregras e projeções) ainda não
- * está pronto: abrir, fechar, reexportar, recuperar e baixar o livro e as projeções é a etapa 8.
- * Até lá o BFF não o lê, e o único lugar que muda isso é o leitor que o inventário anuncia no core
- * (`PINTA_INVENTORY_READER_VERSION`, hoje 7). Não há variável de ambiente que o abra antes.
+ * LG05 leitor A: admite o corpo nativo 9/nuvem 8 pelo codec integral da oficina, sem flag.
+ * A leitura do BFF acompanha a capacidade do inventário; o gravador público tem seu próprio
+ * teto e continua no nativo 8/nuvem 7 até a autoria e os destinos da LG05 estarem qualificados.
  */
 const WORKSHOP_BODY_READABLE = PINTA_INVENTORY_READER_VERSION >= 8
 

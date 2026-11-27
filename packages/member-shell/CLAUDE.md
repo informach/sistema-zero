@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## LG05 leitor A (27/11/2026, implementação local)
+
+`lib/pinta-workshop-capabilities.ts` separa o leitor causal (8), o gravador (7) e o teto
+nativo público (8). A montagem real do Pinta usa esse contrato, inclusive sob o Arquipélago.
+O BFF acompanha o leitor do core e verifica/sela as três variantes nativas 9 sem descartar dados;
+não há flag. `PINTA_MAX_READ_FORMAT_VERSION` do caminho legado permanece 6. Isso prepara o
+leitor anterior ao gravador: não libera edição de projetados nem PNG 6, não promove Python e
+não comprova deploy. Plano: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`.
+As seções de 23/11 que dizem leitor 7 descrevem o corte anterior.
+
 ## Quarto: modo construção e salvar sozinho (26/11/2026)
 
 Proposta aprovada "Modo construção" (artifact JumYepv6zU68fEo8843m8t), em cima do layout de abas

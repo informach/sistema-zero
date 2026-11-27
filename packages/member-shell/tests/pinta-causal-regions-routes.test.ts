@@ -13,6 +13,7 @@ import {
   pintaWorkshopAssetToJson,
 } from '../../pinta/src/export/workshopDocument'
 import { automapFixture } from '../../pinta/src/testing/automapFixture'
+import { nativeNineGallery } from '../../pinta/src/testing/nativeNineFixtures'
 import { createRegionWorld } from '../../pinta/src/tiles/regionMap'
 import type { SessionUser } from '../src/lib/types'
 
@@ -20,8 +21,7 @@ mock.module('server-only', () => ({}))
 const { createPintaCausalRoutes } = await import('../src/routes/pinta-causal')
 
 // Etapa 1 das regiões (23/11/2026): o BFF confere o documento nativo 8 / nuvem 7 de qualquer perfil
-// causal, sem flag. O nativo 9 / nuvem 8 continua de fora: o leitor 8 é recusado no pedido e o
-// corpo 9 não passa na prova sem o leitor da oficina, que segue desligado.
+// causal, sem flag. LG05 A prepara o leitor nativo 9 / nuvem 8 antes do gravador público.
 
 const userId = '11111111-1111-4111-8111-111111111111'
 const accountId = '22222222-2222-4222-8222-222222222222'
@@ -40,8 +40,8 @@ const user: SessionUser = {
 const link = 'http://localhost/api/pinta/causal'
 const context = { params: Promise.resolve({ opId }) }
 
-function candidate(asset: PintaWorkshopAsset, formatVersion: number) {
-  const json = pintaWorkshopAssetToJson(asset)
+function candidate(asset: PintaWorkshopAsset, formatVersion: number, textOverride?: string) {
+  const json = textOverride ?? pintaWorkshopAssetToJson(asset)
   if (!json) throw Error('O documento não tem formato portátil')
   const gzip = gzipSync(json)
   const sha256 = createHash('sha256').update(gzip).digest('hex')
@@ -94,7 +94,9 @@ function bff(plan: ReturnType<typeof candidate>) {
                 remapSheetIds: [],
                 remaps: [],
               }
-            : { accepted: true }
+            : endpoint === 'graph/page'
+              ? { protocol: 1, epoch: '0', requiredFormat: 8, entries: [], nextCursor: null }
+              : { accepted: true }
         return { status: 200, body: body as T }
       },
     },
@@ -167,17 +169,73 @@ test('o mesmo mundo declarado como nuvem 6 não passa: o formato do documento ma
   expect(calls.some((call) => call.path.endsWith('/units/attest'))).toBe(false)
 })
 
-test('o nativo 9 (autorregras) continua de fora: leitor 8 recusado e corpo 9 sem prova', async () => {
+test('LG05 A: leitor 8 lê o inventário e leitor 7 é recusado pelo piso, sem aceitar leitor futuro', async () => {
   const { map, book } = await automapFixture()
   const authored = attachWorkshopBook(map, book)
   if (!authored) throw Error('O livro não se ligou ao mapa')
-  const plan = candidate(authored, 8)
-  const { routes, verify, calls, objects } = bff(plan)
-  expect((await routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=8`))).status).toBe(
-    400,
-  )
-  expect(calls).toEqual([])
-  expect((await verify()).status).toBe(409)
-  expect(objects.has(pintaCausalBlobKey(plan.binding, 'sealed'))).toBe(false)
-  expect(calls.some((call) => call.path.endsWith('/units/attest'))).toBe(false)
+  const { routes, calls } = bff(candidate(authored, 8))
+  const read = (reader: number) =>
+    routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=${reader}`))
+  expect((await read(8)).status).toBe(200)
+  expect((await read(7)).status).toBe(409)
+  const before = calls.length
+  expect((await read(9)).status).toBe(400)
+  expect(calls).toHaveLength(before)
+})
+
+for (const variant of [0, 1, 2]) {
+  test(`LG05 A: sela a variante nativa 9/${variant} inteira e repete a prova sem mudar os bytes`, async () => {
+    const { variants } = await nativeNineGallery()
+    const source = variants[variant]
+    if (!source) throw Error('Variante nativa ausente')
+    const plan = candidate(source.asset, 8)
+    const { verify, calls, objects } = bff(plan)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await verify()
+      expect(response.status, await response.clone().text()).toBe(200)
+      expect(objects.get(pintaCausalBlobKey(plan.binding, 'sealed'))).toEqual(plan.gzip)
+    }
+    const attested = calls.filter((call) => call.path.endsWith('/units/attest'))
+    expect(attested).toHaveLength(2)
+    for (const call of attested) {
+      const body = call.body
+      if (!body || typeof body !== 'object' || !('payload' in body)) throw Error('Atestado ausente')
+      const receipt = PintaCausalAttestationSchema.parse(body.payload)
+      expect(receipt.binding.candidateSha256).toBe(plan.member.sha256)
+      expect(receipt.manifest).toMatchObject({
+        itemId: source.asset.id,
+        nativeSchema: 9,
+        backupVersion: 9,
+        requiredNativeSchema: 9,
+      })
+      expect(receipt.manifest?.refs.length).toBeGreaterThan(0)
+    }
+  })
+
+  test(`LG05 A: recusa a variante nativa 9/${variant} declarada como nuvem 7`, async () => {
+    const { variants } = await nativeNineGallery()
+    const source = variants[variant]
+    if (!source) throw Error('Variante nativa ausente')
+    const plan = candidate(source.asset, 7)
+    const { verify, calls, objects } = bff(plan)
+    expect((await verify()).status).toBe(409)
+    expect(objects.has(pintaCausalBlobKey(plan.binding, 'sealed'))).toBe(false)
+    expect(calls.some((call) => call.path.endsWith('/units/attest'))).toBe(false)
+  })
+}
+
+test('LG05 A: hash válido não autoriza formato futuro nem campo autoral desconhecido', async () => {
+  const { variants } = await nativeNineGallery()
+  const source = variants[2]
+  if (!source) throw Error('Projeção ausente')
+  for (const change of ['future-envelope', 'unknown-field']) {
+    const document = JSON.parse(source.text)
+    if (change === 'future-envelope') document.version = 10
+    else document.assets[0].unknownAuthoringData = { keep: true }
+    const plan = candidate(source.asset, 8, JSON.stringify(document))
+    const { verify, calls, objects } = bff(plan)
+    expect((await verify()).status).toBe(409)
+    expect(objects.has(pintaCausalBlobKey(plan.binding, 'sealed'))).toBe(false)
+    expect(calls.some((call) => call.path.endsWith('/units/attest'))).toBe(false)
+  }
 })

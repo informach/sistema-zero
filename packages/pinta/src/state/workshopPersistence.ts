@@ -114,6 +114,12 @@ function workshopPolicy(
   ceiling: WorkshopNativeCeiling = 9,
 ): LocalPersistenceFormat<PintaWorkshopAsset> {
   const stamp = stampFor(ceiling)
+  const readAuthority = createLocalRegionAssetAuthority({
+    sanitize: sanitizeWorkshopAsset,
+    stamp: stampFor(9),
+    schema: workshopNativeSchema,
+    size: workshopBackupSize,
+  })
   return {
     authority: createLocalRegionAssetAuthority({
       sanitize: sanitizeWorkshopAsset,
@@ -121,6 +127,7 @@ function workshopPolicy(
       schema: workshopNativeSchema,
       size: workshopBackupSize,
     }),
+    applyReadTransitions: readAuthority.applyAssetTransitions,
     stamp,
     codec: createWorkshopStorageCodec(sanitizeWorkshopAsset),
     strictCapture: true,
