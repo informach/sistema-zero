@@ -148,6 +148,15 @@ const LEVEL_LABEL: Record<MapLevel, string> = {
   advanced: COPY.scene.avancado,
 }
 
+/** A coluna dos mapas compartilha superfície, respiro e rolagem em todas as oficinas. */
+export function MapSidePanels({ children }: { children: ReactNode }): JSX.Element {
+  return (
+    <aside className="pin-col pin-col--end flex max-h-72 min-h-0 w-full shrink-0 flex-col gap-3 overflow-y-auto p-3 md:max-h-none md:w-68">
+      <PanelLook value="card">{children}</PanelLook>
+    </aside>
+  )
+}
+
 /** A escolha do nível ("Começar", "Criar mais", "Avançado"): a mesma em todo editor de mapa. */
 export function MapLevelSelect({
   level,

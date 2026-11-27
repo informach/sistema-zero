@@ -1,3 +1,4 @@
+import { SaveBadge } from './EditorSaveBadge'
 /**
  * Tela do editor de UM asset: cria as stores (editor + sessão), liga o flush
  * do autosave em pagehide/unmount/voltar e monta o layout por tipo de asset.
@@ -41,7 +42,6 @@ import { observePintaReferences, SceneMapClosureError } from '../../core/sceneMa
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
 import { buildStudioMapBundle, StudioMapBundleError } from '../../export/studioMapBundle'
-import type { PintaEditorState } from '../../state/editorStore'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import {
@@ -66,7 +66,6 @@ import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChro
 import { Button, IconButton } from '../ui/Button'
 import {
   ArrowLeft,
-  Check,
   ChevronDown,
   Download,
   Gamepad2,
@@ -79,7 +78,6 @@ import {
   Redo2,
   Rocket,
   Scaling,
-  TriangleAlert,
   Undo2,
 } from '../ui/icons'
 import { PanelLook } from '../ui/Panel'
@@ -111,36 +109,6 @@ import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
 import { TOOLS as VECTOR_TOOLS } from './vector/vectorTools'
 import { ZoomControls } from './ZoomControls'
-
-/**
- * O salvamento local na pílula da tela-modelo: menta com o visto quando está salvo, quieta
- * enquanto salva e vermelha (com o recado do erro) quando falhou. O texto mora DIRETO na região
- * viva (`role="status"`), que é como o leitor anuncia e como os testes a encontram.
- */
-function SaveBadge({
-  saveState,
-  saveError,
-}: Pick<PintaEditorState, 'saveState' | 'saveError'>): JSX.Element {
-  const label =
-    saveState === 'saved'
-      ? COPY.editor.saved
-      : saveState !== 'error'
-        ? COPY.editor.saving
-        : (saveError ?? COPY.editor.saveError)
-  const tone = saveState === 'saved' ? 'ok' : saveState !== 'error' ? 'muted' : 'danger'
-  return (
-    <span
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      className={`pin-bar-seal pin-bar-seal--${tone}`}
-    >
-      {tone === 'ok' ? <Check aria-hidden="true" /> : null}
-      {tone === 'danger' ? <TriangleAlert aria-hidden="true" /> : null}
-      {label}
-    </span>
-  )
-}
 
 /** O ícone de linha de cada PAPEL (os mesmos dos filtros da galeria), na cor do papel. */
 const ROLE_ICON: Record<PintaAssetRole, LucideIcon> = {
