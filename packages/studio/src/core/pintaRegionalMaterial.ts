@@ -128,10 +128,13 @@ export async function admitPintaRegionalMaterial(
   signal?.throwIfAborted()
   const world = readPintaRegionImageWorld(captured.bytes, budget)
   if (world.rootId !== sourceId) invalid()
+  const dataVersion = world.maps.get(world.rootId)?.data.version
+  if ((dataVersion !== 5 && dataVersion !== 6) || (marker && marker.dataVersion !== dataVersion))
+    invalid()
   signal?.throwIfAborted()
   const material = {
     dataUrl: captured.dataUrl,
-    regional: marker ?? Object.freeze({ dataVersion: 5 as const, sourceId, sha256 }),
+    regional: marker ?? Object.freeze({ dataVersion, sourceId, sha256 }),
     world,
   }
   // Copying or serializing the material preserves only its PNG and marker.

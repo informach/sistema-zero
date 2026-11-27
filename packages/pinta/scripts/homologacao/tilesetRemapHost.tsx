@@ -4,7 +4,7 @@ import { type PintaAppContextValue, PintaAppProvider } from '../../src/component
 import { PintaEditorProvider } from '../../src/components/editor/editorContext'
 import { TileStrip } from '../../src/components/editor/TileStrip'
 import { ToastProvider } from '../../src/components/ui/Toast'
-import type { PintaMemoryAsset } from '../../src/core/assetMemory'
+import { isPintaMemoryAsset, type PintaWorkshopAsset } from '../../src/core/assetMemory'
 import {
   createBitmap,
   createTilemapAsset,
@@ -26,8 +26,8 @@ import { addObjectLayer, setCell } from '../../src/tiles/tilemapOps'
 export type TileRemapMode = 'normal' | 'overflow' | 'supersede'
 
 /** The confirmed gallery of this host holds public dense assets only; a regional one is a host error. */
-function confirmedWire(asset: PintaMemoryAsset): unknown {
-  if (isLocalRegionAsset(asset))
+function confirmedWire(asset: PintaWorkshopAsset): unknown {
+  if (!isPintaMemoryAsset(asset) || isLocalRegionAsset(asset))
     throw new Error('A galeria deste ensaio só guarda desenhos públicos.')
   return pintaAssetToWire(asset)
 }

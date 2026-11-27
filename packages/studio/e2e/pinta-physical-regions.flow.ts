@@ -1205,7 +1205,7 @@ test('regional geometry queries reopen a signed Vila PNG without a world-sized c
     const data = p.readPintaRegionImageData(
       new TextDecoder().decode(p.unzlibSync(bytes.subarray(51, 41 + length))),
     )
-    if (!data) throw Error('Dados não reabriram')
+    if (!data || data.scene.version !== 4) throw Error('Dados regionais não reabriram')
     const query = p.createRegionSceneQueries(data.scene)
     const portable = new Function(
       `${p.sceneObjectTransformSource};return {query:sceneIntersectsBox,move:sceneMoveBox};`,
@@ -1376,7 +1376,11 @@ test('the encoded PNG-5 world reader captures Vila images and renders identical 
       sourceCopied: root.png[0] === 137,
       corruptRefused: refused,
       mapsAfterRefusal: world.maps.size,
-      childStart: p.createRegionSceneQueries(world.maps.get('cabana')!.data.scene).spawn(),
+      childStart: (() => {
+        const scene = world.maps.get('cabana')!.data.scene
+        if (scene.version !== 4) throw Error('A fixture qualifica a cena regional 4.')
+        return p.createRegionSceneQueries(scene).spawn()
+      })(),
       imagePixels: world.imagePixels,
       publicReaderRefused: p.readPintaScene(root.data.scene) === null,
     }
@@ -1438,6 +1442,11 @@ test('linked PNG-5 metadata admits Vila and Cabana together before decoding thei
         return decoded
       })
       if (!maps) throw Error('O mundo não reabriu')
+      const regionalScene = (id: string) => {
+        const scene = maps.get(id)?.scene
+        if (scene?.version !== 4) throw Error('A fixture qualifica a cena regional 4.')
+        return scene
+      }
       const validDecodes = decodes
       const root = JSON.parse(rootText)
       root.world.maps[0].name = 'Nome trocado'
@@ -1452,13 +1461,12 @@ test('linked PNG-5 metadata admits Vila and Cabana together before decoding thei
         headersBeforeCells,
         remainingBudgetRespected,
         validDecodes,
-        rootObjects: p.createRegionSceneQueries(maps.get('vila-e-floresta')!.scene).objects()
-          .length,
+        rootObjects: p.createRegionSceneQueries(regionalScene('vila-e-floresta')).objects().length,
         rootObjectIds: p
-          .createRegionSceneQueries(maps.get('vila-e-floresta')!.scene)
+          .createRegionSceneQueries(regionalScene('vila-e-floresta'))
           .objects()
           .map((object) => object.id),
-        childStart: p.createRegionSceneQueries(maps.get('cabana')!.scene).spawn(),
+        childStart: p.createRegionSceneQueries(regionalScene('cabana')).spawn(),
         childHasNoNestedWorld: maps.get('cabana')!.world === undefined,
         refusedWrongName: refused,
         decodesBeforeRefusal: decodes,

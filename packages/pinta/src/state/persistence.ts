@@ -432,6 +432,8 @@ export function runSerializedWrite<Result>(
  */
 export interface PintaPersistence<Asset extends PintaWorkshopAsset = PintaAsset> {
   readonly workshopReader?: true
+  /** Native authoring ceiling of this authority; reading may admit newer documents. */
+  readonly nativeWriterVersion?: number
   persistAsset(asset: Asset, context?: PintaEditorWriteContext): Promise<void>
   persistAssets(assets: readonly Asset[], context?: PintaEditorWriteContext): Promise<void>
   persistRevision?(

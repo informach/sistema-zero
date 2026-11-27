@@ -326,7 +326,7 @@ test('PNG 5 congelado: o leitor de mundo reabre a capa, a folha e a mesma cena 4
   const world = readPintaRegionImageWorld(png)
   expect(world.rootId).toBe('cenario-vila')
   const root = world.maps.get('cenario-vila')
-  if (!root) throw Error('Mapa raiz ausente')
+  if (root?.data.scene.version !== 4) throw Error('Mapa raiz regional ausente')
   expect([root.width, root.height]).toEqual([32, 16])
   expect(root.data).toMatchObject({ format: 'pinta', version: 5, kind: 'map', scale: 1 })
   expect(root.data.name).toBe('vila-congelada')

@@ -5,7 +5,10 @@ import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
 import { gameTwoDManifest } from '../../studio/src/official-extensions/game-2d/manifest'
 import { convertClassicToProTree } from '../../studio/src/state/convertToPro'
-import { regionalSceneMaterial } from '../../studio/src/testing/pintaRegionalMaterialFixture'
+import {
+  projectedSceneMaterial,
+  regionalSceneMaterial,
+} from '../../studio/src/testing/pintaRegionalMaterialFixture'
 import validationProfile from '../../studio-runtime/runtime/validation-profile.json'
 import {
   readBuildRequest,
@@ -15,8 +18,10 @@ import {
 } from '../../studio-runtime/src/contracts'
 import { projectStudioRegionalBuild } from '../src/server/studio-regional-build'
 
-async function fixture() {
-  const asset = await regionalSceneMaterial()
+async function fixture(projection?: 'isometric' | 'hexagonal') {
+  const asset = projection
+    ? await projectedSceneMaterial(projection)
+    : await regionalSceneMaterial()
   const original = {
     ...createBlankProjectSnapshot('regional-build', 'Vila'),
     installedExtensions: [
@@ -59,21 +64,22 @@ async function fixture() {
   }
   return { input, pro, asset }
 }
-test('o mesmo pacote regional passa pela projeção do BFF e pelo contrato real do compilador sem alterar a árvore autoral', async () => {
-  const { input, pro, asset } = await fixture()
-  const before = JSON.stringify(pro),
-    filesBefore = JSON.stringify(input.files)
-  const files = await projectStudioRegionalBuild(input)
-  expect(files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
-  expect(files['public/sz-ext/game-2d.js']).toContain('__SZ_PINTA_REGIONAL_WORLDS__')
-  expect(files['public/sz-ext/game-2d.js']).not.toContain(asset.dataUrl)
-  const accepted = await readBuildRequest({ ...input, files })
-  await verifyBuildBinaries(accepted.binaries)
-  expect(accepted.files['public/sz-ext/game-2d.js']).toBe(files['public/sz-ext/game-2d.js'])
-  expect(JSON.stringify(pro)).toBe(before)
-  expect(JSON.stringify(input.files)).toBe(filesBefore)
-  expect(await projectStudioRegionalBuild({ ...input, files })).toEqual(files)
-})
+for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
+  test(`o pacote ${projection ?? 'ortogonal'} passa pelo BFF e pelo compilador sem alterar a árvore autoral`, async () => {
+    const { input, pro, asset } = await fixture(projection)
+    const before = JSON.stringify(pro),
+      filesBefore = JSON.stringify(input.files)
+    const files = await projectStudioRegionalBuild(input)
+    expect(files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
+    expect(files['public/sz-ext/game-2d.js']).toContain('__SZ_PINTA_REGIONAL_WORLDS__')
+    expect(files['public/sz-ext/game-2d.js']).not.toContain(asset.dataUrl)
+    const accepted = await readBuildRequest({ ...input, files })
+    await verifyBuildBinaries(accepted.binaries)
+    expect(accepted.files['public/sz-ext/game-2d.js']).toBe(files['public/sz-ext/game-2d.js'])
+    expect(JSON.stringify(pro)).toBe(before)
+    expect(JSON.stringify(input.files)).toBe(filesBefore)
+    expect(await projectStudioRegionalBuild({ ...input, files })).toEqual(files)
+  })
 test('PNG ou motor trocado é recusado sem adotar a projeção', async () => {
   const { input } = await fixture()
   await expect(
@@ -102,15 +108,16 @@ test('PNG ou motor trocado é recusado sem adotar a projeção', async () => {
 })
 
 const image = process.env.STUDIO_REGIONAL_TEST_IMAGE
-test.skipIf(!image)(
-  'o Pro regional compila na imagem real sem rede e conserva o PNG original',
-  async () => {
-    if (!image) throw new Error('Informe a imagem qualificada da LG04.')
-    const { input } = await fixture()
-    const files = await projectStudioRegionalBuild(input)
-    const accepted = await readBuildRequest({ ...input, files })
-    await verifyBuildBinaries(accepted.binaries)
-    const script = `
+for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
+  test.skipIf(!image)(
+    `o Pro ${projection ?? 'ortogonal'} compila na imagem real sem rede e conserva o PNG original`,
+    async () => {
+      if (!image) throw new Error('Informe a imagem qualificada da LG04.')
+      const { input } = await fixture(projection)
+      const files = await projectStudioRegionalBuild(input)
+      const accepted = await readBuildRequest({ ...input, files })
+      await verifyBuildBinaries(accepted.binaries)
+      const script = `
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
 const root = '/workspace/builds/lg04-' + require('node:crypto').randomUUID();
 if (process.getuid() === 0) throw new Error('The build must not run as root.');
@@ -145,42 +152,42 @@ try {
   console.log(JSON.stringify({ lg04RegionalBuild: true, uid: process.getuid(), pngCount, fingerprint: profile.runtimeFingerprint }));
 } finally { fs.rmSync(root, { recursive: true, force: true }); }
 `
-    const child = Bun.spawn(
-      [
-        'docker',
-        'run',
-        '--rm',
-        '--network',
-        'none',
-        '--memory',
-        '1g',
-        '--cpus',
-        '1',
-        '--pids-limit',
-        '256',
-        '--entrypoint',
-        'node',
-        '-i',
-        image,
-      ],
-      {
-        stdin: new TextEncoder().encode(script),
-        stdout: 'pipe',
-        stderr: 'pipe',
-        windowsHide: true,
-      },
-    )
-    const [code, stdout, stderr] = await Promise.all([
-      child.exited,
-      new Response(child.stdout).text(),
-      new Response(child.stderr).text(),
-    ])
-    if (code !== 0)
-      throw new Error(
-        `Regional image build failed (${code}): ${stdout.slice(-4000)}\n${stderr.slice(-4000)}`,
+      const child = Bun.spawn(
+        [
+          'docker',
+          'run',
+          '--rm',
+          '--network',
+          'none',
+          '--memory',
+          '1g',
+          '--cpus',
+          '1',
+          '--pids-limit',
+          '256',
+          '--entrypoint',
+          'node',
+          '-i',
+          image,
+        ],
+        {
+          stdin: new TextEncoder().encode(script),
+          stdout: 'pipe',
+          stderr: 'pipe',
+          windowsHide: true,
+        },
       )
-    expect(stdout).toContain('"lg04RegionalBuild":true')
-    console.info(stdout.split('\n').find((line) => line.includes('"lg04RegionalBuild":true')))
-  },
-  150_000,
-)
+      const [code, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      if (code !== 0)
+        throw new Error(
+          `Regional image build failed (${code}): ${stdout.slice(-4000)}\n${stderr.slice(-4000)}`,
+        )
+      expect(stdout).toContain('"lg04RegionalBuild":true')
+      console.info(stdout.split('\n').find((line) => line.includes('"lg04RegionalBuild":true')))
+    },
+    150_000,
+  )

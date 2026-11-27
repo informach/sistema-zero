@@ -1,10 +1,9 @@
 /**
- * Mapa projetado guardado na oficina: esta versão ainda não o abre. A galeria avisa no mesmo
- * formato do aviso de desenho mais novo, sem cartão e sem ação nova; o resto continua igual.
+ * Mapas projetados usam os mesmos cartões e ações da oficina, sem galeria paralela.
  */
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
-import { COPY } from '../../core/copy'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { pintaWorkshopAssetToJson } from '../../export/workshopDocument'
 import { clearIdbMock } from '../../testing/idbMock'
 import { nativeNineGallery } from '../../testing/nativeNineFixtures'
 
@@ -30,24 +29,42 @@ async function gallery(maps: 'one' | 'two' | 'none') {
   await waitFor(() => expect(screen.getByRole('button', { name: /Abrir chao/ })).toBeTruthy())
 }
 
-test('um mapa projetado: aviso com o nome, sem cartão nem botão de atualizar', async () => {
+test('um mapa projetado aparece no catálogo comum com as ações de autoria', async () => {
   await gallery('one')
-  const aviso = await screen.findByRole('alert')
-  expect(aviso.textContent).toBe(
-    'O mapa "praca" ainda não abre nesta versão do Pinta. Ele continua guardado.',
-  )
-  expect(screen.queryByRole('button', { name: /Abrir praca/ })).toBeNull()
-  expect(screen.queryByRole('button', { name: COPY.gallery.newerFormatReload })).toBeNull()
+  expect(await screen.findByRole('button', { name: /Abrir praca/ })).toBeTruthy()
+  expect(screen.getByRole('button', { name: /Renomear praca/ })).toBeTruthy()
+  expect(screen.getByRole('button', { name: /Duplicar praca/ })).toBeTruthy()
+  expect(screen.queryByRole('alert')).toBeNull()
 })
 
-test('dois mapas projetados: a contagem aparece na frase', async () => {
+test('as duas projeções aparecem ao lado dos outros desenhos', async () => {
   await gallery('two')
-  expect((await screen.findByRole('alert')).textContent).toBe(
-    '2 mapas ainda não abrem nesta versão do Pinta. Eles continuam guardados.',
-  )
+  expect(await screen.findByRole('button', { name: /Abrir colmeia/ })).toBeTruthy()
+  expect(screen.getByRole('button', { name: /Abrir praca/ })).toBeTruthy()
+  expect(screen.queryByRole('alert')).toBeNull()
 })
 
 test('sem mapa projetado, a galeria não mostra aviso', async () => {
   await gallery('none')
   expect(screen.queryByRole('alert')).toBeNull()
+})
+
+test('um leitor preparado sem gravador 9 abre o mesmo mapa para leitura e não oferece uma edição que não pode guardar', async () => {
+  const namespace = 'galeria-leitor-antes-gravador'
+  setPintaStorageNamespace(namespace)
+  const { sheet, iso } = await nativeNineGallery()
+  const source = createWorkshopPintaPersistence({ namespace })
+  await source.persistAssets([sheet, iso])
+  const original = pintaWorkshopAssetToJson((await source.loadAssetById(iso.id))!)
+  const reader = createWorkshopPintaPersistence({ namespace, nativeCeiling: 8 })
+  render(<PintaApp persistence={reader} />)
+  fireEvent.click(await screen.findByRole('button', { name: /Abrir praca/ }))
+  await screen.findByText(
+    'Este mapa está disponível para leitura nesta versão do Pinta. Você pode explorar e baixar o original.',
+  )
+  expect(screen.getByRole('button', { name: 'Pincel' }).hasAttribute('disabled')).toBe(true)
+  expect(screen.queryByRole('button', { name: 'Criar autorregras' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Voltar' }))
+  await screen.findByRole('button', { name: /Abrir praca/ })
+  expect(pintaWorkshopAssetToJson((await reader.loadAssetById(iso.id))!)).toBe(original)
 })

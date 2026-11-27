@@ -15,10 +15,13 @@ import {
 import type { PintaEditorStore } from '../../state/editorStore'
 import type { LocalRegionAuthorSession } from '../../state/localRegionAuthorSession'
 import { isMapObjectTool, type PintaSessionStore } from '../../state/sessionStore'
+import { createAutomapBook } from '../../tiles/automapping/book'
 import type { CellPos } from '../../tiles/cellGeometry'
 import { type MapViewport, TileChunkCache } from '../../tiles/chunks'
 import { resolveMapTilesets } from '../../tiles/mapTilesets'
 import { expandRegionMap } from '../../tiles/regionMap'
+import { usePintaApp } from '../appContext'
+import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useToolCuration } from './editorContext'
@@ -93,6 +96,7 @@ function RegionalMapStage({
   gallery,
   map,
 }: CompleteRegionMapWorkspaceProps & { map: RegionTilemapAsset }): JSX.Element {
+  const { persistence, lesson } = usePintaApp()
   const { showToast } = useToast()
   const wide = useMediaQuery('(min-width: 768px)')
   const tool = useStore(session, (state) => state.tool) as MapTool
@@ -396,6 +400,19 @@ function RegionalMapStage({
                 ))}
             </select>
           </Panel>
+          {level === 'advanced' &&
+          (persistence.nativeWriterVersion ?? 0) >= 9 &&
+          !lesson &&
+          !(map.schema === 9 && map.automapping) ? (
+            <Button
+              variant="barOutline"
+              onClick={() =>
+                editor.getState().commit({ ...map, schema: 9, automapping: createAutomapBook() })
+              }
+            >
+              Criar regras por exemplo
+            </Button>
+          ) : null}
           {level === 'advanced' && map.schema === 9 && map.automapping ? (
             <Suspense fallback={null}>
               <RegionalRules

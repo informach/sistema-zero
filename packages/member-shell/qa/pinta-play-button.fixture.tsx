@@ -1,12 +1,12 @@
 import type { PintaHostAdapter } from '@sistemazero/pinta'
 import { createRoot } from 'react-dom/client'
 import { PintaApp } from '../../pinta/src/components/PintaApp'
-import type { PintaMemoryAsset } from '../../pinta/src/core/assetMemory'
+import type { PintaWorkshopAsset } from '../../pinta/src/core/assetMemory'
 import type { PintaPersistence } from '../../pinta/src/state/persistence'
 
 /** Real Pinta UI hosted by the existing browser qualification page. */
 export async function mountPintaPlayButton(
-  persistence: PintaPersistence<PintaMemoryAsset>,
+  persistence: PintaPersistence<PintaWorkshopAsset>,
   adapter: PintaHostAdapter,
 ) {
   const stylesheet = document.createElement('link')

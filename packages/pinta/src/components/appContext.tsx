@@ -71,7 +71,7 @@ export interface PintaAppContextValue {
    * `EditorScreen` precise receber ref por prop em todo o caminho.
    */
   onWorkshopEditorReady?(
-    editor: PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset> | null,
+    editor: PintaEditorStore<import('../core/assetMemory').PintaWorkshopAsset> | null,
   ): void
   onEditorReady?(editor: PintaEditorStore | null): void
 }

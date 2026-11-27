@@ -75,3 +75,42 @@ export async function regionalSceneMaterial(
     regional,
   }
 }
+
+/** Native projected documents use the same producer and admission as the Pinta→Studio bridge. */
+export async function projectedSceneMaterial(kind: 'isometric' | 'hexagonal') {
+  const { nativeNineGallery } = await import('../../../pinta/src/testing/nativeNineFixtures')
+  const { exportPintaProjectedScene } = await import('../../../pinta/src/export/projectedScene')
+  const { nativeImageOf } = await import('../../../pinta/scripts/homologacao/generate')
+  const { readPngDataUrl } = await import('@sistemazero/core/studio/pinta-png-binary')
+  const { PINTA_REGION_IMAGE_PNG_LIMITS } = await import(
+    '@sistemazero/core/studio/pinta-region-image-limits'
+  )
+  const { sheet, hex, iso } = await nativeNineGallery()
+  const map = kind === 'hexagonal' ? hex : iso
+  const scene = await exportPintaProjectedScene(
+    map,
+    (id) => (id === sheet.id ? sheet : null),
+    nativeImageOf,
+  )
+  const cover = readPngDataUrl(scene.wire.tilesets[0]!.image, PINTA_REGION_IMAGE_PNG_LIMITS)
+  const { png } = await embedPintaRegionImage(cover.bytes, scene.json)
+  const admitted = await admitPintaRegionalMaterial({
+    png,
+    sourceId: map.id,
+    width: cover.width,
+    height: cover.height,
+  })
+  return {
+    id: `material-${map.id}`,
+    name: map.name,
+    kind: 'image' as const,
+    source: 'library' as const,
+    libOrigin: 'pinta' as const,
+    libId: `personal:${map.id}`,
+    proPath: `public/assets/${map.name}.png`,
+    width: cover.width,
+    height: cover.height,
+    dataUrl: admitted.dataUrl,
+    regional: admitted.regional,
+  }
+}

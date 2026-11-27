@@ -49,6 +49,7 @@ test('keeps the Vila PNG exact and admits Cabana and the sparse signed world in 
     physics: 'legacy',
   })
   expect(child.data.scene.physics).toBe('precise')
+  if (root.data.scene.version !== 4) throw Error('A fixture qualifica a cena regional 4.')
   const tiles = root.data.scene.layers.find((layer) => layer.kind === 'tiles')
   if (!tiles?.cells.chunks[0]) throw Error('Camada esparsa ausente')
   expect(tiles.cells.chunks[0].cells).toBeInstanceOf(Int16Array)

@@ -10,9 +10,12 @@
  */
 import { type JSX, lazy, type ReactNode, Suspense } from 'react'
 import { COPY } from '../../core/copy'
+import { createAutomapBook } from '../../tiles/automapping/book'
 import { isAutomapEditorMap } from '../../tiles/automapping/model'
+import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
+import { useEditorStores } from './editorContext'
 import { MapLibraryPanel } from './MapLibraryPanel'
 import { MapMinimapPanel } from './MapMinimapPanel'
 import { MapObjectPanel } from './MapObjectPanel'
@@ -64,6 +67,8 @@ function TilemapWorkspace({
   model: ReadyMapModel
   setEditor: boolean
 }): JSX.Element {
+  const { persistence, lesson } = usePintaApp()
+  const { editor } = useEditorStores()
   const { tilemap, mapTilesets, galleryAssets, layerTilesetChoices } = model
   const wide = useMediaQuery('(min-width: 768px)')
   const c = useTilemapController(model)
@@ -185,6 +190,20 @@ function TilemapWorkspace({
             extras={
               <>
                 {levelPanel}
+                {c.level === 'advanced' &&
+                (persistence.nativeWriterVersion ?? 0) >= 9 &&
+                !lesson &&
+                !isAutomapEditorMap(tilemap) ? (
+                  <Button
+                    variant="barOutline"
+                    onClick={() => {
+                      const next = { ...tilemap, schema: 9, automapping: createAutomapBook() }
+                      editor.getState().commit(next)
+                    }}
+                  >
+                    Criar regras por exemplo
+                  </Button>
+                ) : null}
                 {c.level === 'advanced' && isAutomapEditorMap(tilemap) ? (
                   <Suspense fallback={null}>
                     <MapAutomappingPanel

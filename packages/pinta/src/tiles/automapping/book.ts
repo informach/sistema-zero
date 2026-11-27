@@ -32,6 +32,9 @@ export interface AutomapBook {
   seed: number
   rules: AutomapRule[]
 }
+export function createAutomapBook(): AutomapBook {
+  return { format: 'pinta-regras', version: 1, seed: 1, rules: [] }
+}
 export interface SheetIdentity {
   sha256: string
   count: number

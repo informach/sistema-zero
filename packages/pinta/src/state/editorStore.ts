@@ -7,7 +7,7 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
-  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
   retainedAssetBytes,
   rulebookSharedPart,
   sharedAssetParts,
@@ -17,13 +17,14 @@ import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
 import { isTilesetKind, type PintaAsset } from '../core/project'
 import { RegionBackupSizeCache } from '../export/regionBackupSize'
+import { workshopBackupSize } from '../export/workshopBackupSize'
 import type { AutomapRegionEditorDocument } from '../tiles/automapping/model'
 import type { TileIndexChange } from '../tiles/tilesetOps'
 
 export { assetBytes } from '../core/assetMemory'
 
-type EditorAsset = PintaMemoryAsset | AutomapRegionEditorDocument
-function content(asset: EditorAsset): PintaMemoryAsset {
+type EditorAsset = PintaWorkshopAsset | AutomapRegionEditorDocument
+function content(asset: EditorAsset): PintaWorkshopAsset {
   return asset.kind === 'automap-document' ? asset.map : asset
 }
 export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
@@ -183,8 +184,12 @@ export function createEditorStore<Asset extends EditorAsset = PintaAsset>(
 ): PintaEditorStore<Asset> {
   const metadataBudget = new RegionMetadataBudgetCache()
   let backupSizes: RegionBackupSizeCache | null = null
-  function admitsMetadata(asset: PintaMemoryAsset): boolean {
-    if ((asset.kind !== 'tilemap' && asset.kind !== 'map-set') || asset.schema !== 8) return true
+  function admitsMetadata(asset: PintaWorkshopAsset): boolean {
+    if (
+      (asset.kind !== 'tilemap' && asset.kind !== 'map-set') ||
+      (asset.schema !== 8 && asset.schema !== 9)
+    )
+      return true
     const metadata = regionDocumentMetadata(asset)
     return metadata !== null && metadataBudget.accepts(metadata)
   }
@@ -193,12 +198,14 @@ export function createEditorStore<Asset extends EditorAsset = PintaAsset>(
     if (!assets.every(admitsMetadata)) return false
     if (
       !assets.some(
-        (item) => (item.kind === 'tilemap' || item.kind === 'map-set') && item.schema === 8,
+        (item) =>
+          (item.kind === 'tilemap' || item.kind === 'map-set') &&
+          (item.schema === 8 || item.schema === 9),
       )
     )
       return true
     if (!backupSizes) backupSizes = new RegionBackupSizeCache()
-    return Number.isFinite(backupSizes.byteLength(assets))
+    return Number.isFinite(workshopBackupSize(backupSizes, assets))
   }
   if (!admitsSnapshot(options.asset)) throw new RangeError('O cenário excede o orçamento de dados.')
   const history = createHistory<EditorSnapshot<Asset>>({

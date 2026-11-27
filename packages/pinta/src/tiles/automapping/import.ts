@@ -1,11 +1,11 @@
-import { isTileLayer, type TilemapCells, tileLayerTilesetId } from '../../core/project'
-import type { AuthorMap } from '../mapCellEdits'
+import { tileLayerTilesetId } from '../../core/project'
 import type { AutomapBook, SheetIndex } from './book'
+import { type AutomapMap, isAutomapTileLayer } from './cells'
 import { checkAutomapBindings } from './engine'
 
 /** Source layer IDs are local to their document. An imported book must either bind exactly
  * or ask the author to choose a distinct destination with the same ordered tile identity. */
-export function automapImportLayers(book: AutomapBook, map: AuthorMap, sheets: SheetIndex) {
+export function automapImportLayers(book: AutomapBook, map: AutomapMap, sheets: SheetIndex) {
   const source = new Map<string, { sha256: string; sheet: string; rule: string }>()
   for (const rule of book.rules)
     for (const group of [rule.input, ...rule.outputs])
@@ -20,14 +20,14 @@ export function automapImportLayers(book: AutomapBook, map: AuthorMap, sheets: S
     id,
     rule: binding.rule,
     choices: map.layers
-      .filter(isTileLayer<TilemapCells>)
+      .filter(isAutomapTileLayer)
       .filter((layer) => sheets.get(tileLayerTilesetId(map, layer))?.sha256 === binding.sha256)
       .map((layer) => ({ id: layer.id, name: layer.name, sheet: tileLayerTilesetId(map, layer) })),
   }))
 }
 export function bindAutomapImport(
   book: AutomapBook,
-  map: AuthorMap,
+  map: AutomapMap,
   sheets: SheetIndex,
   selected: ReadonlyMap<string, string>,
 ): AutomapBook | null {

@@ -61,8 +61,10 @@ function get(slot: string) {
   return entry
 }
 const api = {
-  async showPintaPlayButton(namespace: string) {
-    return (await import('./pintaPublicBridgeProbe')).showPintaPlayButton(namespace)
+  async showPintaPlayButton(
+    ...args: Parameters<typeof import('./pintaPublicBridgeProbe').showPintaPlayButton>
+  ) {
+    return (await import('./pintaPublicBridgeProbe')).showPintaPlayButton(...args)
   },
   async readPintaPlayButton(namespace: string) {
     return (await import('./pintaPublicBridgeProbe')).readPintaPlayButton(namespace)
@@ -73,6 +75,13 @@ const api = {
     return (await import('./pintaPublicBridgeProbe')).showPintaPublicBridge(...args)
   },
   decodeMaterial: decodeProjectAsset,
+  async publishPintaJavaScriptProject(
+    ...args: Parameters<
+      typeof import('./pintaProjectJavaScriptProbe').publishPintaJavaScriptProject
+    >
+  ) {
+    return (await import('./pintaProjectJavaScriptProbe')).publishPintaJavaScriptProject(...args)
+  },
   async showPintaJavaScriptProject(
     ...args: Parameters<typeof import('./pintaProjectJavaScriptProbe').showPintaJavaScriptProject>
   ) {

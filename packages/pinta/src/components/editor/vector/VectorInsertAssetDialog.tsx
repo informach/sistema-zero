@@ -9,6 +9,7 @@
  */
 import type { JSX } from 'react'
 import { useCallback, useMemo, useState } from 'react'
+import { isPintaMemoryAsset } from '../../../core/assetMemory'
 import { COPY } from '../../../core/copy'
 import { normalizeSearchText } from '../../../core/searchText'
 import { insertableAssets, insertKindFor } from '../../../vector/insertAsset'
@@ -35,7 +36,7 @@ export function VectorInsertAssetDialog({
   const assetsById = useMemo(() => new Map(assets.map((a) => [a.id, a])), [assets])
   const findAsset = useCallback((id: string) => assetsById.get(id) ?? null, [assetsById])
   const disponiveis = useMemo(
-    () => insertableAssets(assets, currentId, '', normalizeSearchText),
+    () => insertableAssets(assets.filter(isPintaMemoryAsset), currentId, '', normalizeSearchText),
     [assets, currentId],
   )
   const candidatos = useMemo(() => {

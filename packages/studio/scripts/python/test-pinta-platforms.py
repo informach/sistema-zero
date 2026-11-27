@@ -48,17 +48,16 @@ for scale in (1,2):
 spec=importlib.util.spec_from_file_location('portable_platforms',folder/'pygame/pinta_cenario.py')
 module=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-game=module.Mundo(folder/'pygame','plataformas-precisas')
+game=module.carregar_cenario(folder/'pygame/cenario.png')
 verify(game.pouso,1)
-game.jogador=pygame.FRect(40,10,4,4)
-game.mover(0,90,gravidade=1)
-assert abs(game.jogador.y-36.25)<0.0001,game.jogador
-game.jogador=pygame.FRect(40,10,4,4)
-game.mover(0,90)
-assert game.jogador.y==100,game.jogador
+# The facade returns support without owning/mutating the game's body.
+body=pygame.FRect(40,10,4,4)
+support=game.pouso(body,body.move(0,90))
+assert abs(support.y-36.25)<0.0001,support
+assert body==pygame.FRect(40,10,4,4),body
 cases=json.loads((folder/'pygame/platform-probes.json').read_text(encoding='utf-8'))['cases']
 for case in cases:
-    game.carregar(case['scene']['name'])
+    game.carregar(case['scene']['id'])
     before=pygame.FRect(*(case['previous'][key] for key in ('x','y','width','height')))
     desired=pygame.FRect(*(case['desired'][key] for key in ('x','y','width','height')))
     actual=game.pouso(before,desired,case['gravity'])
@@ -66,5 +65,22 @@ for case in cases:
     assert (actual is None)==(expected is None),(case['name'],actual,expected)
     if expected is not None:
         assert all(abs(getattr(actual,key)-expected[key])<0.0001 for key in ('x','y','width','height')),(case['name'],actual,expected)
+# Execute the shipped game, including falling and the top-down branch.
+sys.path.insert(0,str(folder/'pygame'))
+main_spec=importlib.util.spec_from_file_location('portable_game',folder/'pygame/main.py')
+main_module=importlib.util.module_from_spec(main_spec)
+main_spec.loader.exec_module(main_module)
+game.carregar('qa-platform-physics')
+player=main_module.Jogo(game)
+player.corpo=pygame.FRect(40,10,4,4)
+player.mover(0,0,0.6)
+assert abs(player.corpo.y-36.25)<0.0001 and player.no_chao,player.corpo
+game.carregar('invisivel')
+player=main_module.Jogo(game)
+assert not player.plataforma
+player.corpo=pygame.FRect(40,10,4,4)
+player.mover(0,1,0.75)
+assert abs(player.corpo.y-100)<0.0001,player.corpo
 print(json.dumps({'pygame':pygame.version.ver,'png':results,'portable':True,'topDownUnchanged':True,'geometryCases':len(cases)}))
+game.descartar()
 pygame.quit()
