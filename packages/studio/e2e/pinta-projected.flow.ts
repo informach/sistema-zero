@@ -252,7 +252,7 @@ for (const [name, projection] of [
 for (const projection of ['hexagonal', 'isometric'] as const) {
   test(`${projection}: criar mapa e livro pelo fluxo comum e reabrir sem versão paralela`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.goto(`/?profile=new-${projection}-${Date.now()}`)
     await page.getByRole('button', { name: 'Criar novo', exact: true }).click()
     const dialog = page.getByRole('dialog')
@@ -292,6 +292,11 @@ for (const projection of ['hexagonal', 'isometric'] as const) {
     const location = page.getByRole('status').filter({ hasText: /^Coluna/ })
     await expect(location).toHaveText(/^Coluna -?\d+, linha -?\d+$/)
     const coordinates = (await location.textContent())!.match(/-?\d+/g)!.map(Number)
+    // Panel messages can resize the canvas after choosing the rule area.
+    // Reproduce that layout change; each gesture must use the current box.
+    const viewport = page.viewportSize()!
+    await page.setViewportSize({ ...viewport, height: viewport.height + 20 })
+    const paintAtCenter = () => (testInfo.project.name === 'touch' ? stage.tap() : stage.click())
     const rules = page.locator('[data-pinta-automapping]')
     await rules
       .getByRole('spinbutton', { name: 'Coluna', exact: true })
@@ -299,7 +304,8 @@ for (const projection of ['hexagonal', 'isometric'] as const) {
     await rules.getByRole('spinbutton', { name: 'Linha', exact: true }).fill(String(coordinates[1]))
     await rules.getByRole('button', { name: 'Copiar o antes', exact: true }).click()
     await page.getByRole('button', { name: 'Peça 2', exact: true }).click()
-    await stage.click({ position: { x: box.width / 2, y: box.height / 2 } })
+    await paintAtCenter()
+    await expect(location).toHaveText(`Coluna ${coordinates[0]}, linha ${coordinates[1]}`)
     await rules.getByRole('button', { name: 'Guardar o depois', exact: true }).click()
     await expect
       .poll(async () => {
@@ -309,8 +315,16 @@ for (const projection of ['hexagonal', 'isometric'] as const) {
         return saved?.text && JSON.parse(saved.text).assets[0].book?.rules.length
       })
       .toBe(1)
+    const captured = JSON.parse(
+      (await page.evaluate(() => window.pintaProjectedQA.documents())).find(
+        (item) => item.name === name,
+      )!.text!,
+    ).assets[0].book.rules[0]
+    expect(captured.input[0].cells).toEqual([-1])
+    expect(captured.outputs[0][0].cells).toEqual([1])
     await page.getByRole('button', { name: 'Borracha', exact: true }).click()
-    await stage.click({ position: { x: box.width / 2, y: box.height / 2 } })
+    await paintAtCenter()
+    await expect(location).toHaveText(`Coluna ${coordinates[0]}, linha ${coordinates[1]}`)
     let empty: string | null = null
     await expect
       .poll(async () => {
