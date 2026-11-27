@@ -1,6 +1,6 @@
-[upbeat, welcoming voice] Oi! As moedas chegaram à Ilha do Farol, em três dimensões!
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou as moedas e o baú no jogo 2D. Agora as moedas chegaram à Ilha do Farol, em três dimensões!
 
-[engaging, energetic, conversational voice] A ideia é a mesma do seu jogo 2D: cada moeda soma um e conta uma vez só, o número aparece na tela, e o baú só abre com moedas suficientes.
+[engaging, energetic, conversational voice] A regra continua a mesma: cada moeda soma um e conta uma vez só, o número aparece na tela, e o baú abre com pelo menos 5 moedas.
 
 [engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
@@ -8,15 +8,13 @@
 
 [interested, animated voice] E com a seta da direita, ele passa pela primeira moeda, e o número aqui em cima sobe para 1.
 
-[engaging, energetic, conversational voice] O baú também está na ilha, com uma animação de abrir que já vem pronta.
-
-[engaging, energetic, conversational voice] Já o caminho até o baú, esse eu deixo para você descobrir.
-
 [engaging, energetic, conversational voice] Repare também no aviso aqui em cima, no meio: ele diz o que fazer na partida.
 
-[engaging, energetic, conversational voice] Para começar outra partida, toque na tecla R.
+[curious] Será que o baú está no mesmo lugar do jogo 2D?
 
-[upbeat, encouraging voice] Explore a ilha e tente o baú com poucas moedas e com muitas. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
+
+[upbeat, encouraging voice] Agora é a sua vez: encontre o baú e abra com as suas moedas. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

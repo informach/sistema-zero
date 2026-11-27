@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: As moedas chegaram à ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: As moedas chegaram à ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que o baú está no mesmo lugar do jogo 2D?\",\"falaPersonagem\":\"Será que o baú está no mesmo lugar do jogo 2D?\",\"ancoraAntes\":\"e o número aqui em cima sobe para 1. Repare também no aviso aqui em cima, no meio: ele diz o que fazer na partida.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: encontre o baú e\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Jogue a versão pronta: segure as setas ou W, A, S e D, pegue moedas e tente o baú com poucas e com muitas. A tecla R recomeça. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas ou W, A, S e D, pegue moedas, encontre o baú e abra com as suas moedas. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue Moedas no caminho",
         "required": true,
-        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Pegue moedas, encontre o baú e abra com as suas moedas. A tecla R começa outra partida. Você pode seguir sem terminar.",
         "hints": [],
         "activity": {
           "type": "project-play",
