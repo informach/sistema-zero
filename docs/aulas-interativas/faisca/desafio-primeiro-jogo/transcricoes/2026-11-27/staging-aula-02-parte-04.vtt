@@ -1,0 +1,201 @@
+WEBVTT
+
+1
+00:00:00.540 --> 00:00:04.380
+Aqui no seu jogo, segure as setas e leve o personagem até a
+
+2
+00:00:04.460 --> 00:00:08.141
+chave. Repare no aviso, a mensagem no alto do jogo.
+
+3
+00:00:08.500 --> 00:00:12.160
+Tá vendo? A chave sai do chão, mas o aviso continua
+
+4
+00:00:12.220 --> 00:00:14.920
+dizendo: "Encontre a chave e vá ao farol".
+
+5
+00:00:15.480 --> 00:00:19.080
+É que o seu jogo ainda não manda o aviso mudar quando a chave é pega.
+
+6
+00:00:19.500 --> 00:00:22.100
+Lembra da experiência da primeira parte desta aula?
+
+7
+00:00:22.540 --> 00:00:25.540
+Quando o personagem pegava a chave, o aviso mudava.
+
+8
+00:00:26.040 --> 00:00:29.200
+Agora a gente vai fazer o aviso do seu jogo mudar também.
+
+9
+00:00:29.660 --> 00:00:32.360
+O aviso tem que mudar no encontro com a chave.
+
+10
+00:00:32.701 --> 00:00:36.320
+Por isso, o próximo bloco vai dentro do encontro, logo
+
+11
+00:00:36.380 --> 00:00:40.000
+abaixo do bloco de "Tem Chave". Encontre a área "Quando
+
+12
+00:00:40.040 --> 00:00:43.560
+acontecer". Se ela não estiver aparecendo, arraste um
+
+13
+00:00:43.620 --> 00:00:46.580
+espaço vazio entre os blocos até ela aparecer.
+
+14
+00:00:47.000 --> 00:00:50.980
+Depois, deixe à vista o bloco de "Tem Chave" dentro do encontro.
+
+15
+00:00:51.420 --> 00:00:55.040
+Abra a programação e depois variáveis e pegue outro
+
+16
+00:00:55.100 --> 00:00:58.840
+bloco "Alterar variável para". Arraste e solte logo
+
+17
+00:00:58.900 --> 00:01:02.280
+abaixo do bloco de "Tem Chave". Esse bloco chega com
+
+18
+00:01:02.420 --> 00:01:05.840
+contador. Clique em "Contador" e escolha "Aviso".
+
+19
+00:01:06.260 --> 00:01:09.340
+É este bloco que muda o aviso, como na experiência.
+
+20
+00:01:09.820 --> 00:01:13.600
+A variável "Aviso" guarda a mensagem que aparece no alto do jogo.
+
+21
+00:01:13.940 --> 00:01:17.500
+No fim do bloco vem o número um, mas o aviso guarda uma
+
+22
+00:01:17.540 --> 00:01:21.100
+mensagem, que é um texto. Por isso, esse número vai ser
+
+23
+00:01:21.160 --> 00:01:24.940
+trocado por um bloco de texto. Abra a programação e depois
+
+24
+00:01:25.000 --> 00:01:28.820
+valores e pegue o bloco "Texto". Arraste e solte em
+
+25
+00:01:28.920 --> 00:01:32.740
+cima do um. Repare que o bloco "Texto" vem com a palavra "Olá".
+
+26
+00:01:33.300 --> 00:01:37.100
+Clique em "Olá" e apague. Escreva: "Você pegou a
+
+27
+00:01:37.180 --> 00:01:40.880
+chave! Agora vá ao farol". Depois clique fora do
+
+28
+00:01:40.980 --> 00:01:44.620
+campo. Agora teste. Segure as setas e leve o
+
+29
+00:01:44.660 --> 00:01:48.360
+personagem até a chave. Olha só, a chave sai do
+
+30
+00:01:48.440 --> 00:01:51.080
+chão e o aviso muda para sua mensagem.
+
+31
+00:01:51.460 --> 00:01:55.360
+Agora clique em "Atualizar", o botão com uma seta redonda, logo
+
+32
+00:01:55.420 --> 00:01:58.060
+acima do jogo. Começa uma partida nova.
+
+33
+00:01:58.420 --> 00:02:02.340
+A chave volta para o chão e o aviso diz de novo: "Encontre a
+
+34
+00:02:02.400 --> 00:02:06.060
+chave e vá ao farol". Se algo não funcionou no seu jogo,
+
+35
+00:02:06.400 --> 00:02:08.780
+volte aos blocos e confira se ficou assim.
+
+36
+00:02:09.320 --> 00:02:12.100
+Dentro do encontro com a chave estão três blocos.
+
+37
+00:02:12.460 --> 00:02:14.860
+Primeiro, destruir o sprite chave.
+
+38
+00:02:15.220 --> 00:02:18.240
+Depois, alterar "Tem Chave" para verdadeiro.
+
+39
+00:02:18.600 --> 00:02:21.780
+E, por último, alterar "Aviso" para sua mensagem.
+
+40
+00:02:22.220 --> 00:02:25.420
+Depois de corrigir, teste de novo. Funcionou?
+
+41
+00:02:25.860 --> 00:02:29.240
+Clique em "Verificar projeto". Se faltar alguma coisa,
+
+42
+00:02:29.420 --> 00:02:31.640
+corrija os blocos e clique novamente.
+
+43
+00:02:32.080 --> 00:02:35.980
+Quando aparecer "Objetivo cumprido", clique em "Enviar meu
+
+44
+00:02:36.020 --> 00:02:39.800
+projeto" e confirme em "Enviar". Pronto, você
+
+45
+00:02:39.860 --> 00:02:43.060
+programou o que acontece quando o personagem pega a chave.
+
+46
+00:02:43.460 --> 00:02:47.200
+Ela sai do chão, o jogo guarda em "Tem Chave" que ela foi pega
+
+47
+00:02:47.520 --> 00:02:51.380
+e o aviso muda. E lembra da surpresa que eu te contei quando o curso
+
+48
+00:02:51.420 --> 00:02:55.160
+começou? Ela está quase aqui. Na próxima aula, você
+
+49
+00:02:55.300 --> 00:02:58.940
+vai descobrir o que é. Quando aparecer "Projeto enviado",
+
+50
+00:02:59.280 --> 00:03:00.700
+clique em "Concluir aula".

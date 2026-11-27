@@ -2,6 +2,13 @@
 
 Materiais do curso para consulta, gravação e importação.
 
+**Atualização de 27/11/2026:** os vídeos corrigidos da Aula 1, Parte 6; Aula 2, Parte 4; Aula 3,
+Parte 7; e Aula 4, Parte 2 foram substituídos em staging e produção, no Kids e no adulto, mantendo
+os endereços do Vimeo. As capas foram reenviadas e ativadas, e as aulas receberam as durações e
+transcrições novas. Consulte o [registro da substituição](troca-videos-2026-11-27.md), o
+[comprovante técnico](troca-videos-2026-11-27.json), as [capas](capas-das-aulas/) e as
+[transcrições atuais](transcricoes/2026-11-27/).
+
 | Material | Arquivo |
 | --- | --- |
 | Título, descrições, módulos e aulas | [Módulos](modulos.md) |

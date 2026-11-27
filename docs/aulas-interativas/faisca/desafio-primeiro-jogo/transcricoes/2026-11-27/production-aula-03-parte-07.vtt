@@ -1,0 +1,161 @@
+WEBVTT
+
+1
+00:00:00.440 --> 00:00:03.240
+Aqui no seu jogo, olha a chave. Tá vendo?
+
+2
+00:00:03.540 --> 00:00:07.340
+Toda partida começa com ela neste mesmo lugar, porque o jogo
+
+3
+00:00:07.400 --> 00:00:10.700
+usa sempre o mesmo X e o mesmo Y para ela.
+
+4
+00:00:11.120 --> 00:00:13.020
+Lembra da experiência da parte anterior?
+
+5
+00:00:13.360 --> 00:00:16.560
+Um X maior levava a chave para a direita e um Y
+
+6
+00:00:16.980 --> 00:00:20.660
+maior levava a chave para baixo, porque na tela do jogo, o Y
+
+7
+00:00:21.040 --> 00:00:24.320
+começa em zero lá no alto e vai crescendo para baixo.
+
+8
+00:00:24.720 --> 00:00:28.020
+Agora você vai escolher onde fica a chave do seu jogo.
+
+9
+00:00:28.460 --> 00:00:32.259
+Encontre a área ao iniciar. Se ela não estiver aparecendo,
+
+10
+00:00:32.600 --> 00:00:36.060
+arraste um espaço vazio entre os blocos até ela aparecer.
+
+11
+00:00:36.480 --> 00:00:40.040
+Lá dentro, deixe à vista o bloco "Criar Sprite Chave".
+
+12
+00:00:40.440 --> 00:00:43.420
+Olha aqui, esse bloco tem os campos X e Y.
+
+13
+00:00:44.140 --> 00:00:47.960
+São eles que escolhem onde a chave aparece quando a partida começa.
+
+14
+00:00:48.360 --> 00:00:52.020
+No seu passo a passo do projeto, tem três lugares para experimentar:
+
+15
+00:00:52.340 --> 00:00:55.300
+perto da trilha, com X 211 e Y
+
+16
+00:00:55.920 --> 00:00:59.900
+53, na parte de baixo, com X 160 e Y
+
+17
+00:01:00.560 --> 00:01:03.560
+250, ou perto da ponte, com X
+
+18
+00:01:03.780 --> 00:01:06.380
+280 e Y 160.
+
+19
+00:01:06.720 --> 00:01:09.180
+Preciso escolher um desses três lugares?
+
+20
+00:01:09.420 --> 00:01:12.480
+Você pode escolher um deles ou experimentar outro lugar.
+
+21
+00:01:12.840 --> 00:01:16.640
+Eu vou colocar na parte de baixo. No campo X do bloco,
+
+22
+00:01:16.960 --> 00:01:20.640
+troque o número pelo X do lugar que você escolheu, como
+
+23
+00:01:20.720 --> 00:01:24.600
+160. Depois, no campo Y, coloque o Y
+
+24
+00:01:25.020 --> 00:01:28.980
+do lugar, como 250. Clique fora do campo
+
+25
+00:01:29.080 --> 00:01:32.860
+e espere o jogo atualizar. O nome chave, a largura,
+
+26
+00:01:33.060 --> 00:01:35.660
+a altura e a imagem ficam como estão.
+
+27
+00:01:35.940 --> 00:01:39.560
+Olha só, agora quem joga precisa buscar a chave em
+
+28
+00:01:39.700 --> 00:01:42.840
+outro lugar. Repare se a chave aparece inteira.
+
+29
+00:01:43.280 --> 00:01:47.120
+Se ela ficar atrás do farol ou da faixa do aviso, quem joga
+
+30
+00:01:47.280 --> 00:01:50.960
+não vai achar. Se ficar em cima do personagem, ele já
+
+31
+00:01:51.020 --> 00:01:54.680
+começa com a chave. Nesses casos, escolha um dos três
+
+32
+00:01:54.720 --> 00:01:56.700
+lugares do passo a passo do projeto.
+
+33
+00:01:57.060 --> 00:02:00.540
+Agora teste o novo caminho. Clique em "Atualizar",
+
+34
+00:02:00.980 --> 00:02:04.600
+busque a chave no lugar escolhido e leve até a porta do farol.
+
+35
+00:02:05.060 --> 00:02:07.860
+A luz deve acender e o barco deve chegar.
+
+36
+00:02:08.200 --> 00:02:10.301
+Clique em "Atualizar" mais uma vez.
+
+37
+00:02:10.640 --> 00:02:13.340
+A chave deve voltar ao lugar que você escolheu.
+
+38
+00:02:13.620 --> 00:02:17.420
+Agora o jogo está do seu jeito. Clique em "Enviar meu
+
+39
+00:02:17.440 --> 00:02:21.100
+projeto" e confirme em "Enviar". Quando aparecer
+
+40
+00:02:21.220 --> 00:02:24.180
+"Projeto enviado", clique em "Próxima parte".

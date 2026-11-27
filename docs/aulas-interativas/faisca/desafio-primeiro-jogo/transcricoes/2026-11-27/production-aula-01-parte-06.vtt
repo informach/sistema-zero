@@ -1,0 +1,129 @@
+WEBVTT
+
+1
+00:00:00.480 --> 00:00:04.220
+Aqui no seu jogo, segure uma seta até o personagem chegar à
+
+2
+00:00:04.260 --> 00:00:06.980
+beirada e continue segurando. Tá vendo?
+
+3
+00:00:07.380 --> 00:00:11.260
+Ele passa da beirada e vai sumindo da tela, porque o seu jogo
+
+4
+00:00:11.420 --> 00:00:15.360
+ainda não tem limite. Lembra da experiência da parte anterior?
+
+5
+00:00:15.880 --> 00:00:19.820
+Com o limite da tela, depois de cada passinho, o jogo puxava ele
+
+6
+00:00:19.860 --> 00:00:23.720
+de volta para dentro. Agora a gente vai pôr esse limite no
+
+7
+00:00:23.860 --> 00:00:24.540
+seu jogo.
+
+8
+00:00:25.220 --> 00:00:26.960
+E onde eu coloco esse limite?
+
+9
+00:00:27.200 --> 00:00:29.960
+O jogo confere a beirada logo depois do passinho.
+
+10
+00:00:30.320 --> 00:00:34.220
+Por isso, o limite vai logo abaixo do bloco de movimento, ainda
+
+11
+00:00:34.280 --> 00:00:38.100
+dentro de "a cada quadro do jogo". Deixe esse lugar à vista.
+
+12
+00:00:38.500 --> 00:00:42.240
+Agora abra "jogo 2D", depois "movimento" e depois
+
+13
+00:00:42.360 --> 00:00:45.920
+"bordas e rebatidas" e pegue o bloco "manter o sprite
+
+14
+00:00:46.040 --> 00:00:49.620
+dentro da tela". Arraste e solte logo abaixo do bloco de
+
+15
+00:00:49.680 --> 00:00:53.080
+movimento. Repare que esse bloco também chega com "herói".
+
+16
+00:00:53.540 --> 00:00:55.860
+Clique em "herói" e escolha "personagem".
+
+17
+00:00:56.220 --> 00:00:58.200
+É este bloco que confere a beirada.
+
+18
+00:00:58.500 --> 00:01:01.920
+Se o personagem passou dela, ele puxa de volta para dentro.
+
+19
+00:01:02.240 --> 00:01:05.880
+Agora segure cada seta até o personagem chegar à beirada
+
+20
+00:01:05.920 --> 00:01:09.600
+daquele lado. Olha só, ele para em cada beirada e
+
+21
+00:01:09.760 --> 00:01:13.640
+não sai mais da tela. Se algo não funcionou no seu jogo, volte
+
+22
+00:01:13.680 --> 00:01:15.720
+aos blocos e confira se ficou assim.
+
+23
+00:01:16.180 --> 00:01:19.540
+Dentro de "a cada quadro do jogo", o bloco que move o
+
+24
+00:01:19.580 --> 00:01:23.340
+personagem vem antes e logo abaixo dele está "manter o
+
+25
+00:01:23.460 --> 00:01:25.540
+sprite personagem dentro da tela".
+
+26
+00:01:25.860 --> 00:01:28.720
+Depois de corrigir, teste de novo. Funcionou?
+
+27
+00:01:29.140 --> 00:01:33.100
+Clique em "verificar projeto". Se faltar alguma coisa, corrija os
+
+28
+00:01:33.160 --> 00:01:37.140
+blocos e clique novamente. Quando aparecer "objetivo cumprido",
+
+29
+00:01:37.440 --> 00:01:40.880
+clique em "enviar meu projeto" e confirme em "enviar".
+
+30
+00:01:41.200 --> 00:01:44.400
+Pronto, você programou o movimento do seu personagem.
+
+31
+00:01:44.720 --> 00:01:47.640
+Agora ele anda pelo mapa e não sai da tela.
+
+32
+00:01:47.940 --> 00:01:51.460
+Quando aparecer "projeto enviado", clique em "concluir aula".
