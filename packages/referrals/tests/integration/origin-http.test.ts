@@ -391,7 +391,8 @@ describe('rotas da origem por aquisição', () => {
     expect(sent.input.templateKey).toBe('referrals-offer-referral-invite')
     expect(sent.input.variables).toMatchObject({
       oferta: DESAFIO.name,
-      link: `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}`,
+      // O tipo vai no link (27/11/2026): a oferta única de um curso pode ser venda e presente.
+      link: `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}?tipo=indicacao`,
     })
   })
 
@@ -434,6 +435,8 @@ describe('rotas da origem por aquisição', () => {
       input: { templateKey: string; variables: Record<string, string> }
     }
     expect(sent.input.templateKey).toBe('referrals-scholarship-invite')
-    expect(sent.input.variables.link).toBe(`${FUNNEL_URL}/i/mari-x7k2/${KIDS_GIFT_OFFER.offerSlug}`)
+    expect(sent.input.variables.link).toBe(
+      `${FUNNEL_URL}/i/mari-x7k2/${KIDS_GIFT_OFFER.offerSlug}?tipo=presente`,
+    )
   })
 })

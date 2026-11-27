@@ -124,6 +124,7 @@ export interface RedeemOptions {
       audience: GiftAudience,
       kind: 'gift',
       offerRef: string,
+      options?: { sameCourse?: boolean },
     ): Promise<{ offerId: string } | null>
   }
 }
@@ -336,7 +337,11 @@ export class RedeemScholarshipService {
     if (campaign) return campaign.kind === 'sale' ? null : giftOfferRef(campaign, audience)
     const wanted = requested?.trim()
     if (wanted && this.opts.ambassadorOffers) {
-      const option = await this.opts.ambassadorOffers.allowed(audience, 'gift', wanted)
+      // A oferta que saiu da lista cai na ligada do mesmo curso (27/11/2026): a página aberta por
+      // um link antigo (`?oferta-presente=` com o slug de antes) continua resgatando.
+      const option = await this.opts.ambassadorOffers.allowed(audience, 'gift', wanted, {
+        sameCourse: true,
+      })
       return option?.offerId ?? null
     }
     return giftOfferRef(null, audience)

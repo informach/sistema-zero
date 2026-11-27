@@ -97,14 +97,18 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     )
     .get(
       '/links/:code/:offer',
-      async ({ params, set }) =>
+      async ({ params, query, set }) =>
         params.offer === CHECKOUT_SEGMENT
           ? linkResponse(deps, params.code, null, true, set)
-          : linkResponse(deps, params.code, params.offer, false, set),
+          : linkResponse(deps, params.code, params.offer, false, set, undefined, query.kind),
       {
         params: t.Object({
           code: t.String({ minLength: 1, maxLength: 64 }),
           offer: t.String({ minLength: 1, maxLength: 80, pattern: SLUG }),
+        }),
+        // O tipo pedido pelo link (`/i/<código>/<oferta>?tipo=`, 27/11/2026).
+        query: t.Object({
+          kind: t.Optional(t.Union([t.Literal('gift'), t.Literal('referral')])),
         }),
       },
     )
@@ -486,6 +490,7 @@ async function linkResponse(
   checkout: boolean,
   set: SetStatus,
   byProduct?: { kind: 'gift' | 'referral'; skus: string[] },
+  kind?: 'gift' | 'referral',
 ) {
   const code = normalizeCode(rawCode)
   if (!deps.links || !isValidCode(code)) {
@@ -494,7 +499,7 @@ async function linkResponse(
   }
   const result = byProduct
     ? await deps.links.resolveForProduct(code, byProduct.kind, byProduct.skus, checkout)
-    : await deps.links.resolve(code, offer, checkout)
+    : await deps.links.resolve(code, offer, checkout, kind)
   if (result.kind === 'upstream_error') {
     set.status = 502
     return envelope('UPSTREAM_ERROR', 'Não foi possível abrir o link agora')

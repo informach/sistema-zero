@@ -40,12 +40,22 @@ export const CHECKOUT_SEGMENT = 'pagamento'
 export function referralLinkUrl(
   funnelPublicUrl: string,
   code: string,
-  options: { offerSlug?: string | null; checkout?: boolean } = {},
+  options: {
+    offerSlug?: string | null
+    checkout?: boolean
+    /**
+     * O tipo da lista (27/11/2026): a oferta única de um curso pode ser venda e presente, e o link
+     * por slug precisa dizer qual (`?tipo=presente|indicacao`). Só com `offerSlug` e sem checkout.
+     */
+    kind?: 'gift' | 'referral'
+  } = {},
 ): string {
   if (options.offerSlug === CHECKOUT_SEGMENT)
     throw new Error(`"${CHECKOUT_SEGMENT}" é reservado no link de indicação`)
   const parts = [funnelBase(funnelPublicUrl), 'i', encodeURIComponent(code)]
   if (options.offerSlug) parts.push(encodeURIComponent(options.offerSlug))
   if (options.checkout) parts.push(CHECKOUT_SEGMENT)
-  return parts.join('/')
+  const url = parts.join('/')
+  if (!options.kind || !options.offerSlug || options.checkout) return url
+  return `${url}?tipo=${options.kind === 'gift' ? 'presente' : 'indicacao'}`
 }
