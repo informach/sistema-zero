@@ -1,4 +1,8 @@
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import {
+  isPintaMemoryAsset,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from '../core/assetMemory'
 /**
  * As PEÇAS de um mapa com várias peças: o tileset padrão do mapa + os que as
  * camadas escolheram. Os renderizadores recebem `MapTilesets` — UM tileset (o
@@ -131,8 +135,11 @@ export function collectTilesetsByIds(
 /** `collectMapTilesets` sobre uma lista de assets (galeria, backup, pacote). */
 export function collectMapTilesetsFrom(
   tilemap: TilemapAsset<TilemapCells>,
-  assets: readonly PintaMemoryAsset[],
+  assets: readonly PintaWorkshopAsset[],
 ): AnyTilesetAsset[] {
   const byId = new Map(assets.map((asset) => [asset.id, asset]))
-  return collectMapTilesets(tilemap, (id) => byId.get(id))
+  return collectMapTilesets(tilemap, (id) => {
+    const asset = byId.get(id)
+    return asset && isPintaMemoryAsset(asset) ? asset : null
+  })
 }

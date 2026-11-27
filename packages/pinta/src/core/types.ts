@@ -73,6 +73,7 @@ export interface PintaTilemapMeta {
 export type PintaSceneWire =
   | import('@sistemazero/core/studio/pinta-scene').PintaScene
   | import('@sistemazero/core/studio/pinta-region-scene').PintaRegionSceneWire
+  | import('@sistemazero/core/studio/pinta-projected-scene').PintaProjectedSceneWire
 
 export interface PintaExportedAsset {
   regional?: import('@sistemazero/core/studio/pinta-regional-marker').PintaRegionalMarker

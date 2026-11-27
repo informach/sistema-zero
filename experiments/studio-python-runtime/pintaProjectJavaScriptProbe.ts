@@ -77,3 +77,36 @@ export async function showPintaJavaScriptProject(
     blocksState: reopened.blocksState,
   }
 }
+
+/** Local fixture: real BFF, immutable snapshots and publication commands; controlled Hub/R2 ports. */
+export async function publishPintaJavaScriptProject(projectId: string, requestId: string) {
+  const scope = createProjectStorageScope('js-player-public-probe')
+  const project = await loadSanitizedProjectById(projectId, scope)
+  if (!project) throw Error('Projeto ausente')
+  const form = new FormData()
+  form.set('title', project.name)
+  form.set('description', 'Minha criação do Pinta')
+  form.set('clientIdempotencyKey', requestId)
+  form.set(
+    'project',
+    new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
+  )
+  const response = await fetch('/api/studio/publish-standalone', { method: 'POST', body: form })
+  const result = await response.json()
+  if (!response.ok) throw Error(JSON.stringify(result))
+  const played = await fetch('/api/studio/play/' + result.publicationId)
+  if (!played.ok) throw Error('A publicação não reabriu')
+  const published = (await played.json()) as Project
+  const frame = document.createElement('iframe')
+  frame.title = 'Projeto PNG6 publicado'
+  frame.sandbox.add('allow-scripts')
+  frame.srcdoc = await renderProjectToPreviewDocAsync(published)
+  document.querySelector('iframe[title="Projeto PNG6 publicado"]')?.remove()
+  document.body.append(frame)
+  return {
+    publicationId: result.publicationId,
+    playUrl: result.playUrl,
+    updated: result.updated === true,
+    assets: published.assets,
+  }
+}

@@ -1,6 +1,7 @@
-import { isPintaMemoryAsset, type PintaWorkshopAsset } from '../../core/assetMemory'
+import type { PintaWorkshopAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import type { RegionMapSetAsset, RegionTilemapAsset } from '../../core/project'
+import type { WorkshopProjectedMap } from '../../core/projectedDocument'
 import { triggerDownload } from '../../export/download'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
@@ -14,7 +15,7 @@ export function WorkshopMapDownload({
   catalog: snapshot,
 }: {
   open: boolean
-  asset: RegionTilemapAsset | RegionMapSetAsset
+  asset: RegionTilemapAsset | RegionMapSetAsset | WorkshopProjectedMap
   onClose: () => void
   catalog?: readonly PintaWorkshopAsset[]
 }) {
@@ -43,9 +44,7 @@ export function WorkshopMapDownload({
       <Button variant="barOutline" onClick={() => void download()}>
         {COPY.editor.download} .pinta.json
       </Button>
-      {asset.kind === 'tilemap' ? (
-        <SceneExportButtons map={asset} inventory={catalog.filter(isPintaMemoryAsset)} />
-      ) : null}
+      {asset.kind === 'tilemap' ? <SceneExportButtons map={asset} inventory={catalog} /> : null}
     </Dialog>
   )
 }

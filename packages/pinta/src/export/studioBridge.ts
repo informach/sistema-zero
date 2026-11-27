@@ -1,4 +1,5 @@
 import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
+import { readPintaProjectedScene } from '@sistemazero/core/studio/pinta-projected-scene'
 import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import { sceneFitsStudio } from '@sistemazero/core/studio/pinta-scene'
 import { tilemapNeedsV3 } from '../core/project'
@@ -154,9 +155,11 @@ export function validateStudioPayloadSize(
   if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) return 'asset-too-big'
   if (
     payload.scene &&
-    (payload.scene.version === 4
-      ? !readPintaRegionScene(JSON.stringify(payload.scene))
-      : !sceneFitsStudio(payload.scene))
+    (payload.scene.version === 5
+      ? !readPintaProjectedScene(JSON.stringify(payload.scene))
+      : payload.scene.version === 4
+        ? !readPintaRegionScene(JSON.stringify(payload.scene))
+        : !sceneFitsStudio(payload.scene))
   )
     return 'asset-too-big'
   if (payload.tilemap && payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {

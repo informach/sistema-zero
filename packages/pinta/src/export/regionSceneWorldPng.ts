@@ -3,6 +3,7 @@ import {
   type PintaImageWorld,
 } from '@sistemazero/core/studio/pinta-image'
 import { readPngDataUrl } from '@sistemazero/core/studio/pinta-png-binary'
+import type { PintaProjectedSceneWire } from '@sistemazero/core/studio/pinta-projected-scene'
 import { PINTA_REGION_IMAGE_PNG_LIMITS } from '@sistemazero/core/studio/pinta-region-image-limits'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { embedPintaRegionImage } from './regionImage'
@@ -11,13 +12,16 @@ import { readPintaRegionImageWorld } from './regionImageWorld'
 /** The first sheet is the cover of this portable world. No full-map raster is needed. */
 export async function encodeRegionSceneWorldPng(
   rootId: string,
-  scenes: ReadonlyMap<string, PintaRegionSceneWire>,
+  scenes: ReadonlyMap<string, PintaRegionSceneWire | PintaProjectedSceneWire>,
 ) {
   if (scenes.size > PINTA_IMAGE_WORLD_LIMITS.maps)
     throw new Error('Este cenário tem mais de 16 lugares ligados.')
   const root = scenes.get(rootId)
   if (!root) throw new Error('O cenário inicial não veio no pacote.')
-  const encode = (scene: PintaRegionSceneWire, world?: PintaImageWorld) => {
+  const encode = (
+    scene: PintaRegionSceneWire | PintaProjectedSceneWire,
+    world?: PintaImageWorld,
+  ) => {
     const cover = readPngDataUrl(scene.tilesets[0]!.image, PINTA_REGION_IMAGE_PNG_LIMITS).bytes
     return embedPintaRegionImage(cover, JSON.stringify(scene), { world })
   }

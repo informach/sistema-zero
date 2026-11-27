@@ -33,7 +33,7 @@ function shapesBytes(shapes: VectorShape[]): number {
 }
 
 /** Legacy payload metric remains stable for reading existing resource catalogs. */
-export function assetBytes(asset: PintaMemoryAsset, countSharedData = true): number {
+export function assetBytes(asset: PintaWorkshopAsset, countSharedData = true): number {
   const bitmaps: PintaBitmap[] = []
   switch (asset.kind) {
     case 'map-set':
@@ -86,7 +86,7 @@ export function assetBytes(asset: PintaMemoryAsset, countSharedData = true): num
 
 /** Retained authoring estimate includes tile rules/properties, without serializing pixel buffers. */
 const rulebookSizes = new WeakMap<object, number>()
-function authoredRulebook(asset: PintaMemoryAsset): SharedPart | undefined {
+function authoredRulebook(asset: PintaWorkshopAsset): SharedPart | undefined {
   if (
     asset.kind !== 'tilemap' ||
     asset.schema !== 9 ||
@@ -105,7 +105,7 @@ export function rulebookSharedPart(book: object): SharedPart {
   }
   return { key: book, bytes }
 }
-export function retainedAssetBytes(asset: PintaMemoryAsset, countSharedData = true): number {
+export function retainedAssetBytes(asset: PintaWorkshopAsset, countSharedData = true): number {
   if (asset.kind === 'map-set') return retainedAssetBytes(asset.map, countSharedData)
   let bytes =
     assetBytes(asset, countSharedData) +
@@ -129,7 +129,7 @@ export function retainedAssetBytes(asset: PintaMemoryAsset, countSharedData = tr
 }
 
 /** Every immutable chunk buffer is an independent shared part of history. */
-export function* sharedAssetParts(asset: PintaMemoryAsset): Iterable<SharedPart> {
+export function* sharedAssetParts(asset: PintaWorkshopAsset): Iterable<SharedPart> {
   if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') return
   const book = authoredRulebook(asset)
   if (book) yield book

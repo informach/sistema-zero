@@ -50,7 +50,7 @@ import {
   uniqueAnimationName,
   VECTOR_TILE_SIZES,
 } from './projectConfig'
-import type { ProjectedTilemapAsset } from './projectedDocument'
+import type { ProjectedMapLayer, ProjectedTilemapAsset } from './projectedDocument'
 
 export {
   BACKGROUND_SIZES,
@@ -629,14 +629,16 @@ export function isTileLayer<Cells extends TilemapCells>(
   return layer.kind === undefined || layer.kind === 'tiles'
 }
 
-export function isGroupLayer(layer: TilemapLayer<TilemapCells>): layer is TilemapGroupLayer {
+type LayerHierarchy = TilemapLayer<TilemapCells> | ProjectedMapLayer
+
+export function isGroupLayer(layer: LayerHierarchy): layer is TilemapGroupLayer {
   return layer.kind === 'group'
 }
 
 /** Os grupos que contêm a camada, do mais próximo ao mais de fora. */
 export function layerAncestors(
-  tilemap: TilemapAsset<TilemapCells>,
-  layer: TilemapLayer<TilemapCells>,
+  tilemap: { layers: readonly LayerHierarchy[] },
+  layer: LayerHierarchy,
 ): TilemapGroupLayer[] {
   const out: TilemapGroupLayer[] = []
   let parentId = layer.parentId
@@ -662,8 +664,8 @@ export interface EffectiveLayer {
 }
 
 export function effectiveLayer(
-  tilemap: TilemapAsset<TilemapCells>,
-  layer: TilemapLayer<TilemapCells>,
+  tilemap: { layers: readonly LayerHierarchy[] },
+  layer: LayerHierarchy,
 ): EffectiveLayer {
   const out: EffectiveLayer = {
     visible: layer.visible,
@@ -728,10 +730,7 @@ export function tilemapTilesetIds(tilemap: MapGraph): string[] {
 }
 
 /** O mapa usa este tileset (como padrão ou em alguma camada)? */
-export function tilemapUsesTileset(
-  tilemap: TilemapAsset<TilemapCells>,
-  tilesetId: string,
-): boolean {
+export function tilemapUsesTileset(tilemap: MapGraph, tilesetId: string): boolean {
   return (
     tilemapTilesetIds(tilemap).includes(tilesetId) ||
     tilemap.layers.some(

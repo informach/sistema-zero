@@ -6,7 +6,10 @@ import {
   PINTA_IMAGE_WORLD_PNG_PATTERN,
   PintaImageWorldSchema,
 } from '../src/studio/pinta-image'
-import { PintaRegionImageHeaderSchema } from '../src/studio/pinta-region-image'
+import {
+  PINTA_REGION_IMAGE_DATA_VERSION,
+  PintaRegionImageHeaderSchema,
+} from '../src/studio/pinta-region-image'
 import { PintaRegionSceneHeaderSchema } from '../src/studio/pinta-region-scene'
 import {
   PINTA_SCENE_COLOR_PATTERN,
@@ -111,7 +114,11 @@ function pythonSchemaConverter() {
 export function pythonSceneSchemaTable() {
   const convert = pythonSchemaConverter()
   const schema = convert(PintaRegionSceneHeaderSchema)
-  const image = convert(PintaRegionImageHeaderSchema)
+  // The current Python adapter reads Scene 4 / PNG 5. Expanding the common
+  // JavaScript reader must not silently advertise projected PNG 6 to Python.
+  const image = convert(
+    PintaRegionImageHeaderSchema.extend({ version: z.literal(PINTA_REGION_IMAGE_DATA_VERSION) }),
+  )
   if (PINTA_SCENE_PROPERTY_COLOR_PATTERN.flags !== 'i')
     throw new Error('Unsupported typed color regex flags.')
   return {

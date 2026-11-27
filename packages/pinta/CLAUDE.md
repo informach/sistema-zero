@@ -1,15 +1,27 @@
 # CLAUDE.md — @sistemazero/pinta
 
-## LG05 leitor A (27/11/2026, implementação local)
+## LG05 — transição para autoria 9 (27/11/2026)
 
 Plano vigente: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`.
-O core prepara leitor causal 8 e o BFF admite o nativo 9 integral. O host público continua
-com teto nativo 8 e gravador nuvem 7. A autoridade de instalação de um pull canônico é separada
-da autoridade de escrita local: a conta pode baixar e preservar nativo 9 sem permitir sua
-edição/importação/enfileiramento por um gravador 7. Não subir o teto público por isso.
-A autoria projetada, PNG 6/destinos e o gravador público 8 continuam na entrega B da LG05;
-produção ainda depende da qualificação e implantação próprias. As seções datadas de 23/11
-abaixo são o corte anterior; o leitor 7 citado ali é histórico.
+O leitor causal A está integrado em main (PR 298), com CI aprovado; a implantação de staging
+está em andamento. Nenhuma promoção LG05 para produção está confirmada neste corte.
+
+A entrega B está em qualificação: catálogo único para todos os documentos da oficina, editor
+projetado com a mesma autoridade/histórico/autosave, seleção e geometria próprias, avaliador
+comum de autorregras e PNG 6/cena 5 pelo mesmo ponto de admissão Pinta→Studio. O exportador
+externo anterior foi substituído pelo preparador comum; formatos antigos conservam leitura
+e recuperação, sem seletor de escrita antiga. O gesto publica cada pincelada na autoridade
+comum e registra um único desfazer ao terminar; prévias de regras continuam explícitas.
+
+O host público ainda anuncia leitor 8, escritor causal 7 e teto nativo 8 pelo contrato único
+`pinta-workshop-capabilities.ts`. A capacidade numérica `nativeWriterVersion` impede mutações
+de documentos 9 nesse host. A ativação escritor 8/teto 9 depende da implantação prévia de
+todos os leitores, inclusive PNG 6 no Studio, e da qualificação completa da entrega B.
+Não introduzir flag, versão selecionável ou uma segunda implementação pública.
+
+As seções datadas de 23/11 e anteriores abaixo são históricas. As recusas ali de galeria,
+PNG e editor projetados não descrevem o código B em qualificação, nem comprovam deploy.
+Python permanece na LG08; não promover catálogo/distribuição Python nesta entrega.
 
 ## Oficina de cenários: como está em 23/11/2026
 

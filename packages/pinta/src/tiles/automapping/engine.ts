@@ -1,19 +1,22 @@
 import {
   effectiveLayer,
-  isTileLayer,
   isTileLayerGraph,
   type MapGraph,
-  type TilemapCells,
   tileLayerTilesetId,
 } from '../../core/project'
-import { isValidCellForTiles } from '../cell'
 import type { CellRect } from '../cellGeometry'
-import { type AuthorMap, isBoundedCellRect, tryEditMapCellBatch } from '../mapCellEdits'
-import { mapCellBounds, type TileCellReader } from '../mapCells'
+import { isBoundedCellRect } from '../mapCellEdits'
+import { mapCellBounds } from '../mapCells'
 import type { RegionCellEdit } from '../regionCells'
 import { seededChoice } from '../terrain'
-import { createMapLayerCellReader } from '../tilemapOps'
 import { AUTOMAP_LIMITS, type AutomapBook, type PatternLayer, type SheetIndex } from './book'
+import {
+  type AutomapMap,
+  automapCellReader,
+  editAutomapCells,
+  isAutomapTileLayer,
+  validAutomapCell,
+} from './cells'
 
 export type AutomapFailure =
   | 'invalid-area'
@@ -22,10 +25,10 @@ export type AutomapFailure =
   | 'locked'
   | 'work-budget'
   | 'map-limit'
-export type AutomapPreview<Map extends AuthorMap> =
+export type AutomapPreview<Map extends AutomapMap> =
   | { ok: false; reason: AutomapFailure }
   | { ok: true; base: Map; map: Map; changes: number; matches: number; comparisons: number }
-type PlaneState = { reader: TileCellReader; locked: boolean }
+type PlaneState = { reader: { at(col: number, row: number): number }; locked: boolean }
 
 /**
  * Structure and IDs only: every plane names a tile layer of the map that still uses the plane's
@@ -46,7 +49,7 @@ export function checkAutomapLayers(
 }
 
 export function checkAutomapBindings(
-  map: AuthorMap,
+  map: AutomapMap,
   book: AutomapBook,
   sheets: SheetIndex,
 ): AutomapFailure | undefined {
@@ -54,20 +57,20 @@ export function checkAutomapBindings(
     for (const planes of [rule.input, ...rule.outputs])
       for (const plane of planes) {
         const layer = map.layers.find((item) => item.id === plane.layer)
-        if (!layer || !isTileLayer<TilemapCells>(layer)) return 'missing-layer'
+        if (!layer || !isAutomapTileLayer(layer)) return 'missing-layer'
         const sheet = sheets.get(plane.sheet)
         if (
           tileLayerTilesetId(map, layer) !== plane.sheet ||
           !sheet ||
           sheet.sha256 !== plane.sha256 ||
-          plane.cells.some((v) => v !== null && !isValidCellForTiles(v, sheet.count))
+          plane.cells.some((v) => v !== null && !validAutomapCell(map, v, sheet.count))
         )
           return 'changed-sheet'
       }
 }
 
 /** All matching observes one immutable snapshot. Earlier rules and row-major anchors win entire output patterns. */
-export function previewAutomapping<M extends AuthorMap>(
+export function previewAutomapping<M extends AutomapMap>(
   map: M,
   book: AutomapBook,
   sheets: SheetIndex,
@@ -87,9 +90,9 @@ export function previewAutomapping<M extends AuthorMap>(
     return { ok: true, base: map, map, changes: 0, matches: 0, comparisons: 0 }
   const layers = new Map<string, PlaneState>()
   for (const layer of map.layers)
-    if (isTileLayer<TilemapCells>(layer))
+    if (isAutomapTileLayer(layer))
       layers.set(layer.id, {
-        reader: createMapLayerCellReader(map, layer.id)!,
+        reader: automapCellReader(map, layer.id)!,
         locked: effectiveLayer(map, layer).locked,
       })
   const pending = new Map<string, Map<number, RegionCellEdit>>()
@@ -187,7 +190,7 @@ export function previewAutomapping<M extends AuthorMap>(
       (e) => layers.get(id)!.reader.at(e.col, e.row) !== e.cell,
     )
     if (!edits.length) continue
-    const result = tryEditMapCellBatch(next, id, edits)
+    const result = editAutomapCells(next, id, edits)
     if (result.failure) return { ok: false, reason: 'map-limit' }
     next = result.map
     changes += edits.length
@@ -196,7 +199,7 @@ export function previewAutomapping<M extends AuthorMap>(
 }
 
 export function captureAutomapExample(
-  map: AuthorMap,
+  map: AutomapMap,
   area: CellRect,
   ids: readonly string[],
   sheets: SheetIndex,
@@ -222,15 +225,16 @@ export function captureAutomapExample(
   const planes: PatternLayer[] = []
   for (const id of ids) {
     const layer = map.layers.find((item) => item.id === id)
-    if (!layer || !isTileLayer<TilemapCells>(layer)) return null
+    if (!layer || !isAutomapTileLayer(layer)) return null
     const sheet = tileLayerTilesetId(map, layer),
       identity = sheets.get(sheet),
-      reader = createMapLayerCellReader(map, id)!
+      reader = automapCellReader(map, id)!
     if (!identity) return null
     const cells: (number | null)[] = []
     for (let row = area.row; row < area.row + area.rows; row++)
       for (let col = area.col; col < area.col + area.cols; col++) {
         const cell = reader.at(col, row)
+        if (!validAutomapCell(map, cell, identity.count)) return null
         cells.push(ignoreEmpty && cell === -1 ? null : cell)
       }
     if (cells.some((cell) => cell !== null))
@@ -240,7 +244,7 @@ export function captureAutomapExample(
 }
 
 /** Exact cells changed by a dense editing gesture, including the shift when its left/top edge grew. */
-export function previewAutomapStroke<M extends AuthorMap>(
+export function previewAutomapStroke<M extends AutomapMap>(
   before: M,
   painted: M,
   layer: string,
@@ -249,8 +253,8 @@ export function previewAutomapStroke<M extends AuthorMap>(
   shift = { col: 0, row: 0 },
 ): AutomapPreview<M> {
   if (before.id !== painted.id) return { ok: false, reason: 'invalid-area' }
-  const old = createMapLayerCellReader(before, layer),
-    current = createMapLayerCellReader(painted, layer)
+  const old = automapCellReader(before, layer),
+    current = automapCellReader(painted, layer)
   if (!old || !current) return { ok: false, reason: 'missing-layer' }
   const bounds = mapCellBounds(painted),
     priorBounds = mapCellBounds(before)
@@ -287,11 +291,11 @@ export function previewAutomapStroke<M extends AuthorMap>(
       return { ok: false, reason: 'invalid-area' }
     const oldLayer = before.layers.find((item) => item.id === layer),
       nextLayer = painted.layers.find((item) => item.id === layer)
-    if (!oldLayer || !nextLayer || !isTileLayer(oldLayer) || !isTileLayer(nextLayer))
+    if (!oldLayer || !nextLayer || !isAutomapTileLayer(oldLayer) || !isAutomapTileLayer(nextLayer))
       return { ok: false, reason: 'missing-layer' }
-    const prior = new Map(oldLayer.cells.chunks.map((part) => [part.col + ',' + part.row, part]))
+    const prior = new Map(oldLayer.cells.chunks.map((part) => [`${part.col},${part.row}`, part]))
     const touched = nextLayer.cells.chunks.filter((part) => {
-      const key = part.col + ',' + part.row,
+      const key = `${part.col},${part.row}`,
         previous = prior.get(key)
       prior.delete(key)
       return previous?.cells !== part.cells
@@ -328,7 +332,7 @@ export function previewAutomapStroke<M extends AuthorMap>(
   // overwrite the brush layer or restore its previous value.
   if (changed.size + result.changes > AUTOMAP_LIMITS.writes) {
     let total = result.changes
-    const final = createMapLayerCellReader(result.map, layer)!
+    const final = automapCellReader(result.map, layer)!
     for (const at of changed) {
       const col = bounds.col + (at % painted.cols),
         row = bounds.row + Math.floor(at / painted.cols),
