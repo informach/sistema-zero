@@ -1,0 +1,619 @@
+{
+  "capturedAt": "2026-11-27T16:54:59.771Z",
+  "referenceCheckCapturedAt": "2026-11-27T16:58:50.032Z",
+  "readOnlyTransactions": true,
+  "offers": [
+    {
+      "id": "67f83f08-6e8a-4bba-ab7e-58db1780d485",
+      "productId": "9d86e472-4946-417b-a9fc-ca51f1c69b34",
+      "slug": "cade-todo-mundo-1-ano",
+      "name": "Cadê Todo Mundo? — 1 ano",
+      "status": "active",
+      "priceCents": 3700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 12,
+      "accessDurationUnit": "months",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+      "productId": "9d86e472-4946-417b-a9fc-ca51f1c69b34",
+      "slug": "cade-todo-mundo-7-dias",
+      "name": "Cadê Todo Mundo? · 7 dias",
+      "status": "active",
+      "priceCents": 3700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 15,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": 7
+    },
+    {
+      "id": "eda965a4-20ae-4b41-bed6-3540cba2ed25",
+      "productId": "b94b3d78-23f7-48e2-900b-83f23d58425b",
+      "slug": "cade-todo-mundo-adulto-1-ano",
+      "name": "Cadê Todo Mundo? (adultos) — 1 ano",
+      "status": "active",
+      "priceCents": 3700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 12,
+      "accessDurationUnit": "months",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "ef06b473-89b4-40a6-81fe-5040508c38cf",
+      "productId": "b94b3d78-23f7-48e2-900b-83f23d58425b",
+      "slug": "cade-todo-mundo-adulto-7-dias",
+      "name": "Cadê Todo Mundo? (adultos) · 7 dias",
+      "status": "active",
+      "priceCents": 3700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 15,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": 7
+    },
+    {
+      "id": "98049085-2891-4aa0-8fa4-28c61bf0b354",
+      "productId": "d8d42f31-e777-464f-aded-00d2f421cc99",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+      "name": "Como ajudar seu filho autista a lidar com frustrações e evitar crises",
+      "status": "active",
+      "priceCents": 6700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 6,
+      "accessDurationUnit": "months",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "289cfcc8-9304-47ea-bd2e-a629422d3169",
+      "productId": "4c31f312-f82d-498d-ac6c-ee26b97a5d97",
+      "slug": "comunidade-dos-criadores-adulto-anual",
+      "name": "Comunidade dos Criadores adultos · Assinatura anual",
+      "status": "active",
+      "priceCents": 97000,
+      "currency": "BRL",
+      "pricingMode": "subscription",
+      "accessMode": "billing_cycle",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "4ca70bea-16df-4393-b1e1-2c6b0e7c9d70",
+      "productId": "4c31f312-f82d-498d-ac6c-ee26b97a5d97",
+      "slug": "comunidade-dos-criadores-adulto-mensal",
+      "name": "Comunidade dos Criadores adultos · Assinatura mensal",
+      "status": "active",
+      "priceCents": 9700,
+      "currency": "BRL",
+      "pricingMode": "subscription",
+      "accessMode": "billing_cycle",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "b31c143a-fafc-43e1-9601-9e65e3f97f09",
+      "productId": "2f72f993-0b17-4453-b596-91d1ace31829",
+      "slug": "comunidade-dos-criadores-anual",
+      "name": "Comunidade dos Criadores — Assinatura anual",
+      "status": "active",
+      "priceCents": 97000,
+      "currency": "BRL",
+      "pricingMode": "subscription",
+      "accessMode": "billing_cycle",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "b08ec180-49a2-4d76-954b-fd1a0f2688aa",
+      "productId": "2f72f993-0b17-4453-b596-91d1ace31829",
+      "slug": "comunidade-dos-criadores-mensal",
+      "name": "Comunidade dos Criadores — Assinatura mensal",
+      "status": "active",
+      "priceCents": 9700,
+      "currency": "BRL",
+      "pricingMode": "subscription",
+      "accessMode": "billing_cycle",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "36b68cb5-aa12-4694-b94f-682df5537b72",
+      "productId": "f730ed4b-a62a-49e8-9c0f-543534b07198",
+      "slug": "desafio-primeiro-jogo",
+      "name": "Desafio do Primeiro Jogo — Oferta padrão",
+      "status": "active",
+      "priceCents": 3700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "lifetime",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "337b3fee-ae48-4afc-81af-f2371ae32eec",
+      "productId": "f730ed4b-a62a-49e8-9c0f-543534b07198",
+      "slug": "desafio-primeiro-jogo-30-dias",
+      "name": "Desafio do Primeiro Jogo — 30 dias",
+      "status": "active",
+      "priceCents": 6700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 30,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "47ce39b3-c56c-44f2-bdfd-06f9dc0cedf0",
+      "productId": "dbdafdeb-2efa-4a4f-966b-6938dc08438b",
+      "slug": "desafio-primeiro-jogo-adulto-30-dias",
+      "name": "Desafio do Primeiro Jogo (adultos) · 30 dias",
+      "status": "active",
+      "priceCents": 6700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 30,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "90ad4610-5c91-4749-a640-6b9c91162eae",
+      "productId": "bc2d500f-e32c-4769-a62c-c0a458a4cac2",
+      "slug": "estudio-completo",
+      "name": "Estúdio Completo — Oferta padrão",
+      "status": "active",
+      "priceCents": 9700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "lifetime",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "d0a64f24-96e0-4d9d-b0d2-a25e3a7da697",
+      "productId": "2770609b-2cec-49ad-a050-0d75018cff03",
+      "slug": "molda",
+      "name": "Molda — Oferta padrão",
+      "status": "active",
+      "priceCents": 9700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "lifetime",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "cc29214d-e7ec-4584-81fa-64485f438a29",
+      "productId": "d5423ff5-d3e6-498e-8bd1-a4b049b11794",
+      "slug": "no-comando-da-ia",
+      "name": "No Comando da IA — Oferta padrão",
+      "status": "archived",
+      "priceCents": 3700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "lifetime",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "772d449a-e330-43c3-b075-1a2489a9b198",
+      "productId": "ccc6f5af-70f0-4969-957c-7ecd5aaeabb3",
+      "slug": "pensa",
+      "name": "Pensa — Oferta padrão",
+      "status": "active",
+      "priceCents": 9700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "lifetime",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "78f8a962-81f2-400d-bc33-c5330541d508",
+      "productId": "3802578e-72af-4df6-97c3-a0d9471dfa77",
+      "slug": "pinta",
+      "name": "Pinta — Oferta padrão",
+      "status": "active",
+      "priceCents": 9700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "lifetime",
+      "accessDurationValue": null,
+      "accessDurationUnit": null,
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "590d3df9-80b4-4a6a-8c70-b7edadabf709",
+      "productId": "fa8cf1eb-4689-4674-9c07-713cc126b7e0",
+      "slug": "transformando-o-vilao-em-aliado-1-ano",
+      "name": "Transformando o vilão em aliado",
+      "status": "active",
+      "priceCents": 2700,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 12,
+      "accessDurationUnit": "months",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "8bb30b5d-0390-4267-a0b9-3e388b9472d7",
+      "productId": "fa8cf1eb-4689-4674-9c07-713cc126b7e0",
+      "slug": "transformando-o-vilao-em-aliado-presente",
+      "name": "Transformando o vilão em aliado — acesso gratuito para pais",
+      "status": "paused",
+      "priceCents": 1,
+      "currency": "BRL",
+      "pricingMode": "one_time",
+      "accessMode": "fixed",
+      "accessDurationValue": 15,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": 7
+    }
+  ],
+  "primaryOffers": [
+    {
+      "id": "9d86e472-4946-417b-a9fc-ca51f1c69b34",
+      "sku": "cade-todo-mundo",
+      "slug": "cade-todo-mundo",
+      "kind": "course",
+      "status": "active",
+      "primaryOfferId": "67f83f08-6e8a-4bba-ab7e-58db1780d485",
+      "primaryOfferSlug": "cade-todo-mundo-1-ano"
+    },
+    {
+      "id": "b94b3d78-23f7-48e2-900b-83f23d58425b",
+      "sku": "cade-todo-mundo-adulto",
+      "slug": "cade-todo-mundo-adulto",
+      "kind": "course",
+      "status": "active",
+      "primaryOfferId": "eda965a4-20ae-4b41-bed6-3540cba2ed25",
+      "primaryOfferSlug": "cade-todo-mundo-adulto-1-ano"
+    },
+    {
+      "id": "d8d42f31-e777-464f-aded-00d2f421cc99",
+      "sku": "como-ajudar-seu-filho-autista-nas-frustracoes",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+      "kind": "course",
+      "status": "active",
+      "primaryOfferId": "98049085-2891-4aa0-8fa4-28c61bf0b354",
+      "primaryOfferSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano"
+    },
+    {
+      "id": "2f72f993-0b17-4453-b596-91d1ace31829",
+      "sku": "comunidade-dos-criadores",
+      "slug": "comunidade-dos-criadores",
+      "kind": "bundle",
+      "status": "active",
+      "primaryOfferId": "b08ec180-49a2-4d76-954b-fd1a0f2688aa",
+      "primaryOfferSlug": "comunidade-dos-criadores-mensal"
+    },
+    {
+      "id": "4c31f312-f82d-498d-ac6c-ee26b97a5d97",
+      "sku": "comunidade-dos-criadores-adulto",
+      "slug": "comunidade-dos-criadores-adulto",
+      "kind": "bundle",
+      "status": "active",
+      "primaryOfferId": "4ca70bea-16df-4393-b1e1-2c6b0e7c9d70",
+      "primaryOfferSlug": "comunidade-dos-criadores-adulto-mensal"
+    },
+    {
+      "id": "f730ed4b-a62a-49e8-9c0f-543534b07198",
+      "sku": "desafio-primeiro-jogo",
+      "slug": "desafio-primeiro-jogo",
+      "kind": "course",
+      "status": "active",
+      "primaryOfferId": "337b3fee-ae48-4afc-81af-f2371ae32eec",
+      "primaryOfferSlug": "desafio-primeiro-jogo-30-dias"
+    },
+    {
+      "id": "dbdafdeb-2efa-4a4f-966b-6938dc08438b",
+      "sku": "desafio-primeiro-jogo-adulto",
+      "slug": "desafio-primeiro-jogo-adulto",
+      "kind": "course",
+      "status": "active",
+      "primaryOfferId": "47ce39b3-c56c-44f2-bdfd-06f9dc0cedf0",
+      "primaryOfferSlug": "desafio-primeiro-jogo-adulto-30-dias"
+    },
+    {
+      "id": "bc2d500f-e32c-4769-a62c-c0a458a4cac2",
+      "sku": "estudio-completo",
+      "slug": "estudio-completo",
+      "kind": "tool",
+      "status": "active",
+      "primaryOfferId": null,
+      "primaryOfferSlug": null
+    },
+    {
+      "id": "2770609b-2cec-49ad-a050-0d75018cff03",
+      "sku": "molda",
+      "slug": "molda",
+      "kind": "tool",
+      "status": "active",
+      "primaryOfferId": null,
+      "primaryOfferSlug": null
+    },
+    {
+      "id": "d5423ff5-d3e6-498e-8bd1-a4b049b11794",
+      "sku": "no-comando-da-ia",
+      "slug": "no-comando-da-ia",
+      "kind": "ebook",
+      "status": "archived",
+      "primaryOfferId": null,
+      "primaryOfferSlug": null
+    },
+    {
+      "id": "ccc6f5af-70f0-4969-957c-7ecd5aaeabb3",
+      "sku": "pensa",
+      "slug": "pensa",
+      "kind": "tool",
+      "status": "active",
+      "primaryOfferId": null,
+      "primaryOfferSlug": null
+    },
+    {
+      "id": "3802578e-72af-4df6-97c3-a0d9471dfa77",
+      "sku": "pinta",
+      "slug": "pinta",
+      "kind": "tool",
+      "status": "active",
+      "primaryOfferId": null,
+      "primaryOfferSlug": null
+    },
+    {
+      "id": "fa8cf1eb-4689-4674-9c07-713cc126b7e0",
+      "sku": "transformando-o-vilao-em-aliado",
+      "slug": "transformando-o-vilao-em-aliado",
+      "kind": "course",
+      "status": "active",
+      "primaryOfferId": "590d3df9-80b4-4a6a-8c70-b7edadabf709",
+      "primaryOfferSlug": "transformando-o-vilao-em-aliado-1-ano"
+    }
+  ],
+  "ambassadorOffers": [
+    {
+      "audience": "adult",
+      "kind": "gift",
+      "offerId": "ef06b473-89b4-40a6-81fe-5040508c38cf",
+      "offerSlug": "cade-todo-mundo-adulto-7-dias",
+      "position": 0,
+      "enabled": true
+    },
+    {
+      "audience": "adult",
+      "kind": "referral",
+      "offerId": "4ca70bea-16df-4393-b1e1-2c6b0e7c9d70",
+      "offerSlug": "comunidade-dos-criadores-adulto-mensal",
+      "position": 0,
+      "enabled": true
+    },
+    {
+      "audience": "adult",
+      "kind": "referral",
+      "offerId": "47ce39b3-c56c-44f2-bdfd-06f9dc0cedf0",
+      "offerSlug": "desafio-primeiro-jogo-adulto-30-dias",
+      "position": 1,
+      "enabled": true
+    },
+    {
+      "audience": "adult",
+      "kind": "referral",
+      "offerId": "eda965a4-20ae-4b41-bed6-3540cba2ed25",
+      "offerSlug": "cade-todo-mundo-adulto-1-ano",
+      "position": 2,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "gift",
+      "offerId": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+      "offerSlug": "cade-todo-mundo-7-dias",
+      "position": 0,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "gift",
+      "offerId": "8bb30b5d-0390-4267-a0b9-3e388b9472d7",
+      "offerSlug": "transformando-o-vilao-em-aliado-presente",
+      "position": 1,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "referral",
+      "offerId": "b08ec180-49a2-4d76-954b-fd1a0f2688aa",
+      "offerSlug": "comunidade-dos-criadores-mensal",
+      "position": 0,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "referral",
+      "offerId": "337b3fee-ae48-4afc-81af-f2371ae32eec",
+      "offerSlug": "desafio-primeiro-jogo-30-dias",
+      "position": 1,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "referral",
+      "offerId": "67f83f08-6e8a-4bba-ab7e-58db1780d485",
+      "offerSlug": "cade-todo-mundo-1-ano",
+      "position": 2,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "referral",
+      "offerId": "590d3df9-80b4-4a6a-8c70-b7edadabf709",
+      "offerSlug": "transformando-o-vilao-em-aliado-1-ano",
+      "position": 3,
+      "enabled": true
+    },
+    {
+      "audience": "kids",
+      "kind": "referral",
+      "offerId": "98049085-2891-4aa0-8fa4-28c61bf0b354",
+      "offerSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+      "position": 4,
+      "enabled": true
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "9adb49e9-977e-4a74-a118-7a3494a23005",
+      "name": "Laopa - palestra de 13 de novembro de 2026, às 20h",
+      "status": "active",
+      "audience": "kids",
+      "gift_offer_id": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+      "kind": "gift",
+      "sale_offer_id": null,
+      "link_target": "page",
+      "redirect_path": null,
+      "redirect_until": null,
+      "starts_at": "2026-11-13T03:00:00+00:00",
+      "ends_at": "2026-12-13T03:00:00+00:00",
+      "schedule": {
+        "eventDate": "2026-11-13",
+        "giftClaimDays": 30,
+        "couponClaimDays": 37
+      },
+      "coupon": {
+        "offerId": "337b3fee-ae48-4afc-81af-f2371ae32eec",
+        "couponId": "b6d7769b-5f1a-4b07-9955-6237d662ad69"
+      },
+      "updated_at": "2026-11-16T12:05:41.517+00:00",
+      "code": "laopa-20261113",
+      "giftOfferSlug": "cade-todo-mundo-7-dias",
+      "saleOfferSlug": null,
+      "couponOfferSlug": "desafio-primeiro-jogo-30-dias",
+      "acquisitions": [
+        {
+          "campaign_id": "9adb49e9-977e-4a74-a118-7a3494a23005",
+          "kind": "gift",
+          "count": 2
+        }
+      ],
+      "redemptions": [
+        {
+          "campaign_id": "9adb49e9-977e-4a74-a118-7a3494a23005",
+          "status": "completed",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "120013bc-00c6-482e-80ad-ee4cdf006f65",
+      "name": "Guia para pais — acesso de presente ao minicurso",
+      "status": "active",
+      "audience": "kids",
+      "gift_offer_id": "8bb30b5d-0390-4267-a0b9-3e388b9472d7",
+      "kind": "gift",
+      "sale_offer_id": null,
+      "link_target": "page",
+      "redirect_path": "/kids/vilao-em-aliado",
+      "redirect_until": "2026-12-26T12:52:08.847+00:00",
+      "starts_at": "2026-11-21T03:00:00+00:00",
+      "ends_at": "2030-01-01T03:00:00+00:00",
+      "schedule": null,
+      "coupon": null,
+      "updated_at": "2026-11-26T16:39:02.868+00:00",
+      "code": "vilao-em-aliado",
+      "giftOfferSlug": "transformando-o-vilao-em-aliado-presente",
+      "saleOfferSlug": null,
+      "couponOfferSlug": null,
+      "acquisitions": [
+        {
+          "campaign_id": "120013bc-00c6-482e-80ad-ee4cdf006f65",
+          "kind": "gift",
+          "count": 17
+        }
+      ],
+      "redemptions": [
+        {
+          "campaign_id": "120013bc-00c6-482e-80ad-ee4cdf006f65",
+          "status": "completed",
+          "count": 17
+        }
+      ]
+    }
+  ],
+  "permanentBenefits": [
+    {
+      "id": "fd741378-dffd-478e-ac5c-f89c948b7f9e",
+      "name": "Cadê Todo Mundo",
+      "audience": "kids",
+      "course_slug": "transformando-o-vilao-em-aliado",
+      "gift_offer_id": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+      "status": "active",
+      "giftOfferSlug": "cade-todo-mundo-7-dias"
+    }
+  ],
+  "parentsCourseSaleOffers": [
+    {
+      "id": "3edc936c-5b72-4dd9-9c33-0b66e44d5a8b",
+      "slug": "transformando-o-vilao-em-aliado",
+      "title": "Transformando o vilão em aliado",
+      "status": "published",
+      "audience": "kids",
+      "learner": "parents",
+      "salesOfferRef": "transformando-o-vilao-em-aliado-1-ano"
+    },
+    {
+      "id": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+      "title": "Como ajudar seu filho autista a lidar com frustrações e evitar crises",
+      "status": "published",
+      "audience": "kids",
+      "learner": "parents",
+      "salesOfferRef": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano"
+    }
+  ],
+  "cadeIncludedProducts": [
+    {
+      "offer": "cade-todo-mundo-1-ano",
+      "additionalProducts": [
+        "mural-dos-criadores"
+      ]
+    },
+    {
+      "offer": "cade-todo-mundo-7-dias",
+      "additionalProducts": [
+        "mural-dos-criadores"
+      ]
+    },
+    {
+      "offer": "cade-todo-mundo-adulto-1-ano",
+      "additionalProducts": [
+        "adult-mural-dos-criadores"
+      ]
+    },
+    {
+      "offer": "cade-todo-mundo-adulto-7-dias",
+      "additionalProducts": [
+        "adult-mural-dos-criadores"
+      ]
+    }
+  ],
+  "historicalAccessRecordsCaptured": 84
+}

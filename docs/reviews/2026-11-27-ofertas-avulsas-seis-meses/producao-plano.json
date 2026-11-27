@@ -1,0 +1,482 @@
+{
+  "status": "awaiting_staging_shas_and_owner_approval",
+  "decisionDate": "2026-11-27",
+  "remoteMutationsExecuted": false,
+  "prerequisites": [
+    "Receber SHAs desta frente e comprovação dos testes e publicação de staging.",
+    "Receber a solução escolhida para trocar a oferta da campanha com histórico.",
+    "Receber ok explícito da dona antes de alterar produção.",
+    "Reler ofertas, referências e versões imediatamente antes da aplicação."
+  ],
+  "release": {
+    "base": "origin/main",
+    "branchPattern": "release/ofertas-avulsas-seis-meses-*",
+    "selection": "Somente cherry-picks dos SHAs informados por esta frente; não promover staging inteiro.",
+    "order": [
+      "referrals",
+      "funnel",
+      "apps que incorporam member-shell e outros apps alterados pelos SHAs"
+    ],
+    "catalogTiming": "Logo após o deploy do funnel; janela prevista de indisponibilidade do Desafio até ajustar o catálogo."
+  },
+  "offerPatches": [
+    {
+      "id": "590d3df9-80b4-4a6a-8c70-b7edadabf709",
+      "slug": "transformando-o-vilao-em-aliado-1-ano",
+      "productId": "fa8cf1eb-4689-4674-9c07-713cc126b7e0",
+      "current": {
+        "name": "Transformando o vilão em aliado",
+        "priceCents": 2700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "fixed",
+        "accessDurationValue": 12,
+        "accessDurationUnit": "months",
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Transformando o vilão em aliado · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "67f83f08-6e8a-4bba-ab7e-58db1780d485",
+      "slug": "cade-todo-mundo-1-ano",
+      "productId": "9d86e472-4946-417b-a9fc-ca51f1c69b34",
+      "current": {
+        "name": "Cadê Todo Mundo? — 1 ano",
+        "priceCents": 3700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "fixed",
+        "accessDurationValue": 12,
+        "accessDurationUnit": "months",
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Cadê Todo Mundo? · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "eda965a4-20ae-4b41-bed6-3540cba2ed25",
+      "slug": "cade-todo-mundo-adulto-1-ano",
+      "productId": "b94b3d78-23f7-48e2-900b-83f23d58425b",
+      "current": {
+        "name": "Cadê Todo Mundo? (adultos) — 1 ano",
+        "priceCents": 3700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "fixed",
+        "accessDurationValue": 12,
+        "accessDurationUnit": "months",
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Cadê Todo Mundo? (adultos) · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "337b3fee-ae48-4afc-81af-f2371ae32eec",
+      "slug": "desafio-primeiro-jogo-30-dias",
+      "productId": "f730ed4b-a62a-49e8-9c0f-543534b07198",
+      "current": {
+        "name": "Desafio do Primeiro Jogo — 30 dias",
+        "priceCents": 6700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "fixed",
+        "accessDurationValue": 30,
+        "accessDurationUnit": "days",
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Desafio do Primeiro Jogo · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "47ce39b3-c56c-44f2-bdfd-06f9dc0cedf0",
+      "slug": "desafio-primeiro-jogo-adulto-30-dias",
+      "productId": "dbdafdeb-2efa-4a4f-966b-6938dc08438b",
+      "current": {
+        "name": "Desafio do Primeiro Jogo (adultos) · 30 dias",
+        "priceCents": 6700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "fixed",
+        "accessDurationValue": 30,
+        "accessDurationUnit": "days",
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Desafio do Primeiro Jogo (adultos) · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "78f8a962-81f2-400d-bc33-c5330541d508",
+      "slug": "pinta",
+      "productId": "3802578e-72af-4df6-97c3-a0d9471dfa77",
+      "current": {
+        "name": "Pinta — Oferta padrão",
+        "priceCents": 9700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "lifetime",
+        "accessDurationValue": null,
+        "accessDurationUnit": null,
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Pinta · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "772d449a-e330-43c3-b075-1a2489a9b198",
+      "slug": "pensa",
+      "productId": "ccc6f5af-70f0-4969-957c-7ecd5aaeabb3",
+      "current": {
+        "name": "Pensa — Oferta padrão",
+        "priceCents": 9700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "lifetime",
+        "accessDurationValue": null,
+        "accessDurationUnit": null,
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Pensa · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "d0a64f24-96e0-4d9d-b0d2-a25e3a7da697",
+      "slug": "molda",
+      "productId": "2770609b-2cec-49ad-a050-0d75018cff03",
+      "current": {
+        "name": "Molda — Oferta padrão",
+        "priceCents": 9700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "lifetime",
+        "accessDurationValue": null,
+        "accessDurationUnit": null,
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Molda · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    },
+    {
+      "id": "90ad4610-5c91-4749-a640-6b9c91162eae",
+      "slug": "estudio-completo",
+      "productId": "bc2d500f-e32c-4769-a62c-c0a458a4cac2",
+      "current": {
+        "name": "Estúdio Completo — Oferta padrão",
+        "priceCents": 9700,
+        "currency": "BRL",
+        "status": "active",
+        "accessMode": "lifetime",
+        "accessDurationValue": null,
+        "accessDurationUnit": null,
+        "advertisedAccessDays": null
+      },
+      "patch": {
+        "name": "Estúdio Completo · 6 meses",
+        "accessMode": "fixed",
+        "accessDurationValue": 6,
+        "accessDurationUnit": "months"
+      },
+      "preserve": [
+        "id",
+        "slug",
+        "code",
+        "productId",
+        "priceCents",
+        "currency",
+        "status",
+        "guaranteeDays",
+        "content",
+        "metadata",
+        "offerItems",
+        "primaryOfferReferences"
+      ],
+      "readLatestVersionBeforeApplying": true
+    }
+  ],
+  "disableLegacyOffer": {
+    "id": "36b68cb5-aa12-4694-b94f-682df5537b72",
+    "slug": "desafio-primeiro-jogo",
+    "currentStatus": "active",
+    "patch": {
+      "status": "paused"
+    },
+    "liveReferences": {
+      "primary": [],
+      "campaigns": [],
+      "ambassadors": [],
+      "benefits": [],
+      "coupons": []
+    },
+    "historicalPaidPayments": 6,
+    "historicalAccessRecords": 42,
+    "oldPendingPayment": [
+      {
+        "status": "PENDING",
+        "method": "PIX",
+        "provider": "EFI",
+        "amountCents": 3700,
+        "createdAt": "2026-07-15 14:15:56.561+00",
+        "expiresAt": "2026-07-15 15:15:56.861+00",
+        "paidAt": null,
+        "expiredAtInventory": true
+      }
+    ]
+  },
+  "guideCampaignMigration": {
+    "id": "120013bc-00c6-482e-80ad-ee4cdf006f65",
+    "code": "vilao-em-aliado",
+    "status": "active",
+    "oldOfferId": "8bb30b5d-0390-4267-a0b9-3e388b9472d7",
+    "oldOfferSlug": "transformando-o-vilao-em-aliado-presente",
+    "newOfferId": "590d3df9-80b4-4a6a-8c70-b7edadabf709",
+    "newOfferSlug": "transformando-o-vilao-em-aliado-1-ano",
+    "historicalAcquisitions": 17,
+    "redemptions": 17,
+    "implementation": "Aguardar solução validada em staging para CAMPAIGN_GIFT_OFFER_LOCKED ou instrução de nova edição com preservação dos links."
+  },
+  "guideGiftListMigration": {
+    "audience": "kids",
+    "kind": "gift",
+    "before": [
+      {
+        "audience": "kids",
+        "kind": "gift",
+        "offerId": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+        "offerSlug": "cade-todo-mundo-7-dias",
+        "position": 0,
+        "enabled": true
+      },
+      {
+        "audience": "kids",
+        "kind": "gift",
+        "offerId": "8bb30b5d-0390-4267-a0b9-3e388b9472d7",
+        "offerSlug": "transformando-o-vilao-em-aliado-presente",
+        "position": 1,
+        "enabled": true
+      }
+    ],
+    "after": [
+      {
+        "audience": "kids",
+        "kind": "gift",
+        "offerId": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+        "offerSlug": "cade-todo-mundo-7-dias",
+        "position": 0,
+        "enabled": true
+      },
+      {
+        "audience": "kids",
+        "kind": "gift",
+        "offerId": "590d3df9-80b4-4a6a-8c70-b7edadabf709",
+        "offerSlug": "transformando-o-vilao-em-aliado-1-ano",
+        "position": 1,
+        "enabled": true
+      }
+    ]
+  },
+  "unchangedOffers": [
+    {
+      "id": "98049085-2891-4aa0-8fa4-28c61bf0b354",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+      "priceCents": 6700,
+      "status": "active",
+      "accessMode": "fixed",
+      "accessDurationValue": 6,
+      "accessDurationUnit": "months",
+      "advertisedAccessDays": null
+    },
+    {
+      "id": "d55eb390-7957-4890-a0db-dfcc0e03e3e6",
+      "slug": "cade-todo-mundo-7-dias",
+      "priceCents": 3700,
+      "status": "active",
+      "accessMode": "fixed",
+      "accessDurationValue": 15,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": 7
+    },
+    {
+      "id": "ef06b473-89b4-40a6-81fe-5040508c38cf",
+      "slug": "cade-todo-mundo-adulto-7-dias",
+      "priceCents": 3700,
+      "status": "active",
+      "accessMode": "fixed",
+      "accessDurationValue": 15,
+      "accessDurationUnit": "days",
+      "advertisedAccessDays": 7
+    }
+  ],
+  "historicalAccessProtection": {
+    "baselinePrivate": true,
+    "existingAccessRecords": 84,
+    "rule": "Não alterar as matrículas, snapshots ou vencimentos existentes. Política nova para novas compras e novos resgates."
+  },
+  "toolsWithoutPrimaryOffer": [
+    "estudio-completo",
+    "molda",
+    "pensa",
+    "pinta"
+  ],
+  "browserChecks": [
+    "Venda do guia, Cadê Kids/adulto e Desafio Kids/adulto com 6 meses.",
+    "Campanha do guia e presente do embaixador com o mesmo acesso de 6 meses, sem cobrança.",
+    "Presentes do Cadê Kids/adulto: 15 dias reais e 7 anunciados, com Mural.",
+    "Links de campanha, embaixador, legado e cupom preservados."
+  ],
+  "giftPolicyChecks": [
+    "Aceitar meses na validação e também no cálculo, exibição e snapshot do resgate; não interpretar 6 meses como 6 dias.",
+    "Usar o prazo em meses da oferta para o vencimento e preservar a política dos resgates anteriores."
+  ]
+}
