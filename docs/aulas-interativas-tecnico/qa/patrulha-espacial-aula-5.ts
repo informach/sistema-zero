@@ -308,8 +308,8 @@ export const patrulhaAula5: ConstrutorAula = {
         'Em partidas distintas, teste a derrota por vida zero e a vitória por vinte pontos com vida restante.',
         'Depois de cada resultado, Voltar ao início restaura a abertura e o começo completo. Enter permite jogar de novo.',
       ],
-      blockLabels: ['Quando apertar a tecla Enter', 'Se a vida de nave ≤ 0, senão', 'Fim de jogo'],
-      blockTypes: ['sz_js_if_else', 'sz_g3d_end_game'],
+      blockLabels: [],
+      blockTypes: [],
       conferencia:
         'a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas',
       mostrar:

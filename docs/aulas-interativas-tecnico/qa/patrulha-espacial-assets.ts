@@ -30,7 +30,10 @@ import {
   MODELOS_ESPACO_JSON,
 } from './publicar-construtor-modelos'
 
-const modelos = JSON.parse(readFileSync(MODELOS_ESPACO_JSON, 'utf8')) as Record<EspacoPeca, EspacoModelo>
+const modelos = JSON.parse(readFileSync(MODELOS_ESPACO_JSON, 'utf8')) as Record<
+  EspacoPeca,
+  EspacoModelo
+>
 
 /** O que cada objeto usa no começo do curso (a versão do vídeo e do caderno). */
 export const PATRULHA_PADRAO = {
@@ -71,7 +74,10 @@ export function patrulhaAssetsPortateis(): ProjectAsset[] {
   return ESPACO_PECAS.map((peca) => {
     const m = modelo(peca)
     const modulo = readFileSync(
-      resolve(import.meta.dirname, `../../../packages/studio/src/core/course-models/m-${m.sha}.generated.ts`),
+      resolve(
+        import.meta.dirname,
+        `../../../packages/studio/src/core/course-models/m-${m.sha}.generated.ts`,
+      ),
       'utf8',
     )
     const dataUrl = /export default '([^']+)'/.exec(modulo)?.[1]

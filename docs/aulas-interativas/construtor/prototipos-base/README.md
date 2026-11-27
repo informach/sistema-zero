@@ -4,7 +4,7 @@
 
 Este pacote contém **seis projetos**: três combinações visuais do jogo 2D completo, um inicial 2D, um jogo 3D completo e um inicial 3D. Os arquivos `.szproject.json` são JSONs nativos do Estúdio, com blocos editáveis, código gerado e materiais incorporados.
 
-No 2D, a biblioteca de aparências já acompanha os projetos. No 3D, os modelos provisórios vêm do exemplo Patrulha Espacial da galeria; Helena fará as artes definitivas e suas variações no Blender.
+No 2D e no 3D, a arte vem do Blender ([docs/design/construtor-espaco-blender](../../../design/construtor-espaco-blender/README.md)), com quatro variações de cada elemento. No 2D as imagens vão embutidas; no 3D os projetos levam referências da biblioteca de modelos dos cursos.
 
 ## Comece pelos dois jogos completos
 
@@ -23,7 +23,7 @@ No Estúdio, abra **Meus Jogos → Importar** e selecione o arquivo `.szproject.
 | [nave-2d-orbita.szproject.json](2d/nave-2d-orbita.szproject.json) | Mesmo jogo: Exploradora coral, Órbita, Gelo azul, laser dourado |
 | [nave-2d-nebulosa.szproject.json](2d/nave-2d-nebulosa.szproject.json) | Mesmo jogo: Arraia lilás, Nebulosa, Cristal violeta, laser lilás |
 | [nave-2d-inicial.szproject.json](2d/nave-2d-inicial.szproject.json) | Inicial 2D: cenário, nave parada e fluxo de telas preparado |
-| [patrulha-espacial-3d-completo.szproject.json](3d/patrulha-espacial-3d-completo.szproject.json) | 3D completo, com os modelos provisórios da galeria |
+| [patrulha-espacial-3d-completo.szproject.json](3d/patrulha-espacial-3d-completo.szproject.json) | 3D completo, com as 16 peças do Blender (referências da biblioteca de modelos) |
 | [patrulha-espacial-3d-inicial.szproject.json](3d/patrulha-espacial-3d-inicial.szproject.json) | Inicial 3D: nave pilotável, apoios e fluxo de telas preparados |
 
 ### Fronteira pedagógica aprovada
@@ -46,17 +46,13 @@ A meta é 20 acertos, com três vidas. Cada acerto conta uma vez. Somente batida
 
 ## Personalização exclusivamente visual
 
-### 2D: doze imagens e 81 combinações
+### 2D: dezesseis imagens e 256 combinações
 
-Cada projeto 2D contém três naves, três cenários, três asteroides e três lasers. As quatro escolhas são independentes: **3 × 3 × 3 × 3 = 81 combinações**. Os três arquivos completos mostram algumas delas; é possível combinar as imagens de outra maneira pelo seletor dos próprios blocos.
+Cada projeto 2D contém quatro naves, quatro cenários, quatro asteroides e quatro lasers: **4 × 4 × 4 × 4 = 256 combinações**. Naves, asteroides e lasers são vetores projetados dos modelos 3D (`svg2d.py`); os fundos são os próprios cenários 3D vistos pela câmera do jogo, em WebP (`previa.mjs fundos2d`). As escolhas mudam só a imagem: tamanho de desenho, área de contato e regras continuam iguais. O [catálogo](2d/catalogo-aparencias-2d.png) mostra as dezesseis.
 
-Nave e cenário ficam em **Ao iniciar**; laser, no evento **Espaço**; asteroide, no relógio de criação. As escolhas conservam meta, vidas, velocidades, intervalo, dano, controles e áreas de colisão. As doze imagens SVG estão incorporadas em todos os arquivos 2D. [Guia 2D](2d/README.md) · [Catálogo visual](2d/catalogo-aparencias-2d.png).
+### 3D: quatro modelos para cada objeto
 
-### 3D: modelos provisórios da galeria
-
-Há **uma aparência provisória para cada modelo**: nave, asteroide e laser do exemplo Patrulha Espacial. Cada objeto usa um bloco nativo **Criar o objeto … com o modelo …**. Os três GLBs estão incorporados no completo e no inicial; os arquivos em [3d/modelos/](3d/modelos/) são cópias de referência e não precisam ser importados separadamente.
-
-As artes definitivas e suas variações serão feitas por Helena no Blender. Quando estiverem prontas, a troca acontecerá no campo **modelo** do bloco. Antes de fechar as aulas, será necessário conferir orientação, tamanho, saída do tiro, visibilidade, carregamento e áreas de colisão, preservando as regras do jogo. O céu e a névoa atuais acompanham o visual provisório. [Guia 3D](3d/README.md) · [Origem e hashes dos modelos](fontes/3d/gallery-models-origin.json).
+Cenário, nave, asteroide e laser têm quatro modelos cada, feitos no Blender. Cada objeto usa um bloco nativo **Criar o objeto … com o modelo …**, e a troca acontece no seletor do bloco. Os modelos de uma categoria têm a mesma caixa (marcos de 1 mm nos cantos), então trocar não muda tamanho, centro nem área de toque. A frente da nave aponta para -Z, e o tiro nasce logo à frente do bico.
 
 ## O que foi verificado
 

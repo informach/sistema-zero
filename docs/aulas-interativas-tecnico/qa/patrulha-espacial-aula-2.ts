@@ -20,7 +20,8 @@ export const patrulhaAula2: ConstrutorAula = {
       key: 'ritmo-das-pedras',
       title: 'O ritmo dos asteroides',
       bancada: 'intervalo',
-      objective: 'Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.',
+      objective:
+        'Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.',
       convite: 'Compare quantas pedras nascem com intervalos diferentes.',
       falas: [
         [
@@ -202,8 +203,7 @@ export const patrulhaAula2: ConstrutorAula = {
       title: 'Os asteroides vêm até a nave',
       etapa: 'trajeto-asteroide',
       objective: 'Definir a velocidade positiva em Z para aproximar os asteroides.',
-      ponte:
-        'Faça os asteroides virem na direção da nave e compare com o caminho dos lasers.',
+      ponte: 'Faça os asteroides virem na direção da nave e compare com o caminho dos lasers.',
       falas: [
         [
           'conversa',

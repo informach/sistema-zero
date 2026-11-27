@@ -1,11 +1,11 @@
 import { resolve } from 'node:path'
 import type { ConstrutorBaseConfig } from './construtor-base-tipos'
+import { patrulhaAssetsPortateis } from './patrulha-espacial-assets'
 import { patrulhaAula1 } from './patrulha-espacial-aula-1'
 import { patrulhaAula2 } from './patrulha-espacial-aula-2'
 import { patrulhaAula3 } from './patrulha-espacial-aula-3'
 import { patrulhaAula4 } from './patrulha-espacial-aula-4'
 import { patrulhaAula5 } from './patrulha-espacial-aula-5'
-import { patrulhaAssetsPortateis } from './patrulha-espacial-assets'
 import { patrulhaChecks } from './patrulha-espacial-criterios'
 import { montarProjetoPatrulha, PATRULHA_CURSO, PATRULHA_ETAPAS } from './patrulha-espacial-projeto'
 

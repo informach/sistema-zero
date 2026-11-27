@@ -39,12 +39,16 @@ const server = createServer((req, res) => {
 })
 await new Promise((r) => server.listen(0, r))
 const port = server.address().port
-const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] })
+const browser = await chromium.launch({
+  args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
+})
 
 async function foto(params, arquivo, w = 1280, h = 720) {
   const page = await browser.newPage({ viewport: { width: w, height: h } })
   const erros = []
-  page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') erros.push(m.text()) })
+  page.on('console', (m) => {
+    if (m.type() === 'error' || m.type() === 'warning') erros.push(m.text())
+  })
   await page.goto(`http://127.0.0.1:${port}/?${new URLSearchParams({ ...params, w, h })}`)
   await page.waitForFunction(() => window.__pronto || window.__erro, null, { timeout: 120000 })
   const erro = await page.evaluate(() => window.__erro)
@@ -59,23 +63,59 @@ try {
   if (modo === 'giro') {
     for (const item of resto) {
       const [peca, size = '3', fundo] = item.split(':')
-      await foto({ modo: 'giro', peca, size, ...(fundo ? { fundo: `#${fundo}` } : {}) }, `${peca}.png`, 1200, 800)
+      await foto(
+        { modo: 'giro', peca, size, ...(fundo ? { fundo: `#${fundo}` } : {}) },
+        `${peca}.png`,
+        1200,
+        800,
+      )
     }
   } else if (modo === 'mini') {
     for (const item of resto) {
       const [peca, size = '3', medida] = item.split(':')
-      const [w, h] = medida ? medida.split('x').map(Number) : peca.startsWith('cenario-') ? [640, 360] : [480, 480]
-      await foto({ modo: 'mini', peca, size, fundo: '#1b2140' }, `${peca}${medida ? `-${medida}` : ''}.png`, w, h)
+      const [w, h] = medida
+        ? medida.split('x').map(Number)
+        : peca.startsWith('cenario-')
+          ? [640, 360]
+          : [480, 480]
+      await foto(
+        { modo: 'mini', peca, size, fundo: '#1b2140' },
+        `${peca}${medida ? `-${medida}` : ''}.png`,
+        w,
+        h,
+      )
     }
   } else if (modo === 'fundos2d') {
     // Os fundos 800 × 480 da Nave Contra Asteroides são os MESMOS cenários 3D da Patrulha, vistos
     // pela câmera do jogo, gravados em WebP (cabem embutidos em cada projeto e em cada aula).
-    const sharp = createRequire(join(repo, 'docs/aulas-interativas-tecnico/recursos/construtor-base/gerar-artes.ts'))('sharp')
+    const sharp = createRequire(
+      join(repo, 'docs/aulas-interativas-tecnico/recursos/construtor-base/gerar-artes.ts'),
+    )('sharp')
     for (const peca of resto) {
       await foto({ modo: 'mini', peca, size: '180' }, `${peca}.png`, 800, 480)
-      await sharp(join(outDir, `${peca}.png`)).webp({ quality: 75, effort: 6 }).toFile(join(outDir, `${peca}.webp`))
+      await sharp(join(outDir, `${peca}.png`))
+        .webp({ quality: 75, effort: 6 })
+        .toFile(join(outDir, `${peca}.webp`))
       console.log('fundo', join(outDir, `${peca}.webp`))
     }
+  } else if (modo === 'capa') {
+    // A capa do caderno da Patrulha: a mesma cena do jogo, mais perto da nave, em 1600 × 1400.
+    const [cenario, nave, asteroide, laser] = resto
+    await foto(
+      {
+        modo: 'jogo',
+        cenario,
+        nave,
+        asteroide,
+        laser,
+        cam: '0,4.6,8.5',
+        alvo: '0,2.2,-14',
+        fov: '58',
+      },
+      'capa.png',
+      1600,
+      1400,
+    )
   } else if (modo === 'jogo') {
     const [cenario, nave, asteroide, laser, nome = 'jogo'] = resto
     await foto({ modo: 'jogo', cenario, nave, asteroide, laser }, `${nome}.png`)

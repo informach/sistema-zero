@@ -51,7 +51,9 @@ type Montagem = {
 function recadoDaPagina(m: Montagem) {
   if (m.entrega)
     return `Hora de conferir e enviar! ${m.ponte} Clique em Verificar projeto, envie o projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em ${m.entrega.saida}.`
-  const teste = m.semEfeitoVisivel ? 'Clique em Verificar projeto.' : 'Teste no seu jogo e clique em Verificar projeto.'
+  const teste = m.semEfeitoVisivel
+    ? 'Clique em Verificar projeto.'
+    : 'Teste no seu jogo e clique em Verificar projeto.'
   return `Sua vez! ${m.ponte} ${teste} Quando aparecer Objetivo cumprido!, clique em Próxima parte.`
 }
 

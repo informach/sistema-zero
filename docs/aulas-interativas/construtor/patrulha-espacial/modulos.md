@@ -80,7 +80,7 @@ Na última montagem, quatro mensagens de “projeto inicial” recebem os **avis
 
 Os três assets são a **nave, o meteoro e o laser já existentes na galeria Patrulha Espacial**, preservados como GLBs embutidos no projeto. Cada um é carregado por um bloco nativo `sz_g3d_create_model_file`, que gera `SZGame3D.createModelFile`. Não há uma pilha de blocos de formas usada para desenhar essas artes. O objeto vazio que orienta a câmera é apoio de enquadramento, não uma quarta arte.
 
-A origem é [__gen_patrulhaEspacial.ts, revisão 9ca0696](https://github.com/informach/sistema-zero/blob/9ca0696aef5a536846525704b9d01261e2bd0da7/packages/studio/src/official-extensions/game-3d/__gen_patrulhaEspacial.ts). As artes definitivas e suas variações serão produzidas por Helena no Blender. Esta edição usa os modelos provisórios e não exige que o aluno escolha entre variações 3D inexistentes. A futura personalização fica restrita à aparência e deve conservar regras, posições e dimensões de contato aprovadas.
+A arte é a do Blender ([docs/design/construtor-espaco-blender](../../../design/construtor-espaco-blender/README.md)): quatro variações de cenário, nave, asteroide e laser, escolhidas no seletor do bloco de modelo, com a mesma caixa por categoria.
 
 ## Capa, caderno e arquivos
 

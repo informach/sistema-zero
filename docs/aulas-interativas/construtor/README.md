@@ -16,7 +16,7 @@ No Faísca, a criança faz mudanças pequenas em um projeto com muitas partes pr
 
 Telas de início e resultado, estado inicial, comando de começar e mecanismo de reinício permanecem preparados. A criança aplica a guarda **Se jogando** nas regras novas e verifica o reinício completo. A construção de toda a arquitetura de telas e estados fica para a reautoria futura do Inventor, que começará sem blocos.
 
-A personalização atual é de aparência. O 2D tem três naves, três cenários, três asteroides e três lasers incorporados ao projeto. No 3D, cada elemento usa um bloco de modelo e um GLB provisório da Patrulha da galeria. Helena produzirá as artes e variações no Blender; esta versão não pede uma troca por modelos que ainda não existem.
+A personalização é de aparência. A arte vem do Blender ([docs/design/construtor-espaco-blender](../../design/construtor-espaco-blender/README.md)): cada categoria (nave, asteroide, laser e cenário) tem quatro variações com a mesma caixa, e trocar a variação não muda as regras. No 2D, as quatro opções de cada elemento vão embutidas no projeto (naves, asteroides e lasers em vetor, projetados dos modelos 3D; fundos 800 × 480 que são os próprios cenários 3D, em WebP). No 3D, a criança escolhe o modelo no bloco **Criar o objeto … com o modelo …**; as 16 peças vêm da biblioteca de modelos dos cursos. A revisão de 27/11/2026 está em [revisao-2026-11-27.md](revisao-2026-11-27.md).
 
 ## Materiais para produção
 

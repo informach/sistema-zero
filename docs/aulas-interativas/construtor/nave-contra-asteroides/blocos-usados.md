@@ -34,7 +34,7 @@ As telas, o estado inicial e o retorno ficam preparados. Um tipo usado nesse apo
 | Criar sprite nave em x 372 y 396 largura 56 altura 64 com imagem nave-falcao-azul<br>`sz_g2d_create_image_sprite` | Jogo 2D > Sprites > Criar e trocar aparência | Retomado ou aplicado na montagem | [Aula 1, parte 3](nave-contra-asteroides-primeira-nave.md) |
 | A cada 1.5 segundos<br>`sz_g2d_every_seconds` | Jogo 2D > Tempo > Quadros e intervalos | Construído no curso | [Aula 4, parte 2](nave-contra-asteroides-chuva-de-asteroides.md) |
 | Barra de valor da variável pontos / valor da variável meta em x 280 y 23 largura 240 altura 11 cor #65dfcf<br>`sz_g2d_draw_bar` | Jogo 2D > Vida e placar > Indicadores e texto na tela | Construído no curso | [Aula 9, parte 2](nave-contra-asteroides-dia-5.md) |
-| Escrever texto SETAS: mover · ESPAÇO: disparar em x 780 y 462 cor #d8e6f8 tamanho 15 alinhado à direita<br>`sz_g2d_draw_label` | Jogo 2D > Vida e placar > Indicadores e texto na tela | Retomado ou aplicado na montagem | [Aula 1, parte 8](nave-contra-asteroides-primeira-nave.md) |
+| Escrever texto SETAS: mover ESPAÇO: disparar em x 400 y 60 cor #ffffff tamanho 15 alinhado no centro<br>`sz_g2d_draw_label` | Jogo 2D > Vida e placar > Indicadores e texto na tela | Retomado ou aplicado na montagem | [Aula 1, parte 8](nave-contra-asteroides-primeira-nave.md) |
 | Mostrar placar Acertos: valor valor da variável pontos em x 22 y 32 cor #f3f8ff tamanho 23<br>`sz_g2d_draw_score` | Jogo 2D > Vida e placar > Indicadores e texto na tela | Construído no curso | [Aula 6, parte 2](nave-contra-asteroides-pontos.md) |
 | Machucar o sprite nave em 1 e deixá-lo invencível por 60 quadros<br>`sz_g2d_damage_sprite` | Jogo 2D > Vida e placar > Vida | Construído no curso | [Aula 7, parte 5](nave-contra-asteroides-dia-4.md) |
 | Desenhar as vidas do sprite nave como corações em x 22 y 52 tamanho 21 cor #ff9bae<br>`sz_g2d_draw_sprite_health` | Jogo 2D > Vida e placar > Vida | Construído no curso | [Aula 7, parte 2](nave-contra-asteroides-dia-4.md) |
@@ -44,7 +44,7 @@ As telas, o estado inicial e o retorno ficam preparados. Um tipo usado nesse apo
 | o centro x do sprite nave − 5<br>`sz_math_arithmetic` | Programação > Matemática | Construído no curso | [Aula 2, parte 6](nave-contra-asteroides-dia-1.md) |
 | valor da variável pontos ≥ valor da variável meta<br>`sz_val_compare` | Programação > Valores | Construído no curso | [Aula 9, parte 3](nave-contra-asteroides-dia-5.md) |
 | número aleatório de 24 até 728<br>`sz_val_random` | Programação > Valores | Construído no curso | [Aula 4, parte 4](nave-contra-asteroides-chuva-de-asteroides.md) |
-| texto SETAS: mover · ESPAÇO: disparar<br>`sz_val_text` | Programação > Valores | Retomado ou aplicado na montagem | [Aula 1, parte 8](nave-contra-asteroides-primeira-nave.md) |
+| texto SETAS: mover ESPAÇO: disparar<br>`sz_val_text` | Programação > Valores | Retomado ou aplicado na montagem | [Aula 1, parte 8](nave-contra-asteroides-primeira-nave.md) |
 | valor da variável pontos<br>`sz_val_variable` | Programação > Valores | Construído no curso | [Aula 6, parte 2](nave-contra-asteroides-pontos.md) |
 | Criar variável pontos com valor 0<br>`sz_js_var_create` | Programação > Variáveis | Construído no curso | [Aula 6, parte 2](nave-contra-asteroides-pontos.md) |
 | Somar 1 em variável pontos<br>`sz_js_var_increment` | Programação > Variáveis | Construído no curso | [Aula 6, parte 3](nave-contra-asteroides-pontos.md) |

@@ -87,8 +87,10 @@ async function jogo() {
   // A cena da Patrulha: câmera (0, 8, 12) olhando (0, 1, -12), névoa 30–75, nave em (0, 1, 0).
   const scene = cena('#020617');
   scene.fog = new THREE.Fog(q.get('nevoa') || '#0b1030', 30, 75);
-  const cam = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000);
-  cam.position.set(0, 8, 12); cam.lookAt(0, 1, -12);
+  const cam = new THREE.PerspectiveCamera(+(q.get('fov') || 60), W / H, 0.1, 1000);
+  const [cx, cy, cz] = (q.get('cam') || '0,8,12').split(',').map(Number);
+  const [tx, ty, tz] = (q.get('alvo') || '0,1,-12').split(',').map(Number);
+  cam.position.set(cx, cy, cz); cam.lookAt(tx, ty, tz);
   const cen = q.get('cenario');
   if (cen) { const c = encaixar(await carregar(cen), 180); sombras(c); scene.add(c); }
   const nave = encaixar(await carregar(q.get('nave')), 3); nave.position.set(+(q.get('nx') || 0), 1, 0); sombras(nave); scene.add(nave);

@@ -70,9 +70,16 @@ export async function bootPatrulha(project) {
   Object.defineProperty(window, 'innerWidth', { value: 1280 })
   Object.defineProperty(window, 'innerHeight', { value: 720 })
   Object.defineProperty(window, 'devicePixelRatio', { value: 1 })
-  window.HTMLElement.prototype.getBoundingClientRect = function () {
-    return { x: 0, y: 0, left: 0, top: 0, right: 1280, bottom: 720, width: 1280, height: 720 }
-  }
+  window.HTMLElement.prototype.getBoundingClientRect = () => ({
+    x: 0,
+    y: 0,
+    left: 0,
+    top: 0,
+    right: 1280,
+    bottom: 720,
+    width: 1280,
+    height: 720,
+  })
   class Renderer {
     constructor({ canvas }) {
       this.domElement = canvas

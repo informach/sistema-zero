@@ -200,8 +200,7 @@ export const patrulhaAula3: ConstrutorAula = {
       title: 'Cada acerto soma um',
       etapa: 'soma',
       objective: 'Somar um ponto dentro da mesma resposta que consome o par acertado.',
-      ponte:
-        'Some um ponto dentro do acerto. Um tiro que passa no vazio não soma.',
+      ponte: 'Some um ponto dentro do acerto. Um tiro que passa no vazio não soma.',
       semEfeitoVisivel: true,
       falas: [
         [

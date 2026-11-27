@@ -54,7 +54,9 @@ const retomadas = config3D.aulas
 assert.equal(retomadas.length, 2, 'As duas bancadas da Nave retomadas na Patrulha')
 for (const t of retomadas) {
   const igual = Object.values(bancadas2D).some(
-    (b: any) => JSON.stringify(b.activity) === JSON.stringify(t.experience!.activity),
+    (b) =>
+      JSON.stringify((b as { activity: unknown }).activity) ===
+      JSON.stringify(t.experience!.activity),
   )
   assert.ok(igual, `${t.key}: a bancada retomada é a mesma validada no 2D`)
 }

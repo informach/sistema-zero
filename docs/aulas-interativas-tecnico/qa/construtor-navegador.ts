@@ -18,21 +18,27 @@ import { chromium, type Frame, type Page } from 'playwright'
 import { renderProjectToPreviewDocAsync } from '../../../packages/studio/src/preview/renderProject'
 import { ESPACO_CATEGORIAS } from './publicar-construtor-modelos'
 
+/** O pedaço do projeto que este roteiro lê e troca (o resto segue igual ao arquivo). */
+type Projeto = Parameters<typeof renderProjectToPreviewDocAsync>[0] & {
+  files: Record<string, string>
+}
+
 const raiz = resolve(import.meta.dirname, '../../aulas-interativas/construtor')
 const [saida = '/tmp/construtor-navegador', modo = 'tudo'] = process.argv.slice(2)
 mkdirSync(saida, { recursive: true })
 
-const lerProjeto = (curso: string, etapa: string) =>
+const lerProjeto = (curso: string, etapa: string): Projeto =>
   JSON.parse(readFileSync(resolve(raiz, curso, 'projetos', `${etapa}.szproject.json`), 'utf8'))
 
 /** Troca a peça de cada objeto no programa, como a criança faz no seletor do bloco. */
-function comPecas(projeto: any, trocas: Record<string, string>) {
+function comPecas(projeto: Projeto, trocas: Record<string, string>) {
   let script: string = projeto.files['script.js']
-  for (const [de, para] of Object.entries(trocas)) script = script.replaceAll(`"${de}"`, `"${para}"`)
+  for (const [de, para] of Object.entries(trocas))
+    script = script.replaceAll(`"${de}"`, `"${para}"`)
   return { ...projeto, files: { ...projeto.files, 'script.js': script } }
 }
 
-async function abrir(page: Page, projeto: any): Promise<Frame> {
+async function abrir(page: Page, projeto: Projeto): Promise<Frame> {
   const doc = await renderProjectToPreviewDocAsync(projeto)
   await page.setContent(
     '<body style="margin:0;background:#000"><iframe id="jogo" sandbox="allow-scripts allow-pointer-lock" style="width:1280px;height:720px;border:0;display:block"></iframe></body>',
@@ -50,7 +56,9 @@ async function abrir(page: Page, projeto: any): Promise<Frame> {
 async function esperarModelos(frame: Frame) {
   const inicio = Date.now()
   for (;;) {
-    const pendentes = await frame.evaluate(() => (window as any).__szModelosPendentes ?? 0)
+    const pendentes = await frame.evaluate(
+      () => (window as { __szModelosPendentes?: number }).__szModelosPendentes ?? 0,
+    )
     if (pendentes === 0 && Date.now() - inicio > 1500) return
     if (Date.now() - inicio > 90_000) throw new Error(`Modelos ainda pendentes: ${pendentes}`)
     await frame.page().waitForTimeout(300)
@@ -78,14 +86,30 @@ const browser = await chromium.launch({
 const problemas: string[] = []
 const relatorio: Record<string, unknown> = {}
 try {
-  const casos: { nome: string; projeto: any; tresD: boolean }[] = []
+  const casos: { nome: string; projeto: Projeto; tresD: boolean }[] = []
   if (modo === 'tudo' || modo === '2d') {
-    casos.push({ nome: 'nave-2d-final', projeto: lerProjeto('nave-contra-asteroides', 'final'), tresD: false })
-    casos.push({ nome: 'nave-2d-inicial', projeto: lerProjeto('nave-contra-asteroides', 'inicial'), tresD: false })
+    casos.push({
+      nome: 'nave-2d-final',
+      projeto: lerProjeto('nave-contra-asteroides', 'final'),
+      tresD: false,
+    })
+    casos.push({
+      nome: 'nave-2d-inicial',
+      projeto: lerProjeto('nave-contra-asteroides', 'inicial'),
+      tresD: false,
+    })
   }
   if (modo === 'tudo' || modo === '3d') {
-    casos.push({ nome: 'patrulha-3d-completo', projeto: lerProjeto('patrulha-espacial', 'completo'), tresD: true })
-    casos.push({ nome: 'patrulha-3d-inicio', projeto: lerProjeto('patrulha-espacial', 'inicio'), tresD: true })
+    casos.push({
+      nome: 'patrulha-3d-completo',
+      projeto: lerProjeto('patrulha-espacial', 'completo'),
+      tresD: true,
+    })
+    casos.push({
+      nome: 'patrulha-3d-inicio',
+      projeto: lerProjeto('patrulha-espacial', 'inicio'),
+      tresD: true,
+    })
   }
   if (modo === 'tudo' || modo === 'variacoes') {
     const base = lerProjeto('patrulha-espacial', 'completo')
@@ -94,21 +118,42 @@ try {
       const trocas = Object.fromEntries(
         Object.entries(ESPACO_CATEGORIAS).map(([c, l]) => [padrao[c] as string, l[i] as string]),
       )
-      casos.push({ nome: `patrulha-3d-variacao-${i}`, projeto: comPecas(base, trocas), tresD: true })
+      casos.push({
+        nome: `patrulha-3d-variacao-${i}`,
+        projeto: comPecas(base, trocas),
+        tresD: true,
+      })
     }
     const nave2d = lerProjeto('nave-contra-asteroides', 'final')
     const trocas2d: Record<string, string>[] = [
-      { 'nave-falcao-azul': 'nave-exploradora-coral', 'cenario-aurora': 'cenario-orbita', 'asteroide-rocha-lunar': 'asteroide-gelo-azul', 'laser-ciano': 'laser-dourado' },
-      { 'nave-falcao-azul': 'nave-arraia-lilas', 'cenario-aurora': 'cenario-nebulosa', 'asteroide-rocha-lunar': 'asteroide-cristal-violeta', 'laser-ciano': 'laser-lilas' },
-      { 'nave-falcao-azul': 'nave-cometa-verde', 'cenario-aurora': 'cenario-estacao', 'asteroide-rocha-lunar': 'asteroide-lava-laranja', 'laser-ciano': 'laser-verde' },
+      {
+        'nave-falcao-azul': 'nave-exploradora-coral',
+        'cenario-aurora': 'cenario-orbita',
+        'asteroide-rocha-lunar': 'asteroide-gelo-azul',
+        'laser-ciano': 'laser-dourado',
+      },
+      {
+        'nave-falcao-azul': 'nave-arraia-lilas',
+        'cenario-aurora': 'cenario-nebulosa',
+        'asteroide-rocha-lunar': 'asteroide-cristal-violeta',
+        'laser-ciano': 'laser-lilas',
+      },
+      {
+        'nave-falcao-azul': 'nave-cometa-verde',
+        'cenario-aurora': 'cenario-estacao',
+        'asteroide-rocha-lunar': 'asteroide-lava-laranja',
+        'laser-ciano': 'laser-verde',
+      },
     ]
-    trocas2d.forEach((t, i) => casos.push({ nome: `nave-2d-variacao-${i + 1}`, projeto: comPecas(nave2d, t), tresD: false }))
+    for (const [i, t] of trocas2d.entries())
+      casos.push({ nome: `nave-2d-variacao-${i + 1}`, projeto: comPecas(nave2d, t), tresD: false })
   }
   for (const caso of casos) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
     const erros: string[] = []
     page.on('console', (m) => {
-      if (m.type() === 'error' && !/GPU stall|WebGL-|swiftshader/i.test(m.text())) erros.push(m.text())
+      if (m.type() === 'error' && !/GPU stall|WebGL-|swiftshader/i.test(m.text()))
+        erros.push(m.text())
     })
     page.on('pageerror', (e) => erros.push(String(e)))
     const t0 = Date.now()
@@ -117,7 +162,11 @@ try {
     else await page.waitForTimeout(1200)
     const carregou = Date.now() - t0
     await page.screenshot({ path: resolve(saida, `${caso.nome}-abertura.png`) })
-    await partida(page, `${caso.nome}-jogando.png`, caso.nome.endsWith('2') ? 'ArrowRight' : 'ArrowLeft')
+    await partida(
+      page,
+      `${caso.nome}-jogando.png`,
+      caso.nome.endsWith('2') ? 'ArrowRight' : 'ArrowLeft',
+    )
     relatorio[caso.nome] = { carregouEmMs: carregou, erros }
     if (erros.length) problemas.push(`${caso.nome}: ${erros.join(' | ')}`)
     console.log(caso.nome, `${carregou} ms`, erros.length ? `ERROS: ${erros.length}` : 'sem erros')

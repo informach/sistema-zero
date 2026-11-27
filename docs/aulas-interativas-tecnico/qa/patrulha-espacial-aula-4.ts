@@ -21,8 +21,7 @@ export const patrulhaAula4: ConstrutorAula = {
       title: 'Três chances para a nave',
       etapa: 'vidas',
       objective: 'Dar três vidas à nave no começo e observar os corações nativos.',
-      ponte:
-        'Dê três vidas à nave. Os corações aparecem no começo; a batida vem na próxima parte.',
+      ponte: 'Dê três vidas à nave. Os corações aparecem no começo; a batida vem na próxima parte.',
       falas: [
         [
           'conversa',
@@ -75,7 +74,8 @@ export const patrulhaAula4: ConstrutorAula = {
       key: 'respiro-da-nave',
       title: 'Um respiro depois da batida',
       bancada: 'protecao',
-      objective: 'Observar a proteção curta depois de um dano, antes de programar a batida na patrulha.',
+      objective:
+        'Observar a proteção curta depois de um dano, antes de programar a batida na patrulha.',
       convite: 'Compare uma batida com e sem o respiro de proteção.',
       falas: [
         [

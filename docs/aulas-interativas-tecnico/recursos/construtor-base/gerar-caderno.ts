@@ -120,7 +120,7 @@ export function gerarCaderno(resource: string) {
     if (item.kind === 'gallery')
       return `<div class="galeria">${item.names.map((name: string) => `<figure class="galeria-item"><img src="${picture(name)}" alt="${escapeHtml(name)}"><figcaption>${escapeHtml(name)}</figcaption></figure>`).join('')}</div>`
     if (item.kind === 'gallery3d')
-      return `<div class="galeria galeria--modelos">${item.names.map((name: string) => `<figure class="galeria-item"><img src="data:image/png;base64,${readFileSync(resolve(root, 'docs/aulas-interativas-tecnico/recursos/caderno-visual/arte', `${name}.png`)).toString('base64')}" alt="${escapeHtml(name)}"><figcaption>${escapeHtml(name)}</figcaption></figure>`).join('')}</div>`
+      return `<div class="galeria galeria--modelos">${item.names.map((name: string) => `<figure class="galeria-item"><img src="data:image/png;base64,${readFileSync(resolve(root, 'docs/aulas-interativas-tecnico/recursos/caderno-visual/arte', `modelo-${name}.png`)).toString('base64')}" alt="${escapeHtml(name)}"><figcaption>${escapeHtml(name)}</figcaption></figure>`).join('')}</div>`
     throw new Error(`Item desconhecido: ${item.kind}`)
   }
   const art = arteDoCurso(meta.cover)

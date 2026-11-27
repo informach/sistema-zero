@@ -637,14 +637,24 @@ describe('createSzModels — cópias com ossos', () => {
       ],
       bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }],
       accessors: [
-        { bufferView: 0, componentType: 5126, count: 3, type: 'VEC3', min: [0, 0, 0], max: [1, 1, 0] },
+        {
+          bufferView: 0,
+          componentType: 5126,
+          count: 3,
+          type: 'VEC3',
+          min: [0, 0, 0],
+          max: [1, 1, 0],
+        },
       ],
     }
     const b = bench({
       cenario: { kind: 'model3d', dataUrl: encodeGlb(gltf, new Uint8Array(positions.buffer)) },
     })
     const hit = await loaded(b, 'cenario')
-    for (const copy of [b.models.instantiate(hit), b.models.instantiate(hit, { ownMaterials: true })]) {
+    for (const copy of [
+      b.models.instantiate(hit),
+      b.models.instantiate(hit, { ownMaterials: true }),
+    ]) {
       const fog = new Map<string, boolean>()
       copy.traverse((node) => {
         const mesh = node as RealTHREE.Mesh

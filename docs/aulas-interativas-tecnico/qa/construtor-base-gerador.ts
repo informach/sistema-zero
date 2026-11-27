@@ -100,7 +100,13 @@ export function materializarProjetosConstrutor(cfg: ConstrutorBaseConfig) {
   const portatil = cfg.portatil ?? ((projeto: StudioAuthoringProject) => projeto)
   write('projeto-inicial.szproject.json', portatil(first), true)
   write('projeto-final.szproject.json', portatil(projects[cfg.etapaFinal]!), true)
-  const { montarProjeto: _build, checks: _checks, pasta: _path, portatil: _portable, ...authored } = cfg
+  const {
+    montarProjeto: _build,
+    checks: _checks,
+    pasta: _path,
+    portatil: _portable,
+    ...authored
+  } = cfg
   write('curso-autoria.json', {
     version: 1,
     ...authored,

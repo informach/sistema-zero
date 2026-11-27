@@ -1,7 +1,8 @@
 # Arte espacial do Construtor feita no Blender (27/11/2026)
 
 Scripts que geram as peças 3D da **Patrulha Espacial** e, pelos mesmos modelos, a arte 2D da
-**Nave Contra Asteroides**. São a base visual dos cursos 3D do Construtor: cada categoria tem
+**Nave Contra Asteroides** (sprites em vetor projetados dos GLB; fundos que são os próprios
+cenários 3D em WebP). São a base visual dos cursos 3D do Construtor: cada categoria tem
 quatro variações, e a criança escolhe a que mais gosta no bloco **Criar o objeto … com o modelo …**
 (o seletor do bloco mostra a miniatura de cada uma). Trocar a variação nunca muda o jogo.
 
@@ -56,6 +57,8 @@ ESPACO_OUT=./out /tmp/claude-0/blender-venv/bin/python -B build_all.py -- laser-
 node previa/previa.mjs out /tmp/previa giro nave-falcao-azul:3        # quatro vistas, luz do Jogo 3D
 node previa/previa.mjs out /tmp/previa jogo cenario-orbita nave-falcao-azul asteroide-rocha-lunar laser-ciano
 node previa/previa.mjs out /tmp/previa mini nave-falcao-azul:3        # miniatura (a da galeria/)
+ESPACO_OUT=./out /tmp/claude-0/blender-venv/bin/python -B svg2d.py   # naves, asteroides e lasers 2D
+node previa/previa.mjs out arte2d fundos2d cenario-orbita cenario-aurora cenario-nebulosa cenario-estacao
 cd ../../..
 ESPACO_OUT=docs/design/construtor-espaco-blender/out bun docs/aulas-interativas-tecnico/qa/publicar-construtor-modelos.ts
 ```
@@ -99,4 +102,6 @@ criança aponta para o sha antigo. `--remover-antigos` no publicador só antes d
 | `build_all.py` | gera tudo, confere os tetos do carregador do Estúdio e grava `relatorio.json` |
 | `previa/` | fotos na luz do Jogo 3D (Chromium + o three.js do Estúdio) |
 | `galeria/` | miniaturas das 16 peças (caderno da aula e capas) |
+| `svg2d.py` | a arte 2D da Nave Contra Asteroides: naves, asteroides e lasers projetados em vetor a partir dos GLB (`arte2d/*.svg`) |
+| `arte2d/` | a arte embutida nos projetos 2D: 12 SVG e os 4 fundos `cenario-*.webp` (os cenários 3D pela câmera do jogo, `previa.mjs fundos2d`); `orcamento.json` mede o conjunto |
 | `modelos.json` | o que o publicador gravou na biblioteca (sha, categoria, caixa) |

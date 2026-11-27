@@ -55,7 +55,7 @@ function fonteDoAprovado(project: StudioAuthoringProject): string {
   return (
     script
       .slice(start + '  // Ao iniciar\n'.length, end)
-      .replace(/^  /gm, '')
+      .replace(/^ {2}/gm, '')
       .replace(/^\/\/ (?:Quando acontecer|Enquanto estiver rodando)\n/gm, '')
       .trim() + '\n'
   )
@@ -134,7 +134,7 @@ ${placar}          }
   if (tem('limite-tiro')) limites.push('    SZGame3D.pruneArea(tiros, "z", -36, 3);')
   if (tem('limite-asteroide')) limites.push('    SZGame3D.pruneArea(asteroides, "z", -36, 6);')
   if (limites.length)
-    source = source.replace(/\n  }\n\}\);\s*$/, `\n${limites.join('\n')}\n  }\n});\n`)
+    source = source.replace(/\n {2}}\n\}\);\s*$/, `\n${limites.join('\n')}\n  }\n});\n`)
 
   if (tem('derrota')) {
     const vencer = tem('vitoria')

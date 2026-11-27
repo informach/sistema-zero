@@ -21,7 +21,7 @@
         "kind": "index",
         "title": "Aula 2. Asteroides na rota",
         "text": "Asteroides surgem a cada 1,5 segundo dentro da faixa lateral fornecida, aproximam-se pelo Z positivo e saem do grupo depois de passar pela nave.",
-        "pages": "Páginas {{pagina:aula-2-relogio-dos-asteroides}} a {{ultima-pagina:aula-2-fim-da-rota}}"
+        "pages": "Páginas {{pagina:aula-2-ritmo-das-pedras}} a {{ultima-pagina:aula-2-fim-da-rota}}"
       },
       {
         "kind": "index",
@@ -355,10 +355,42 @@
     ]
   },
   {
-    "id": "aula-2-relogio-dos-asteroides",
+    "id": "aula-2-ritmo-das-pedras",
     "lesson": "aula-2",
     "part": 1,
     "kicker": "Aula 2 · Parte 1",
+    "title": "O ritmo dos asteroides",
+    "subtitle": "Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare quantas pedras nascem com intervalos diferentes."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy e compare o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-relogio-dos-asteroides",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
     "title": "Um asteroide a cada intervalo",
     "subtitle": "Usar um intervalo para criar asteroides somente durante a partida.",
     "items": [
@@ -425,8 +457,8 @@
   {
     "id": "aula-2-lugares-de-entrada",
     "lesson": "aula-2",
-    "part": 2,
-    "kicker": "Aula 2 · Parte 2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
     "title": "Uma faixa para as entradas",
     "subtitle": "Montar a expressão fornecida que sorteia o X dentro da faixa lateral da patrulha.",
     "items": [
@@ -480,8 +512,8 @@
   {
     "id": "aula-2-asteroides-se-aproximam",
     "lesson": "aula-2",
-    "part": 3,
-    "kicker": "Aula 2 · Parte 3",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
     "title": "Os asteroides vêm até a nave",
     "subtitle": "Definir a velocidade positiva em Z para aproximar os asteroides.",
     "items": [
@@ -516,8 +548,8 @@
   {
     "id": "aula-2-fim-da-rota",
     "lesson": "aula-2",
-    "part": 4,
-    "kicker": "Aula 2 · Parte 4",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
     "title": "A pedra sai depois de passar",
     "subtitle": "Retirar asteroides que ultrapassam o fim da rota, conservando o intervalo dos tiros.",
     "items": [
@@ -891,10 +923,42 @@
     ]
   },
   {
-    "id": "aula-4-vida-na-batida",
+    "id": "aula-4-respiro-da-nave",
     "lesson": "aula-4",
     "part": 2,
     "kicker": "Aula 4 · Parte 2",
+    "title": "Um respiro depois da batida",
+    "subtitle": "Observar a proteção curta depois de um dano, antes de programar a batida na patrulha.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Observar a proteção curta depois de um dano, antes de programar a batida na patrulha."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare uma batida com e sem o respiro de proteção."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy e compare o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "aula-4-vida-na-batida",
+    "lesson": "aula-4",
+    "part": 3,
+    "kicker": "Aula 4 · Parte 3",
     "title": "A batida tira uma vida",
     "subtitle": "Usar o encontro da nave com um grupo para descontar uma vida durante a partida.",
     "items": [
@@ -967,8 +1031,8 @@
   {
     "id": "aula-4-retirar-a-pedra-da-batida",
     "lesson": "aula-4",
-    "part": 3,
-    "kicker": "Aula 4 · Parte 3",
+    "part": 4,
+    "kicker": "Aula 4 · Parte 4",
     "title": "Só a pedra da batida sai",
     "subtitle": "Consumir o asteroide identificado pelo encontro antes de descontar a vida.",
     "items": [
@@ -1183,41 +1247,34 @@
     "part": 3,
     "kicker": "Aula 5 · Parte 3",
     "title": "Confira a patrulha completa",
-    "subtitle": "Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partida completo.",
+    "subtitle": "Testar o ciclo de partida completo e enviar a patrulha pronta.",
     "items": [
       {
         "kind": "step",
         "number": 1,
-        "text": "Em Ao iniciar, troque o título em cima, no meio por: PATRULHA ESPACIAL | Abra uma rota entre os asteroides."
+        "text": "Clique em Rodar de novo e confira a abertura: nave no centro, três corações e zero acertos."
       },
       {
         "kind": "step",
         "number": 2,
-        "text": "Em Ao iniciar, troque o aviso embaixo, no meio por: ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto."
+        "text": "Antes de Enter, toque em Espaço: não sai laser."
       },
       {
         "kind": "step",
         "number": 3,
-        "text": "No acontecimento Enter, troque o aviso em cima, no meio por: Abra a rota: acerte 20 asteroides e proteja sua nave."
+        "text": "Depois de Enter, teste um acerto, uma batida e uma pedra que passa sem bater."
       },
       {
         "kind": "step",
         "number": 4,
-        "text": "No acontecimento Enter, troque o aviso embaixo, no meio por: SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida."
-      },
-      {
-        "kind": "drawings",
-        "title": "Confira os encaixes desta parte",
-        "before": "vitoria",
-        "after": "completo",
-        "focus": ["sz_g3d_hud_text"]
+        "text": "Em partidas diferentes, teste a derrota e a vitória. Depois de cada resultado, clique em Voltar ao início."
       },
       {
         "kind": "tests",
         "title": "Teste e observe",
         "tests": [
           "Rodar de novo: nave no centro, grupos vazios, pontos zero e três vidas. Espaço antes de Enter não dispara.",
-          "Depois de Enter, movimento, disparos e relógio funcionam. Confira os novos avisos.",
+          "Depois de Enter, movimento, disparos e relógio funcionam.",
           "Um acerto soma um ponto; uma batida válida tira uma vida; uma pedra que passa sem bater não altera pontos ou vida.",
           "Em partidas distintas, teste a derrota por vida zero e a vitória por vinte pontos com vida restante.",
           "Depois de cada resultado, Voltar ao início restaura a abertura e o começo completo. Enter permite jogar de novo."
@@ -1290,22 +1347,76 @@
     ]
   },
   {
-    "id": "galeria-modelos",
+    "id": "galeria-modelos-nave-falcao-azul",
     "kicker": "Os modelos do seu projeto",
-    "title": "As peças da Patrulha",
-    "subtitle": "Os três modelos já estão no projeto inicial.",
+    "title": "Naves",
+    "subtitle": "Quatro modelos para o mesmo objeto do jogo.",
     "items": [
       {
         "kind": "gallery3d",
         "names": [
-          "patrulha-nave-provisoria",
-          "patrulha-asteroide-provisorio",
-          "patrulha-laser-provisorio"
+          "nave-falcao-azul",
+          "nave-exploradora-coral",
+          "nave-arraia-lilas",
+          "nave-cometa-verde"
         ]
       },
       {
         "kind": "note",
-        "text": "A nave, o asteroide e o laser são modelos prontos. Nesta versão, construa e teste as regras com estas peças. O curso não pede que você desenhe ou monte um modelo."
+        "text": "Para trocar, clique no nome do modelo no bloco Criar o objeto com o modelo e escolha outro na lista. O tamanho, a área de toque e as regras continuam iguais. Se preferir, mantenha o primeiro."
+      }
+    ]
+  },
+  {
+    "id": "galeria-modelos-asteroide-rocha-lunar",
+    "kicker": "Os modelos do seu projeto",
+    "title": "Asteroides",
+    "subtitle": "Quatro modelos para o mesmo objeto do jogo.",
+    "items": [
+      {
+        "kind": "gallery3d",
+        "names": [
+          "asteroide-rocha-lunar",
+          "asteroide-gelo-azul",
+          "asteroide-cristal-violeta",
+          "asteroide-lava-laranja"
+        ]
+      },
+      {
+        "kind": "note",
+        "text": "Para trocar, clique no nome do modelo no bloco Criar o objeto com o modelo e escolha outro na lista. O tamanho, a área de toque e as regras continuam iguais. Se preferir, mantenha o primeiro."
+      }
+    ]
+  },
+  {
+    "id": "galeria-modelos-laser-ciano",
+    "kicker": "Os modelos do seu projeto",
+    "title": "Lasers",
+    "subtitle": "Quatro modelos para o mesmo objeto do jogo.",
+    "items": [
+      {
+        "kind": "gallery3d",
+        "names": ["laser-ciano", "laser-dourado", "laser-lilas", "laser-verde"]
+      },
+      {
+        "kind": "note",
+        "text": "Para trocar, clique no nome do modelo no bloco Criar o objeto com o modelo e escolha outro na lista. O tamanho, a área de toque e as regras continuam iguais. Se preferir, mantenha o primeiro."
+      }
+    ]
+  },
+  {
+    "id": "galeria-modelos-cenario-orbita",
+    "kicker": "Os modelos do seu projeto",
+    "title": "Cenários",
+    "subtitle": "Quatro modelos para o mesmo objeto do jogo.",
+    "items": [
+      {
+        "kind": "gallery3d",
+        "names": ["cenario-orbita", "cenario-aurora", "cenario-nebulosa", "cenario-estacao"]
+      },
+      {
+        "kind": "note",
+        "text": "Para trocar, clique no nome do modelo no bloco Criar o objeto com o modelo e escolha outro na lista. O tamanho, a área de toque e as regras continuam iguais. Se preferir, mantenha o primeiro."
       }
     ]
   },
