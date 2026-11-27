@@ -4,6 +4,7 @@ import { pintaInventoryFloor, pintaWriteFormatVersion } from '@sistemazero/core/
 import type { PintaCausalEntry, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaWorkshopAsset } from '../../../pinta/src/core/assetMemory'
 import { createTilesetAsset } from '../../../pinta/src/core/project'
+import { observePintaReferences } from '../../../pinta/src/core/sceneMapClosure'
 import {
   attachWorkshopBook,
   pintaWorkshopAssetFromJson,
@@ -24,6 +25,7 @@ import {
 } from '../../../pinta/src/state/workshopPersistence'
 import { automapFixture } from '../../../pinta/src/testing/automapFixture'
 import { clearIdbMock, idbMockDb, setIdbMockCodec } from '../../../pinta/src/testing/idbMock'
+import { nativeNineGallery } from '../../../pinta/src/testing/nativeNineFixtures'
 import { addTile } from '../../../pinta/src/tiles/tilesetOps'
 import type { CreationsCloud } from '../../src/lib/creations-cloud'
 import { createMemorySyncedMarks } from '../../src/lib/creations-sync'
@@ -37,6 +39,7 @@ import {
   createCloudMirroredPintaPersistence,
   createMemoryPintaFormatMemory,
 } from '../../src/lib/pinta-cloud-persistence'
+import { PINTA_WORKSHOP_CAPABILITIES } from '../../src/lib/pinta-workshop-capabilities'
 
 // Etapa 1 das regiões (23/11/2026), sem flag: o host com a fila causal monta a oficina (teto
 // nativo 8, leitor e escritor 7). Estes casos provam o transporte e o que acontece quando um
@@ -86,7 +89,7 @@ function causalServer(seed: readonly Awaited<ReturnType<typeof published>>[]) {
   const remote = new Map(seed.map(({ entry }) => [entry.itemId, entry]))
   const stored = new Map(seed.map(({ entry, gzip }) => [entry.itemId, gzip]))
   const receipts = new Map<string, PintaCausalResult>()
-  const control = { epoch: 3, offline: false, commits: [] as string[][] }
+  const control = { epoch: 3, offline: false, loseNextAck: false, commits: [] as string[][] }
   const floor = () =>
     Math.max(
       1,
@@ -112,6 +115,8 @@ function causalServer(seed: readonly Awaited<ReturnType<typeof published>>[]) {
       },
       upload: async ({ intent, intentHash, blobs }) => {
         if (control.offline) throw new TypeError('Failed to fetch')
+        const confirmed = receipts.get(intent.opId)
+        if (confirmed) return confirmed
         if (
           intent.reader > reader ||
           floor() > intent.reader ||
@@ -158,6 +163,10 @@ function causalServer(seed: readonly Awaited<ReturnType<typeof published>>[]) {
         control.commits.push(intent.members.map((member) => member.itemId))
         const receipt = { opId: intent.opId, epoch: String(control.epoch), intentHash, members }
         receipts.set(intent.opId, receipt)
+        if (control.loseNextAck) {
+          control.loseNextAck = false
+          throw new TypeError('Confirmação perdida depois do commit')
+        }
         return receipt
       },
       // A unit refused before its reservation has no row on the server: `unknown`.
@@ -204,11 +213,19 @@ const locks = {
 }
 
 /** O host desta etapa: a oficina com teto 8 e a fila com leitor e escritor 7. */
-function newHost(namespace: string, transport: PintaCausalCloud) {
+function newHost(
+  namespace: string,
+  transport: PintaCausalCloud,
+  capabilities: { reader: number; writer: number; nativeCeiling: 8 | 9 } = {
+    reader: 7,
+    writer: 7,
+    nativeCeiling: 8,
+  },
+) {
   const local = createWorkshopPintaPersistence({
     namespace,
     guardCausalWrites: true,
-    nativeCeiling: 8,
+    nativeCeiling: capabilities.nativeCeiling,
   })
   const mirror = createCloudMirroredPintaPersistence({
     local,
@@ -217,14 +234,19 @@ function newHost(namespace: string, transport: PintaCausalCloud) {
     localNamespace: namespace,
     marks: createMemorySyncedMarks(),
     formatMemory: createMemoryPintaFormatMemory(),
-    causal: { local: local.causal, reader: 7, writer: 7, ...locks },
+    causal: {
+      local: local.causal,
+      reader: capabilities.reader,
+      writer: capabilities.writer,
+      ...locks,
+    },
   })
   const flush = () =>
     flushPintaCausalOutbox({
       local: local.causal,
       cloud: transport,
-      reader: 7,
-      writer: 7,
+      reader: capabilities.reader,
+      writer: capabilities.writer,
       signal: new AbortController().signal,
     })
   return { local, mirror, flush }
@@ -525,6 +547,114 @@ test('o nativo 9 não é anunciado: a conta recusa guardar um mapa com regras se
       WORKSHOP_NATIVE_CEILING_MESSAGE,
     )
     expect(structuredClone([...db])).toEqual(before)
+  } finally {
+    host.mirror.dispose?.()
+  }
+})
+
+test('LG05 A: o host público baixa as três variantes nativas 9 por leitura 8 e conserva os bytes ao reabrir', async () => {
+  const { sheet, variants } = await nativeNineGallery()
+  const seed = await Promise.all(
+    [sheet, ...variants.map(({ asset }) => asset)].map((asset) => published(asset, 1, '3')),
+  )
+  const server = causalServer(seed)
+  const namespace = 'lg05-leitor-frio'
+  setPintaStorageNamespace(namespace)
+  const host = newHost(namespace, server.transport(8), PINTA_WORKSHOP_CAPABILITIES)
+  try {
+    await reconciled(host.mirror)
+    const reopened = createWorkshopPintaPersistence({
+      namespace,
+      nativeCeiling: 8,
+      guardCausalWrites: true,
+    })
+    for (const { asset, text } of variants) {
+      const loaded = await reopened.loadAssetById(asset.id)
+      expect(loaded && pintaWorkshopAssetToJson(loaded)).toBe(text)
+    }
+    expect((await host.local.causal.inspect()).pending).toEqual([])
+    expect(server.control.commits).toEqual([])
+    const before = structuredClone([...idbMockDb(dbNameFor(namespace))])
+    const authoredId = variants[0]?.asset.id
+    const authored = authoredId ? await host.mirror.loadAssetById(authoredId) : null
+    if (!authored) throw Error('Mapa com livro ausente')
+    const resources = observePintaReferences(authored, await host.local.listAllAssets())
+    await expect(
+      host.mirror.persistAsset({ ...authored, name: 'edição-prematura' }, { resources }),
+    ).rejects.toThrow(WORKSHOP_NATIVE_CEILING_MESSAGE)
+    expect(structuredClone([...idbMockDb(dbNameFor(namespace))])).toEqual(before)
+  } finally {
+    host.mirror.dispose?.()
+  }
+})
+
+test('LG05 A: leitor anterior 7 não baixa o inventário 8 nem muda os documentos do aparelho atualizado', async () => {
+  const { sheet, variants } = await nativeNineGallery()
+  const seed = await Promise.all(
+    [sheet, ...variants.map(({ asset }) => asset)].map((asset) => published(asset, 1, '3')),
+  )
+  const server = causalServer(seed)
+  const namespace = 'lg05-aba-anterior'
+  setPintaStorageNamespace(namespace)
+  const host = newHost(namespace, server.transport(8), PINTA_WORKSHOP_CAPABILITIES)
+  await reconciled(host.mirror)
+  host.mirror.dispose?.()
+  const before = structuredClone([...idbMockDb(dbNameFor(namespace))])
+  const old = newHost(namespace, server.transport(7))
+  try {
+    await reconciled(old.mirror)
+    await expect(server.transport(7).snapshot()).rejects.toMatchObject({
+      reason: 'client-outdated',
+    })
+    expect(structuredClone([...idbMockDb(dbNameFor(namespace))])).toEqual(before)
+    expect(server.control.commits).toEqual([])
+  } finally {
+    old.mirror.dispose?.()
+  }
+  const freshNamespace = 'lg05-aparelho-anterior'
+  setPintaStorageNamespace(freshNamespace)
+  const fresh = newHost(freshNamespace, server.transport(7))
+  try {
+    await reconciled(fresh.mirror)
+    expect(await fresh.local.listAllAssets()).toEqual([])
+    expect(server.control.commits).toEqual([])
+  } finally {
+    fresh.mirror.dispose?.()
+  }
+})
+
+test('LG05 privada: fila 8 conserva os três documentos offline e resolve ACK perdido sem outra versão', async () => {
+  const { sheet, variants } = await nativeNineGallery()
+  const server = causalServer([])
+  const namespace = 'lg05-gravador-qualificacao'
+  setPintaStorageNamespace(namespace)
+  const host = newHost(namespace, server.transport(8), { reader: 8, writer: 8, nativeCeiling: 9 })
+  try {
+    expect(
+      await host.local.causal.applyPull(
+        { fromEpoch: null, epoch: '3', transitions: [] },
+        () => true,
+      ),
+    ).toBe(true)
+    server.control.offline = true
+    await host.mirror.persistAssets([sheet, ...variants.map(({ asset }) => asset)])
+    await expect(host.flush()).rejects.toThrow()
+    expect(server.control.commits).toEqual([])
+    for (const { asset, text } of variants) {
+      const stored = await host.local.loadAssetById(asset.id)
+      expect(stored && pintaWorkshopAssetToJson(stored)).toBe(text)
+    }
+    server.control.offline = false
+    server.control.loseNextAck = true
+    await expect(host.flush()).rejects.toThrow()
+    await host.flush()
+    expect((await host.local.causal.inspect()).pending).toEqual([])
+    for (const { asset, text } of variants) {
+      expect(server.remote.get(asset.id)?.formatVersion).toBe(8)
+      expect(server.remote.get(asset.id)?.revision).toBe(1)
+      expect(await gunzip(server.stored.get(asset.id)!)).toBe(text)
+    }
+    expect(server.floor()).toBe(8)
   } finally {
     host.mirror.dispose?.()
   }

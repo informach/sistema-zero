@@ -136,13 +136,13 @@ async function render({
   return mounted
 }
 
-test('com a conta do perfil, o host monta a oficina com teto 8 e anuncia leitor e escritor 7', async () => {
+test('LG05 A: o host monta teto 8, leitor 8 e escritor 7 sem antecipar a autoria nova', async () => {
   const view = await render({ viewerId: 'perfil', scope: account })
   expect(clouds.at(-1)).toMatchObject({
     maxFormatVersion: 6,
     pintaCausalEnabled: true,
     pintaPaletteWriteEnabled: true,
-    pintaCausalReader: 7,
+    pintaCausalReader: 8,
   })
   expect(built).toEqual([
     {
@@ -153,7 +153,7 @@ test('com a conta do perfil, o host monta a oficina com teto 8 e anuncia leitor 
   ])
   expect(mirrors).toHaveLength(1)
   expect(mirrors[0]?.local.kind).toBe('workshop')
-  expect(mirrors[0]?.causal).toMatchObject({ reader: 7, writer: 7 })
+  expect(mirrors[0]?.causal).toMatchObject({ reader: 8, writer: 7 })
   expect(view.persistence).toMatchObject({ mirrored: 'workshop' })
 })
 
@@ -214,6 +214,6 @@ test('o Pinta do Arquipélago, sob o escopo da conta, monta a oficina causal e c
   })
   expect(clouds.at(-1)).toMatchObject({ pintaCausalEnabled: true })
   expect(built.map(({ kind }) => kind)).toEqual(['workshop'])
-  expect(mirrors[0]?.causal).toMatchObject({ reader: 7, writer: 7 })
+  expect(mirrors[0]?.causal).toMatchObject({ reader: 8, writer: 7 })
   expect(typeof view.onCompletionControlChange).toBe('function')
 })
