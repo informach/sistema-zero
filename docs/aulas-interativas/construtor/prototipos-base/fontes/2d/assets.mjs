@@ -1,13 +1,13 @@
 /** Arte vetorial da Nave Contra Asteroides, embutida em cada .szproject (sem downloads).
  * Toda variação de uma categoria tem o mesmo tamanho de desenho e a mesma área de contato.
  */
-import { Buffer } from 'node:buffer';
 import { readFileSync } from 'node:fs';
 
 // A arte vem dos MESMOS modelos 3D da Patrulha Espacial (docs/design/construtor-espaco-blender):
-// `svg2d.py` projeta cada nave, asteroide e laser em vetor e compõe os fundos com a paleta dos
-// cenários 3D. Cada categoria tem quatro variações com a mesma caixa: trocar não muda o jogo.
-const pasta = new URL('../../../../../design/construtor-espaco-blender/svg2d/', import.meta.url);
+// `svg2d.py` projeta cada nave, asteroide e laser em vetor; os fundos são os próprios cenários 3D
+// vistos pela câmera do jogo, em WebP. Cada categoria tem quatro variações com a mesma caixa:
+// trocar não muda o jogo.
+const pasta = new URL('../../../../../design/construtor-espaco-blender/arte2d/', import.meta.url);
 const medidas = {
   cenario: [800, 480],
   nave: [56, 64],
@@ -23,17 +23,20 @@ const nomes = {
 const images = Object.entries(nomes).flatMap(([category, lista]) =>
   lista.map((name) => {
     const [width, height] = medidas[category];
-    return { name, category, width, height, art: readFileSync(new URL(`${name}.svg`, pasta), 'utf8') };
+    const ext = category === 'cenario' ? 'webp' : 'svg';
+    const bytes = readFileSync(new URL(`${name}.${ext}`, pasta));
+    const mime = ext === 'webp' ? 'image/webp' : 'image/svg+xml';
+    return { name, category, width, height, ext, art: bytes, dataUrl: `data:${mime};base64,${bytes.toString('base64')}` };
   }),
 );
 
 export const artCatalog = images;
-export const assets = images.map(({ name, width, height, art }) => ({
+export const assets = images.map(({ name, width, height, dataUrl }) => ({
   id: `construtor-2d-${name}`,
   name,
   kind: 'image',
   source: 'library',
-  dataUrl: `data:image/svg+xml;base64,${Buffer.from(art).toString('base64')}`,
+  dataUrl,
   width,
   height,
 }));

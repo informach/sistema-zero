@@ -63,8 +63,18 @@ try {
     }
   } else if (modo === 'mini') {
     for (const item of resto) {
-      const [peca, size = '3'] = item.split(':')
-      await foto({ modo: 'mini', peca, size, fundo: '#1b2140' }, `${peca}.png`, peca.startsWith('cenario-') ? 640 : 480, peca.startsWith('cenario-') ? 360 : 480)
+      const [peca, size = '3', medida] = item.split(':')
+      const [w, h] = medida ? medida.split('x').map(Number) : peca.startsWith('cenario-') ? [640, 360] : [480, 480]
+      await foto({ modo: 'mini', peca, size, fundo: '#1b2140' }, `${peca}${medida ? `-${medida}` : ''}.png`, w, h)
+    }
+  } else if (modo === 'fundos2d') {
+    // Os fundos 800 × 480 da Nave Contra Asteroides são os MESMOS cenários 3D da Patrulha, vistos
+    // pela câmera do jogo, gravados em WebP (cabem embutidos em cada projeto e em cada aula).
+    const sharp = createRequire(join(repo, 'docs/aulas-interativas-tecnico/recursos/construtor-base/gerar-artes.ts'))('sharp')
+    for (const peca of resto) {
+      await foto({ modo: 'mini', peca, size: '180' }, `${peca}.png`, 800, 480)
+      await sharp(join(outDir, `${peca}.png`)).webp({ quality: 75, effort: 6 }).toFile(join(outDir, `${peca}.webp`))
+      console.log('fundo', join(outDir, `${peca}.webp`))
     }
   } else if (modo === 'jogo') {
     const [cenario, nave, asteroide, laser, nome = 'jogo'] = resto
