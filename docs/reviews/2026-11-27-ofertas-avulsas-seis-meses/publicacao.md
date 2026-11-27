@@ -21,9 +21,13 @@ Members e Auth passaram pela barreira canônica antes de Indicações, Funil e A
 Kids continuou publicada na versão 4. Os triggers nativos do Railway permaneceram desativados.
 Não foi necessário cadastrar variável de ambiente.
 
-O ajuste adicional da confirmação de compra, `f00682b14`, e a correção do teste de pixels do
-Estúdio, `bbbfdecb7`, entram na mesma release. Só o primeiro altera um serviço em produção:
-Funil. O recibo desse complemento é registrado no PR, sem repetir a onda dos demais serviços.
+O ajuste adicional da confirmação de compra, `f00682b14`, foi publicado no Funil na fonte
+`93a2fd50b`, deployment `7201ecff-189a-4b1c-a821-8f409766cc4c`, às 15:43 de 27/11.
+A correção do teste de pixels do Estúdio, `bbbfdecb7`, não altera o motor.
+
+A revisão adicional do member-shell alinha o painel interno de presentes em meses à unidade
+da oferta, preservando os dias anunciados do Cadê. Esse complemento exige publicar os apps
+Kids e adulto; o recibo fica no PR, sem repetir a onda dos demais serviços.
 
 ## Catálogo e funcionamento
 
@@ -84,3 +88,8 @@ Nenhum cliente, compra, resgate ou curso de QA foi criado em produção. Respost
 pessoais e baselines individuais ficaram fora do Git. A prova local adicional da confirmação
 usa Postgres descartável e cobre nove cenários, incluindo prazos antigos de trinta dias e doze
 meses e compras novas de seis meses.
+
+Após a publicação adicional do Funil, os vinte links passaram novamente, e os 84 acessos e
+17 resgates continuaram preservados. Três confirmações reais mostraram a data contratada:
+Vivianne com doze meses, Vivianne com seis meses e Desafio adulto com trinta dias. A consulta
+foi somente leitura, sem criar compra ou contato.
