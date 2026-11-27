@@ -35,7 +35,7 @@ export const PAGINA_DESAFIO_9A17 = {
     'Ajude seu filho a praticar planejamento, resolução de problemas e comunicação para a escola e a vida. Treinamento guiado com criação de jogos e programação em blocos. 5 a 17 anos; abaixo de 9, com acompanhante.',
   capa: 'desafio-primeiro-jogo/farol-capa.webp',
   cta: 'Quero ajudar meu filho',
-  condicoes: 'Pagamento único · 30 dias de acesso · 7 dias de garantia',
+  condicoes: 'Pagamento único · 6 meses de acesso · 7 dias de garantia',
   topo: {
     pular: 'Ir para o conteúdo',
     logo: {
@@ -77,7 +77,7 @@ export const PAGINA_DESAFIO_9A17 = {
       alt: 'A Chave do Farol: o personagem na trilha, a chave dourada e o farol listrado na ilha',
     },
     legenda: 'A Chave do Farol: a aventura usada neste treinamento',
-    faixa: '30 dias de acesso',
+    faixa: '6 meses de acesso',
   },
   jeitos: {
     titulo: 'Você quer que ele encontre um caminho quando a resposta ainda não está pronta.',
@@ -296,7 +296,7 @@ export const PAGINA_DESAFIO_9A17 = {
       'Comece por um treinamento guiado, com um projeto que seu filho pode construir e mostrar.',
     selo: 'Desafio do Primeiro Jogo',
     sufixo: 'pagamento único',
-    porDia: '30 dias de acesso a partir da aprovação do pagamento.',
+    porDia: '6 meses de acesso a partir da aprovação do pagamento.',
     inclui: [
       'A Chave do Farol, com 3 etapas guiadas de criação',
       'Vídeos e atividades para planejar, testar e rever',
@@ -373,7 +373,7 @@ export const PAGINA_DESAFIO_9A17 = {
     {
       pergunta: 'Como são as atividades e o prazo?',
       resposta:
-        'São 3 etapas guiadas da Chave do Farol, com aulas gravadas, para fazer dentro dos 30 dias de acesso. Vocês escolhem os momentos; não há turma com horário marcado nem obrigação de concluir em 3 dias. O prazo começa na aprovação do pagamento.',
+        'São 3 etapas guiadas da Chave do Farol, com aulas gravadas, para fazer dentro dos 6 meses de acesso. Vocês escolhem os momentos; não há turma com horário marcado nem obrigação de concluir em 3 dias. O prazo começa na aprovação do pagamento.',
     },
     {
       pergunta: 'Qual equipamento precisamos?',
@@ -383,18 +383,18 @@ export const PAGINA_DESAFIO_9A17 = {
     {
       pergunta: 'É assinatura? O que acontece ao terminar o acesso?',
       resposta:
-        'É um pagamento único de {{preco}}, sem renovação automática. Depois dos 30 dias, o acesso às aulas termina; os projetos ficam guardados na conta. O link do jogo publicado continua acessível enquanto a publicação estiver disponível. A conta pode ver e jogar no Mural; novas publicações, comentários e reações dependem de um acesso ativo.',
+        'É um pagamento único de {{preco}}, sem renovação automática. Depois dos 6 meses, o acesso às aulas termina; os projetos ficam guardados na conta. O link do jogo publicado continua acessível enquanto a publicação estiver disponível. A conta pode ver e jogar no Mural; novas publicações, comentários e reações dependem de um acesso ativo.',
     },
     {
       pergunta: 'É o mesmo presente Cadê Todo Mundo?',
       resposta:
-        'São experiências diferentes. O presente usa o Cadê Todo Mundo, com 7 dias desde o resgate. Este treinamento usa A Chave do Farol, com compra separada e 30 dias de acesso. A Comunidade reúne outros projetos por assinatura. Comprar o Desafio não reinicia o presente nem contrata a Comunidade.',
+        'São experiências diferentes. O presente usa o Cadê Todo Mundo, com 7 dias desde o resgate. Este treinamento usa A Chave do Farol, com compra separada e 6 meses de acesso. A Comunidade reúne outros projetos por assinatura. Comprar o Desafio não reinicia o presente nem contrata a Comunidade.',
     },
   ],
   fim: {
     titulo: 'Dê ao seu filho espaço para pensar, tentar e descobrir do que é capaz.',
     texto:
-      'Desafio do Primeiro Jogo · {{preco}}, pagamento único · 30 dias de acesso · 7 dias de garantia',
+      'Desafio do Primeiro Jogo · {{preco}}, pagamento único · 6 meses de acesso · 7 dias de garantia',
     cta: 'Quero começar com meu filho',
   },
   barra: {
@@ -411,7 +411,7 @@ export const PAGINA_DESAFIO_9A17 = {
     ],
     paraComecar: [
       'Vocês usam um computador ou notebook com internet, mouse e teclado. A aula e o Estúdio de criação ficam juntos no navegador. Na Área dos pais, você cria ou abre o perfil do seu filho e acompanha o primeiro acesso.',
-      'As aulas são gravadas. Ele pode pausar, rever uma parte e continuar em outro momento. São três etapas para realizar dentro dos 30 dias de acesso, contados da aprovação do pagamento; não é preciso concluir em três dias.',
+      'As aulas são gravadas. Ele pode pausar, rever uma parte e continuar em outro momento. São três etapas para realizar dentro dos 6 meses de acesso, contados da aprovação do pagamento; não é preciso concluir em três dias.',
       'Você não precisa saber programar. A orientação mostra como montar cada parte, e sua presença acompanha a necessidade de apoio dele. O Caderno do Aluno ajuda a conferir os testes; dúvidas também podem ser enviadas por mensagens na plataforma. As respostas podem levar um tempo.',
     ],
     areaDosPais: [

@@ -139,7 +139,7 @@ export const WISH: Record<DesafioAdultoProfile, string> = {
 // ---------------------------------------------------------------------------------------------
 
 export const WHERE =
-  'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.'
+  'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 6 meses para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.'
 export const IMAGEM_FAROL = {
   src: '/img/desafio-primeiro-jogo/farol-jogo.png',
   largura: 1280,
@@ -168,15 +168,15 @@ export const NEED: Record<string, string> = {
 export const TEMPO_NEED: Record<string, string> = {
   menos_1: `E sobra ${m('menos de 1 hora por semana')}: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.`,
   '1_3': `E você tem ${m('de 1 a 3 horas por semana')}: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.`,
-  mais_3: `E você tem ${m('mais de 3 horas por semana')}: são 30 dias para fazer no seu ritmo, e o projeto fica salvo na sua conta de um dia para o outro.`,
+  mais_3: `E você tem ${m('mais de 3 horas por semana')}: são 6 meses para fazer no seu ritmo, e o projeto fica salvo na sua conta de um dia para o outro.`,
   depende: `E o seu tempo ${m('depende da semana')}: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para numa semana e continua na outra do mesmo ponto.`,
 }
 /** Quando a garantia já falou das seções e do projeto salvo, o tempo volta curto. */
 export const TEMPO_CURTO: Record<string, string> = {
-  menos_1: `E sobra ${m('menos de 1 hora por semana')}: são 30 dias para fazer no seu ritmo.`,
-  '1_3': `E você tem ${m('de 1 a 3 horas por semana')}: são 30 dias para fazer no seu ritmo.`,
-  mais_3: `E você tem ${m('mais de 3 horas por semana')}: são 30 dias para fazer no seu ritmo.`,
-  depende: `E o seu tempo ${m('depende da semana')}: são 30 dias para fazer no seu ritmo.`,
+  menos_1: `E sobra ${m('menos de 1 hora por semana')}: são 6 meses para fazer no seu ritmo.`,
+  '1_3': `E você tem ${m('de 1 a 3 horas por semana')}: são 6 meses para fazer no seu ritmo.`,
+  mais_3: `E você tem ${m('mais de 3 horas por semana')}: são 6 meses para fazer no seu ritmo.`,
+  depende: `E o seu tempo ${m('depende da semana')}: são 6 meses para fazer no seu ritmo.`,
 }
 export const COMPUTADOR: Record<string, string> = {
   meu: '',
@@ -187,7 +187,7 @@ export const COMPUTADOR: Record<string, string> = {
 export const STILL_LOOKING = `Você disse que ${m('ainda está conhecendo')}. A próxima página mostra o jogo, as fases e as condições, para você decidir com calma.`
 
 export const CTA_TEXT =
-  'Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 30 dias e a resposta para quem tem receio de ser curso de criança.'
+  'Na próxima página, você vê o jogo por dentro, as 3 fases, o que acontece depois dos 6 meses e a resposta para quem tem receio de ser curso de criança.'
 export const CTA_LABEL: Record<DesafioAdultoProfile, string> = {
   A: 'Ver como é o primeiro jogo',
   B: 'Ver como a ideia sai do papel',

@@ -1,5 +1,26 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Presente com prazo em meses (27/11/2026)
+
+Decisão da dona: cada curso avulso tem uma oferta só, de 6 meses, e o presente é essa mesma
+oferta. `giftOfferProblem` deixou de recusar prazo em meses (vale para campanha, listas dos
+embaixadores e resgate). O resgate grava em `access_duration_days` os dias do calendário contados
+do instante do resgate (`giftAccessDays(offer, now)` → `monthsSpanDays`, a mesma conta
+`addUtcCalendarMonths` do members, que concede pela política da própria oferta). O texto lê meses:
+a leitura pública e a da área de membros mandam `gift.accessMonths` (só quando é por meses) e os
+e-mails dizem "por 6 meses, até …" (`monthsOfRedemption` reconstrói os meses dos dias gravados,
+com tolerância de um dia). O Admin lista as ofertas em meses na escolha do presente. O presente do
+Cadê continua em dias (`-7-dias`, 15 reais e 7 divulgados).
+
+Troca da oferta do presente com a campanha no ar: vale quando a oferta nova é do MESMO curso
+(`sameGiftCourse`: as duas resolvem no catálogo com o mesmo `courseSlug`, o mesmo `productSku`
+quando os dois vêm e o mesmo público). O serviço passa `giftOfferSameCourse` ao
+`CampaignRepository.update`, que então não trava nem por status nem por resgates. Cada resgate
+continua com a oferta que recebeu e a vaga sai do curso, que não muda. Troca de curso segue a
+régua antiga (409 `CAMPAIGN_GIFT_OFFER_LOCKED`). É o caminho do guia dos pais: a campanha
+`vilao-em-aliado` passa de `transformando-o-vilao-em-aliado-presente` para a oferta de 6 meses. O
+Admin abre o seletor só com as ofertas do mesmo produto (`GIFT_OFFER_SAME_COURSE_MESSAGE`).
+
 ## Origem por aquisição, ofertas dos embaixadores e campanha de venda (25/11/2026, em andamento)
 
 **Uma oferta por curso em cada lista e o link curto por curso (25/11/2026, depois do Lote 4).**

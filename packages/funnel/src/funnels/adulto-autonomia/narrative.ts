@@ -280,7 +280,7 @@ export function buildNarrative(mode: AdultMode, a: CompleteAnswers): AdultNarrat
     fit.push(
       community
         ? 'Sua rotina pede atenção ao tempo de prática. As aulas gravadas e os projetos salvos permitem retomar, mas é preciso reservar momentos para construir durante o período contratado.'
-        : 'Sua rotina está apertada. Confira se consegue reservar momentos para construir e testar dentro dos 30 dias de acesso. As aulas gravadas permitem organizar os horários.',
+        : 'Sua rotina está apertada. Confira se consegue reservar momentos para construir e testar dentro dos 6 meses de acesso. As aulas gravadas permitem organizar os horários.',
     )
   if (has('apoio') && !has('ao_vivo'))
     fit.push(
@@ -298,7 +298,7 @@ export function buildNarrative(mode: AdultMode, a: CompleteAnswers): AdultNarrat
       ]
     : [
         'Vídeo e prática ficam na mesma aula. Você acompanha uma explicação, constrói uma parte e confere o objetivo antes de continuar. Há materiais de consulta e ajuda por mensagens para dúvidas, sem acompanhamento ao vivo. Ao concluir, pode compartilhar a criação no Mural.',
-        'É uma compra única, com 30 dias de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.',
+        'É uma compra única, com 6 meses de acesso desde a aprovação do pagamento e sete dias de garantia da compra. Continuar na Comunidade é uma contratação opcional e separada.',
       ]
   const lead = [DESIRE[a.interesse], EXPERIENCE[a.experiencia]].join(' ')
   const obstacle =

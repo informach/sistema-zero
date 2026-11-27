@@ -29,8 +29,8 @@ Bun.serve({
       priceCents: mode === 'changed_price' ? 7700 : 6700,
       pricingMode: 'one_time',
       accessMode: 'fixed',
-      accessDurationValue: mode === 'wrong_duration' ? 7 : 30,
-      accessDurationUnit: 'days',
+      accessDurationValue: mode === 'wrong_duration' ? 7 : 6,
+      accessDurationUnit: 'months',
     })
     const result = match[2]
       ? await fake.gateway.quoteOffer(

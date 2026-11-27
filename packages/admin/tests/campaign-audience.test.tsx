@@ -8,8 +8,12 @@ const { createRoot } = await import('react-dom/client')
 const { AUDIENCE_LOCKED_MESSAGE, ConvitesClient, previewUrl } = await import(
   '../src/app/admin/embaixadores/convites-client'
 )
-const { GIFT_CATALOG_UNAVAILABLE_MESSAGE, GIFT_OFFER_LOCKED_MESSAGE, GIFT_OFFER_REQUIRED_MESSAGE } =
-  await import('../src/app/admin/embaixadores/campaign-gift-offer')
+const {
+  GIFT_CATALOG_UNAVAILABLE_MESSAGE,
+  GIFT_OFFER_LOCKED_MESSAGE,
+  GIFT_OFFER_REQUIRED_MESSAGE,
+  GIFT_OFFER_SAME_COURSE_MESSAGE,
+} = await import('../src/app/admin/embaixadores/campaign-gift-offer')
 
 /** Público do presente nas campanhas (20/10/2026): coluna, editor, trava e prévia. */
 
@@ -74,6 +78,7 @@ const catalogOffers: Record<string, unknown[]> = {
       slug: 'vilao-em-aliado',
       name: 'Vilão em aliado',
       status: 'active',
+      productId: '12121212-1212-4212-8212-121212121212',
       productName: 'Transformando o vilão em aliado',
       accessMode: 'lifetime',
       accessDurationValue: null,
@@ -88,7 +93,7 @@ const catalogOffers: Record<string, unknown[]> = {
       accessMode: 'billing_cycle',
     }),
     offer({ id: OFFER_DRAFT, slug: 'rascunho', name: 'Oferta em rascunho', status: 'draft' }),
-    // Prazo em meses não vira presente (o referrals recusa): fica fora da lista.
+    // Prazo em meses vira presente desde 27/11/2026 (a oferta de 6 meses de cada curso).
     offer({
       id: OFFER_MONTHS,
       slug: 'cade-todo-mundo-1-mes',
@@ -397,7 +402,7 @@ test('a prévia leva o público', () => {
 
 /** Oferta de presente (15/11/2026): o campo obrigatório, a lista e os erros novos. */
 
-test('nova campanha Kids exige a oferta de presente e lista só pagamento único em dias ou sem prazo', async () => {
+test('nova campanha Kids exige a oferta de presente e lista só pagamento único de prazo fixo ou sem prazo', async () => {
   const { calls, root } = await mount([campaign({ audience: 'kids' })], () =>
     Response.json({ campaign: campaign({ audience: 'kids', giftOfferId: OFFER_KIDS }) }),
   )
@@ -408,7 +413,14 @@ test('nova campanha Kids exige a oferta de presente e lista só pagamento único
       text: o.textContent,
       disabled: o.disabled,
     }))
-    expect(options.map((o) => o.value)).toEqual(['', OFFER_KIDS, OFFER_PARENTS, OFFER_DRAFT])
+    expect(options.map((o) => o.value)).toEqual([
+      '',
+      OFFER_KIDS,
+      OFFER_PARENTS,
+      OFFER_DRAFT,
+      OFFER_MONTHS,
+    ])
+    expect(options[4]!.text).toContain('1 mês')
     expect(options[1]!.text).toBe(
       'Cadê Todo Mundo 7 dias · Cadê Todo Mundo + Mural · 7 dias · Pausada',
     )
@@ -540,6 +552,30 @@ test('fora do rascunho a oferta trava, e os erros novos viram recados claros', a
       await act(async () => root.unmount())
       document.body.innerHTML = ''
     }
+  }
+})
+
+test('com a campanha no ar, a oferta troca só por outra do mesmo curso (27/11/2026)', async () => {
+  const { calls, root } = await mount(
+    [campaign({ audience: 'kids', status: 'active', state: 'active', giftOfferId: OFFER_KIDS })],
+    () => Response.json({ campaign: campaign({ audience: 'kids', giftOfferId: OFFER_MONTHS }) }),
+  )
+  try {
+    await act(async () => button('Editar').click())
+    expect(giftSelect().disabled).toBe(false)
+    const values = [...giftSelect().options].map((o) => o.value)
+    expect(values).toContain(OFFER_MONTHS)
+    expect(values).not.toContain(OFFER_PARENTS)
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
+      GIFT_OFFER_SAME_COURSE_MESSAGE,
+    )
+    await choose(OFFER_MONTHS)
+    await submit()
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({
+      giftOfferId: OFFER_MONTHS,
+    })
+  } finally {
+    await act(async () => root.unmount())
   }
 })
 

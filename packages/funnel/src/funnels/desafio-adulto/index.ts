@@ -44,13 +44,13 @@ export const DESAFIO_ADULTO: FunnelDef = {
   offerContract: {
     pricingMode: 'one_time',
     accessMode: 'fixed',
-    accessDurationValue: 30,
-    accessDurationUnit: 'days',
+    accessDurationValue: 6,
+    accessDurationUnit: 'months',
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   giftCourses: ['desafio-primeiro-jogo-adulto'],
-  legal: { termos: TERMOS_DESAFIO_ADULTO, termsVersion: 'desafio-adulto-2026-10-21' },
+  legal: { termos: TERMOS_DESAFIO_ADULTO, termsVersion: 'desafio-adulto-2026-11-27' },
   content: {
     copy: DESAFIO_ADULTO_PRODUTO,
     landing: DESAFIO_ADULTO_LANDING,

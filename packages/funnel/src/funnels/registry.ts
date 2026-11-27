@@ -362,7 +362,7 @@ export function getFunnelByKey(key: string | null | undefined): FunnelDef | null
 }
 
 /**
- * True para os dois funis do Desafio do Primeiro Jogo (Kids e adulto): a mesma oferta de 30 dias,
+ * True para os dois funis do Desafio do Primeiro Jogo (Kids e adulto): a mesma oferta de 6 meses,
  * com a capa do checkout, a /obrigado que informa a data final e o e-mail com a data
  * (`challenge-access-approved` no Kids, `challenge-access-approved-adult` no adulto; ver
  * `welcome-email.ts`).

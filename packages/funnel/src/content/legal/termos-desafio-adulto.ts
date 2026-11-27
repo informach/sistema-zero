@@ -1,4 +1,4 @@
-// Termos de Uso do "Desafio do Primeiro Jogo" para ADULTOS (compra única, 30 dias de acesso), a
+// Termos de Uso do "Desafio do Primeiro Jogo" para ADULTOS (compra única, 6 meses de acesso desde 27/11/2026; antes, 30 dias), a
 // versão adulta do mesmo curso (A Chave do Farol) na área adulta da plataforma (decisão da dona em
 // 21/10/2026: mesma oferta do Kids, mesmo preço e condições). Modelados em `termos-desafio.ts`,
 // adaptados a uma pessoa maior de 18 anos que contrata para si, com conta e dados próprios, como
@@ -13,7 +13,7 @@ const PRODUTO = 'Desafio do Primeiro Jogo'
 export const TERMOS_DESAFIO_ADULTO: LegalDoc = {
   titulo: 'Termos de Uso do Desafio do Primeiro Jogo para adultos',
   descricao: `Condições para a contratação e o uso do ${PRODUTO} na área adulta da plataforma da ${EMPRESA.razaoSocial}, contratado por pessoa maior de 18 anos para uso próprio.`,
-  atualizadoEm: '21 de outubro de 2026',
+  atualizadoEm: '27 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -30,8 +30,8 @@ export const TERMOS_DESAFIO_ADULTO: LegalDoc = {
       titulo: '2. O que é e como funciona o Desafio',
       paragrafos: [
         `O ${PRODUTO} é um material digital de caráter educacional: uma trilha recomendada de etapas curtas em que o Usuário monta o primeiro jogo jogável, com passo a passo e o Estúdio da plataforma, sem instalar programas. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito.`,
-        'Após a aprovação do pagamento, o acesso às aulas do Desafio, ao Estúdio das atividades e ao Mural completo é liberado na área de membros por 30 (trinta) dias corridos, contados em períodos exatos de 24 horas. As instruções de primeiro acesso e a data final são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
-        'As etapas do Desafio representam a sequência recomendada do projeto, não dias corridos obrigatórios. O Usuário pode distribuí-las dentro dos 30 dias de acesso.',
+        'Após a aprovação do pagamento, o acesso às aulas do Desafio, ao Estúdio das atividades e ao Mural completo é liberado na área de membros por 6 (seis) meses, contados da data e da hora da aprovação. As instruções de primeiro acesso e a data final são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'As etapas do Desafio representam a sequência recomendada do projeto, não dias corridos obrigatórios. O Usuário pode distribuí-las dentro dos 6 meses de acesso.',
         'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento da compra.',
       ],
     },
@@ -63,7 +63,7 @@ export const TERMOS_DESAFIO_ADULTO: LegalDoc = {
     {
       titulo: '6. Prazo de acesso e Mural',
       paragrafos: [
-        'O prazo de 30 (trinta) dias começa somente com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não inicia a contagem. A data e a hora finais são calculadas a partir da aprovação e exibidas na página de confirmação e na área de membros.',
+        'O prazo de 6 (seis) meses começa somente com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não inicia a contagem. A data e a hora finais são calculadas a partir da aprovação e exibidas na página de confirmação e na área de membros.',
         'Depois do prazo, o acesso às aulas do Desafio termina. Permanece o acesso de visitante ao Mural, para ver e jogar os jogos disponíveis, sem novas publicações, comentários ou reações por esse acesso. O link do jogo já publicado continua funcionando enquanto a publicação estiver disponível.',
         'O progresso e os projetos permanecem armazenados conforme a Política de Privacidade e podem voltar a ficar disponíveis caso o Usuário adquira uma nova condição de acesso válida, inclusive uma assinatura da Comunidade dos Criadores para adultos.',
       ],
@@ -73,7 +73,7 @@ export const TERMOS_DESAFIO_ADULTO: LegalDoc = {
       paragrafos: [
         `O Usuário pode solicitar o reembolso integral em até 7 (sete) dias corridos a contar da compra, conforme o art. 49 do Código de Defesa do Consumidor, por qualquer motivo. Basta enviar a solicitação para ${EMPRESA.email} informando o e-mail usado na compra.`,
         'Confirmada a solicitação dentro do prazo, o valor é estornado pelo mesmo meio de pagamento e o acesso à área de membros é encerrado.',
-        'O prazo de garantia não aumenta, pausa nem reinicia o período de 30 dias de acesso do Desafio.',
+        'O prazo de garantia não aumenta, pausa nem reinicia o período de 6 meses de acesso do Desafio.',
       ],
     },
     {

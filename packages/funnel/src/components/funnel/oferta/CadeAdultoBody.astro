@@ -27,7 +27,7 @@ import PresenteJanela from './PresenteJanela.astro'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon, presente, access } = Astro.props
-// O prazo é o da oferta de venda (1 ano); o do presente vai só no cartão (`cartaoDoPresente`).
+// O prazo é o da oferta de venda (6 meses); o do presente vai só no cartão (`cartaoDoPresente`).
 const prazo = prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeAdultoVenda(prazo, access?.guaranteeDays ?? null)
 const preco = precoDoDesafio(priceReais, coupon)
@@ -43,7 +43,7 @@ const P = presente
     : // Presente sem prazo em dias: os marcadores "sem prazo", nunca o "7 dias" do texto aprovado.
       presenteAdulto(prazoDaOferta(null))
   : venda
-// No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
+// No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "6 meses" da venda).
 const cabeca = cartao ? { ...venda.oferta, texto: cartao.frase } : venda.oferta
 const barra = cartao
   ? { titulo: cartao.etiqueta, texto: cartao.precoFinal, cta: cartao.cta, presente: cartao.aberto }

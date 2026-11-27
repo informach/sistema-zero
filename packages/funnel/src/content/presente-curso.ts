@@ -47,7 +47,8 @@ export function presenteCursoCopy(
   variante: 'pais' | 'curso',
 ): PresenteCursoCopy {
   const curso = cursoDoPresente(gift)
-  const dias = gift.accessDays === null ? null : giftDurationLabel(gift.accessDays)
+  const dias =
+    gift.accessDays === null ? null : giftDurationLabel(gift.accessDays, gift.accessMonths)
   const adulto = audience === 'adult'
   const pais = variante === 'pais' && !adulto
   const mural = gift.includesMural && !pais

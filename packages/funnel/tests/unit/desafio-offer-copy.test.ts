@@ -131,12 +131,12 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     })
     expect(DESAFIO_ADULTO.legal).toEqual({
       termos: TERMOS_DESAFIO_ADULTO,
-      termsVersion: 'desafio-adulto-2026-10-21',
+      termsVersion: 'desafio-adulto-2026-11-27',
     })
     expect(DESAFIO_ADULTO.chargeName).toBe('Desafio do Primeiro Jogo (adultos)')
     const termo = JSON.stringify(TERMOS_DESAFIO_ADULTO)
     expect(termo).toContain('maior de 18 anos')
-    expect(termo).toContain('30 (trinta) dias')
+    expect(termo).toContain('6 (seis) meses')
     expect(termo).toContain('7 (sete) dias')
   })
 
@@ -155,11 +155,11 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     expect(DESAFIO_ADULTO.productSku).toBe('desafio-primeiro-jogo-adulto')
   })
 
-  test('a faixa do Kids é 5 a 17 na página e no SEO; o Termo segue a versão de 21/10', () => {
+  test('a faixa do Kids é 5 a 17 na página e no SEO; o Termo segue a versão de 27/11', () => {
     expect(JSON.stringify(TERMOS_DESAFIO)).toContain(
       'A criança menor de 9 anos usa o Produto junto com o Responsável',
     )
-    expect(DESAFIO_PRIMEIRO_JOGO.legal?.termsVersion).toBe('desafio-2026-10-21')
+    expect(DESAFIO_PRIMEIRO_JOGO.legal?.termsVersion).toBe('desafio-2026-11-27')
     expect(DESAFIO_PRIMEIRO_JOGO.seoDescription).toContain(
       '5 a 17 anos; abaixo de 9, com acompanhante',
     )

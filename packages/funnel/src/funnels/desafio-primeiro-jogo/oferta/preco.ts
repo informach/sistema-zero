@@ -9,7 +9,7 @@ export interface PrecoDoDesafio {
   precoCheio: string | null
   /** O desconto do cupom em porcentagem inteira ("50"), só quando um cupom válido deu desconto. */
   descontoPct: number | null
-  /** "Menos de R$ X por dia de acesso": os 30 dias de acesso, sempre acima da conta exata. */
+  /** "Menos de R$ X por dia de acesso": a conta sobre 30 dias (hoje fora da copy), sempre acima da conta exata. */
   precoDia: string
   /** O código que o pré-checkout leva ao checkout, que volta a cotá-lo. */
   codigo: string | null

@@ -59,7 +59,9 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
           eq(entitlements.accessType, 'course'),
           inArray(entitlements.courseRef, CHALLENGE_COURSE_REFS),
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'`,
-          sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'`,
+          // Dias (os 30 dias de antes) ou meses (6 meses desde 27/11/2026): a cadência do Desafio
+          // vale para qualquer prazo fixo.
+          sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' in ('days', 'months')`,
           gt(entitlements.expiresAt, now),
           // A conclusão é o último aviso: quem já o recebeu não ocupa vaga do lote, senão as compras
           // novas (as dos avisos de 24h e 48h) ficam atrás das antigas quando o lote enche.

@@ -1,11 +1,11 @@
 // Funil kids do curso para pais "Como ajudar seu filho autista a lidar com frustrações e evitar
 // crises" (`kids/como-ajudar-seu-filho-autista-nas-frustracoes`, 25/11/2026), com a psicóloga
-// Vivianne Lima, da Laopa: curso pago normal, com 1 ano de acesso. A página pública
+// Vivianne Lima, da Laopa: curso pago normal, com 6 meses de acesso. A página pública
 // `/kids/como-ajudar-seu-filho-autista-nas-frustracoes` é a página de venda dele (o mesmo corpo do
 // `/oferta`); o presente sai pelos links de campanha e de embaixador, que abrem a página no modo
 // presente (`?presente=`). Quem assiste é o adulto, na área dos pais do app Kids.
 //
-// Oferta no catálogo: a principal do produto (marcada no Admin), a de 1 ano e R$ 67 do curso
+// Oferta no catálogo: a principal do produto (marcada no Admin), a de 6 meses e R$ 67 do curso (slug `-1-ano` mantido)
 // `como-ajudar-seu-filho-autista-nas-frustracoes`. Registrado por último: a landing `/kids` segue
 // abrindo o Desafio.
 

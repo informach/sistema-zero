@@ -109,16 +109,16 @@ describe('venda do guia', () => {
   const venda = comPreco(guiaPaisVenda(7), 'R$ 27')
   const textoVenda = JSON.stringify(venda)
 
-  test('o funil do guia é registrado com a página pública, 1 ano de acesso e Termo próprio', () => {
+  test('o funil do guia é registrado com a página pública, 6 meses de acesso e Termo próprio', () => {
     expect(getFunnelByKey('kids/vilao-em-aliado')).toBe(VILAO_EM_ALIADO)
     expect(VILAO_EM_ALIADO.basePath).toBe(CURSO_PAIS_VILAO_PATH)
     expect(VILAO_EM_ALIADO.offerContract).toMatchObject({
       pricingMode: 'one_time',
       accessMode: 'fixed',
-      accessDurationValue: 12,
+      accessDurationValue: 6,
       accessDurationUnit: 'months',
     })
-    // Nada de prometer acesso vitalício (decisão de 25/11/2026).
+    // Nada de prometer acesso vitalício (decisão de 25/11/2026; 6 meses desde 27/11/2026).
     expect(VILAO_EM_ALIADO.lifetimeAccess).toBe(false)
     expect(JSON.stringify(VILAO_EM_ALIADO.legal.termos)).not.toMatch(
       /vitalíc|sem prazo|não tem prazo/i,
@@ -136,8 +136,8 @@ describe('venda do guia', () => {
     expect(venda.duvidas.itens.map((item) => item.pergunta)).toContain('Quanto custa?')
     expect(venda.oferta.garantia).toContain('7 dias de garantia')
     expect(venda.hero.cta).toBe('Quero o guia')
-    expect(venda.compra.texto).not.toMatch(/R\$|1 ano|pagamento/)
-    expect(venda.formato.itens.at(-1)?.texto).toContain('por 1 ano')
+    expect(venda.compra.texto).not.toMatch(/R\$|6 meses|pagamento/)
+    expect(venda.formato.itens.at(-1)?.texto).toContain('por 6 meses')
     expect(comPreco(guiaPaisVenda(null), 'R$ 27').oferta.garantia).toBeNull()
   })
 

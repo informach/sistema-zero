@@ -337,7 +337,7 @@ export function buildNarrative(mode: KidsMode, a: CompleteAnswers) {
   paragraphs.push(practical)
   const terms =
     mode === 'desafio'
-      ? 'O Desafio tem pagamento único, 30 dias de acesso desde a aprovação do pagamento e 7 dias de garantia.'
+      ? 'O Desafio tem pagamento único, 6 meses de acesso desde a aprovação do pagamento e 7 dias de garantia.'
       : 'A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.'
   const ready = !(needsSupport || needsOrganize || differentNeed)
   const close = ready

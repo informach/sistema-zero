@@ -9,7 +9,7 @@ export class AmbassadorOfferValidationError extends Error {}
 
 /**
  * O motivo para recusar a oferta numa lista, ou null se serve. Presente segue a régua do presente
- * das campanhas (`giftOfferProblem`: pagamento único, sem prazo ou com prazo em dias, não
+ * das campanhas (`giftOfferProblem`: pagamento único, sem prazo ou com prazo fixo em dias ou meses, não
  * arquivada, mesmo público). Indicação aceita qualquer oferta não arquivada do público (ter
  * página de venda é conferido no Admin, que fala com o funil).
  */

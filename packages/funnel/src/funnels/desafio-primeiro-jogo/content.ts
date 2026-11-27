@@ -12,7 +12,7 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
   intro: 'O próximo passo é conhecer A Chave do Farol com seu filho.',
   entrega: [
     'A Chave do Farol: três etapas de programação e certificado.',
-    '30 dias de curso, Estúdio das atividades e Mural completo, desde a aprovação.',
+    '6 meses de curso, Estúdio das atividades e Mural completo, desde a aprovação.',
     'Caderno do Aluno, ajuda por mensagens e orientação de publicação.',
     'Depois do prazo, Mural visitante para ver e jogar.',
     'Pagamento único, sem renovação automática.',
@@ -40,6 +40,6 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
 export const DESAFIO_CHECKOUT: FunnelCheckoutIntro = {
   titulo: 'Falta pouco para o primeiro jogo começar',
   paragrafos: [
-    'Revise o valor, informe os dados do responsável e escolha a forma de pagamento. Depois da aprovação, seu filho terá 30 dias para criar, testar e publicar o primeiro jogo.',
+    'Revise o valor, informe os dados do responsável e escolha a forma de pagamento. Depois da aprovação, seu filho terá 6 meses para criar, testar e publicar o primeiro jogo.',
   ],
 }

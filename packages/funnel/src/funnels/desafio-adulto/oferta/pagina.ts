@@ -5,7 +5,7 @@ import type { PaginaOfertaAdulta } from '../../comunidade-adulto/oferta/types'
 export const PAGINA_DESAFIO_ADULTO = {
   seoTitle: 'Desafio do Primeiro Jogo para adultos | Sistema Zero',
   description:
-    'Ganhe autonomia para criar com tecnologia. Construa A Chave do Farol com aulas guiadas, programação em blocos e 30 dias de acesso.',
+    'Ganhe autonomia para criar com tecnologia. Construa A Chave do Farol com aulas guiadas, programação em blocos e 6 meses de acesso.',
   pularParaConteudo: 'Ir para o conteúdo',
   topo: {
     imagens: [
@@ -42,10 +42,10 @@ export const PAGINA_DESAFIO_ADULTO = {
       'Vídeo e espaço para construir na mesma aula.',
       'A CHAVE DO FAROL',
       '1P',
-      '30 DIAS DE ACESSO',
+      '6 MESES DE ACESSO',
     ],
     acoes: ['Quero começar meu Desafio', 'Ver como esse começo acontece'],
-    paragrafos: ['{{preco}} · pagamento único · 30 dias de acesso · 7 dias de garantia'],
+    paragrafos: ['{{preco}} · pagamento único · 6 meses de acesso · 7 dias de garantia'],
     legendas: ['O projeto do Desafio: você constrói as regras que fazem essa aventura funcionar.'],
   },
   comeco: {
@@ -136,7 +136,7 @@ export const PAGINA_DESAFIO_ADULTO = {
       'Faça o jogo lembrar da chave.',
       'Conecte a regra ao final da aventura.',
     ],
-    destaques: ['Você distribui as etapas dentro dos 30 dias de acesso.'],
+    destaques: ['Você distribui as etapas dentro dos 6 meses de acesso.'],
   },
   aula: {
     titulo: 'Você acompanha a explicação e coloca a mão no projeto, na mesma aula.',
@@ -229,7 +229,7 @@ export const PAGINA_DESAFIO_ADULTO = {
       'Ter 18 anos ou mais e usar a própria conta.',
       'Computador com mouse, teclado e conexão à internet.',
       'Navegador para assistir e construir. As ferramentas ficam na plataforma.',
-      'Tempo para praticar e retomar as três etapas dentro dos 30 dias.',
+      'Tempo para praticar e retomar as três etapas dentro dos 6 meses.',
     ],
     itens: [
       '<span class="cda-rotulo">01</span><span>Nunca programou e quer um primeiro caminho explicado.</span>',
@@ -274,7 +274,7 @@ export const PAGINA_DESAFIO_ADULTO = {
     paragrafos: [
       'Você recebe as três etapas da Chave do Farol, as aulas e o espaço para praticar. Ao longo da construção, aprende o que faz cada parte funcionar e testa suas mudanças, com materiais de consulta e orientação por mensagens.',
       'pagamento único',
-      '30 dias de acesso. Sem renovação automática.',
+      '6 meses de acesso. Sem renovação automática.',
       '<span>7 dias corridos a partir da compra para pedir o reembolso integral.</span>',
       'Pagamento por Pix ou cartão de crédito.',
     ],
@@ -282,7 +282,7 @@ export const PAGINA_DESAFIO_ADULTO = {
     itens: [
       '<span class="cda-depois__numero">01</span><span>O pagamento é confirmado e as instruções chegam ao seu e-mail.</span>',
       '<span class="cda-depois__numero">02</span><span>Você acessa sua conta e abre a primeira aula.</span>',
-      '<span class="cda-depois__numero">03</span><span>Organiza a prática dentro dos 30 dias contados da aprovação do pagamento.</span>',
+      '<span class="cda-depois__numero">03</span><span>Organiza a prática dentro dos 6 meses contados da aprovação do pagamento.</span>',
     ],
     acoes: ['Quero começar meu Desafio'],
   },
@@ -316,7 +316,7 @@ export const PAGINA_DESAFIO_ADULTO = {
       {
         pergunta: 'Quanto tempo preciso reservar?',
         resposta:
-          'Você tem 30 dias de acesso a partir da aprovação do pagamento. As aulas são gravadas e divididas em partes, e seu projeto fica salvo para continuar depois. Reserve momentos para assistir, experimentar e rever o que precisar; o ritmo de conclusão varia de pessoa para pessoa.',
+          'Você tem 6 meses de acesso a partir da aprovação do pagamento. As aulas são gravadas e divididas em partes, e seu projeto fica salvo para continuar depois. Reserve momentos para assistir, experimentar e rever o que precisar; o ritmo de conclusão varia de pessoa para pessoa.',
       },
       {
         pergunta: 'Posso fazer pelo celular?',
@@ -336,10 +336,10 @@ export const PAGINA_DESAFIO_ADULTO = {
       {
         pergunta: 'Essa compra cria uma assinatura?',
         resposta:
-          'Não. Você paga {{preco}} uma vez e recebe 30 dias de acesso ao Desafio. A Comunidade dos Criadores é uma assinatura separada, que você escolhe contratar se quiser continuar.',
+          'Não. Você paga {{preco}} uma vez e recebe 6 meses de acesso ao Desafio. A Comunidade dos Criadores é uma assinatura separada, que você escolhe contratar se quiser continuar.',
       },
       {
-        pergunta: 'O que acontece depois dos 30 dias?',
+        pergunta: 'O que acontece depois dos 6 meses?',
         resposta:
           'O acesso às aulas e ao Estúdio das atividades termina. Você continua podendo visitar o Mural para ver e jogar, mas esse acesso de visitante não permite novas publicações, comentários ou reações. O link do seu jogo continua funcionando enquanto a publicação estiver disponível. Seus projetos e progresso ficam guardados conforme a Política de Privacidade e podem ser retomados com uma nova contratação que inclua esse acesso.',
       },
@@ -355,7 +355,7 @@ export const PAGINA_DESAFIO_ADULTO = {
     rotulos: ['A PRIMEIRA CRIAÇÃO COMEÇA AQUI'],
     paragrafos: [
       'Comece com a Chave do Farol: monte as regras, experimente suas escolhas e compartilhe o resultado. Um primeiro jogo para praticar o que você veio buscar: entender, criar e realizar.',
-      '{{preco}} · pagamento único · 30 dias de acesso · 7 dias de garantia',
+      '{{preco}} · pagamento único · 6 meses de acesso · 7 dias de garantia',
     ],
     acoes: ['Quero começar meu Desafio'],
   },

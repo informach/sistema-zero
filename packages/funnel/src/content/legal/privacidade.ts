@@ -24,7 +24,7 @@ const COMUNIDADE = 'Comunidade dos Criadores'
 export const PRIVACIDADE: LegalDoc = {
   titulo: 'Política de Privacidade',
   descricao: `Como a ${EMPRESA.razaoSocial} trata os dados pessoais em todos os produtos do Sistema Zero, com proteção reforçada para crianças e adolescentes, em conformidade com a LGPD, o ECA e o ECA Digital.`,
-  atualizadoEm: '23 de outubro de 2026',
+  atualizadoEm: '27 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Do objeto e do alcance',
@@ -32,7 +32,7 @@ export const PRIVACIDADE: LegalDoc = {
         `Esta Política descreve como a ${EMPRESA.razaoSocial}, inscrita no CNPJ sob o nº ${EMPRESA.cnpj} ("Empresa", "nós"), coleta, utiliza, armazena e protege os dados pessoais de quem acessa os sites do Sistema Zero, responde aos nossos diagnósticos e contrata ou utiliza os nossos produtos digitais ("Produtos"):`,
       ],
       bullets: [
-        `${DESAFIO}: trilha guiada para crianças e adolescentes, contratada por um adulto responsável, com pagamento único e 30 (trinta) dias de acesso;`,
+        `${DESAFIO}: trilha guiada para crianças e adolescentes, contratada por um adulto responsável, com pagamento único e 6 (seis) meses de acesso;`,
         `${COMUNIDADE} Kids: assinatura mensal ou anual da área infantil da plataforma, contratada por um adulto responsável para até 2 (dois) perfis de crianças ou adolescentes;`,
         `${COMUNIDADE} (área adulta): assinatura mensal ou anual da área adulta da plataforma, contratada por uma pessoa maior de 18 anos para uso próprio.`,
       ],
