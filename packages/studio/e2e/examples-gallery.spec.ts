@@ -15,6 +15,7 @@ import {
 import { MEU_HEROI_MOLDA_SOURCE } from '../src/official-extensions/game-3d/__gen_primeirosJogos'
 import { HEROI_DO_MOLDA_GLB } from '../src/official-extensions/game-3d/exampleAssets'
 import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
+import { hasCompositedCanvasPixels } from './helpers/canvasPixels'
 import {
   configurePreviewInputDiagnostics,
   pressObservedPreviewKey,
@@ -80,7 +81,7 @@ async function expectFirstFrame(
                 )
                 return pixels.some((channel) => channel !== 0)
                   ? 'webgl-renderizado'
-                  : 'transparente'
+                  : 'webgl-descartado'
               }
               try {
                 const blank = document.createElement('canvas')
@@ -94,6 +95,11 @@ async function expectFirstFrame(
               }
             })
             if (canvasState === 'renderizado' || canvasState === 'webgl-renderizado') return 'ok'
+            if (
+              canvasState === 'webgl-descartado' &&
+              (await hasCompositedCanvasPixels(page, canvas))
+            )
+              return 'ok'
           }
           const visibleContent = preview.locator(
             'body > :not(script):not(style):not(canvas):visible',
