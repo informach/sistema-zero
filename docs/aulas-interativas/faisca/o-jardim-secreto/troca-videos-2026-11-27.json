@@ -28,10 +28,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-5",
-        "2-5"
-      ],
+      "changedParts": ["1-5", "2-5"],
       "videoAndCoverVerification": [
         {
           "parte": "1-5",
@@ -167,10 +164,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-5",
-        "2-5"
-      ],
+      "changedParts": ["1-5", "2-5"],
       "videoAndCoverVerification": [
         {
           "parte": "1-5",
@@ -306,10 +300,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-5",
-        "2-5"
-      ],
+      "changedParts": ["1-5", "2-5"],
       "videoAndCoverVerification": [
         {
           "parte": "1-5",
@@ -320,9 +311,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         },
         {
@@ -334,9 +323,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         }
       ],
@@ -419,10 +406,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-5",
-        "2-5"
-      ],
+      "changedParts": ["1-5", "2-5"],
       "videoAndCoverVerification": [
         {
           "parte": "1-5",
@@ -433,9 +417,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         },
         {
@@ -447,9 +429,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         }
       ],

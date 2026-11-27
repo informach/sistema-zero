@@ -592,27 +592,19 @@
   "cadeIncludedProducts": [
     {
       "offer": "cade-todo-mundo-1-ano",
-      "additionalProducts": [
-        "mural-dos-criadores"
-      ]
+      "additionalProducts": ["mural-dos-criadores"]
     },
     {
       "offer": "cade-todo-mundo-7-dias",
-      "additionalProducts": [
-        "mural-dos-criadores"
-      ]
+      "additionalProducts": ["mural-dos-criadores"]
     },
     {
       "offer": "cade-todo-mundo-adulto-1-ano",
-      "additionalProducts": [
-        "adult-mural-dos-criadores"
-      ]
+      "additionalProducts": ["adult-mural-dos-criadores"]
     },
     {
       "offer": "cade-todo-mundo-adulto-7-dias",
-      "additionalProducts": [
-        "adult-mural-dos-criadores"
-      ]
+      "additionalProducts": ["adult-mural-dos-criadores"]
     }
   ],
   "historicalAccessRecordsCaptured": 84

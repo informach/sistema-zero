@@ -34,11 +34,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-4",
-        "2-6",
-        "3-8"
-      ],
+      "changedParts": ["1-4", "2-6", "3-8"],
       "videoAndCoverVerification": [
         {
           "parte": "1-4",
@@ -233,11 +229,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-4",
-        "2-6",
-        "3-8"
-      ],
+      "changedParts": ["1-4", "2-6", "3-8"],
       "videoAndCoverVerification": [
         {
           "parte": "1-4",
@@ -432,11 +424,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-4",
-        "2-6",
-        "3-8"
-      ],
+      "changedParts": ["1-4", "2-6", "3-8"],
       "videoAndCoverVerification": [
         {
           "parte": "1-4",
@@ -447,9 +435,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         },
         {
@@ -461,9 +447,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         },
         {
@@ -475,9 +459,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         }
       ],
@@ -592,11 +574,7 @@
           "draftMatchesPublished": true
         }
       ],
-      "changedParts": [
-        "1-4",
-        "2-6",
-        "3-8"
-      ],
+      "changedParts": ["1-4", "2-6", "3-8"],
       "videoAndCoverVerification": [
         {
           "parte": "1-4",
@@ -607,9 +585,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         },
         {
@@ -621,9 +597,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         },
         {
@@ -635,9 +609,7 @@
           "versaoNovaAtiva": true,
           "capa": true,
           "privado": true,
-          "dominios": [
-            "sistemazero.com.br"
-          ],
+          "dominios": ["sistemazero.com.br"],
           "ok": true
         }
       ],
