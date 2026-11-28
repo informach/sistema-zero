@@ -700,7 +700,9 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
 - ⚠️⚠️ **A identidade de uma opção é uma TABELA** (`identidade` = o tipo + os campos de `DISTINGUE`),
   não uma escada de ternários. Duas opções com a mesma identidade é defeito silencioso: o `value` do
   `<select>` deixa de escolher uma delas (clicar em "Desligar a sombra" selecionava "Ligar a sombra") e
-  o React avisa só no console. Par novo de irmãs entra no `DISTINGUE`. O `inspect` fica sem `kind` de
+  o React avisa só no console. Par novo de irmãs entra no `DISTINGUE`; o teste "duas opções da mesma cena nunca têm a mesma
+  identidade" varre TODAS as cenas (`SCENE_IDS`) desde 28/11/2026, quando as cenas dos Poderes do
+  Faísca e do Construtor apareceram sem as linhas. O `inspect` fica sem `kind` de
   propósito: a lupa vale para as duas pedras e um roteiro antigo com a de vetor casa com a única opção.
 - ⚠️⚠️ **Nomes por cena: `POR_CENA.<cena>.rotulos`**, onde a bancada da cena fala outra língua
   (`acceleration` "Passar 5 segundos", `restart` "Tocar na tela", `hitbox` "Mudar o tamanho da área do

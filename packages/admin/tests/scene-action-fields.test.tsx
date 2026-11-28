@@ -182,15 +182,9 @@ describe('⚠️⚠️ duas opções da mesma cena nunca têm a mesma identidade
   // A identidade é o `value` do `<select>`: duas opções iguais nele e a escolha de uma seleciona a
   // outra. O nome que o editor dá a um passo sai da identidade (`rotuloDaAcaoIncompativel`), então
   // nomes repetidos dentro de uma cena são identidades repetidas.
-  // As cenas dos Poderes do Construtor (28/11/2026), que entraram sem as linhas do `DISTINGUE`.
-  const PODERES: readonly SceneId[] = [
-    'timed-shield',
-    'spread-shot',
-    'enemy-fire',
-    'boss-health',
-    'weapon-swap',
-  ]
-  for (const scene of PODERES)
+  // Todas as cenas: as dos Poderes (Faísca e Construtor) já entraram sem as linhas do `DISTINGUE`,
+  // e uma cena nova sem elas reprova aqui.
+  for (const scene of SCENE_IDS)
     test(`${scene}: cada opção tem a sua identidade`, () => {
       const nomes = sceneActionChoices(scene).map((c) => rotuloDaAcaoIncompativel(c.value, scene))
       expect(new Set(nomes).size, nomes.join(' | ')).toBe(nomes.length)
