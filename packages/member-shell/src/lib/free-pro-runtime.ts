@@ -1,5 +1,4 @@
 import { isStudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
-import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/core/studio/pro-limits'
 import type { StudioProRuntimeAdapter } from '@sistemazero/studio'
 import { proRuntimeProjectInput } from './pro-toolchain'
 /** Public account transport; the BFF applies the same authority as the free Pro page. */
@@ -7,7 +6,8 @@ export function createFreeProRuntime(
   request: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
 ): StudioProRuntimeAdapter {
   return {
-    limits: STUDIO_PRO_BUILD_LIMITS,
+    // Keep document admission independent of the hosted request projection. Regional
+    // documents retain their full engine; the BFF enforces compiler quotas after projection.
     async build({ project, signal }) {
       const response = await request('/api/studio/pro-runtime/free-build', {
         method: 'POST',
