@@ -27,6 +27,7 @@ TARGETS = {
     "triplo": "poder-tiro-triplo",
     "inimigo": "poder-inimigo-que-atira",
     "chefao": "poder-chefao-com-resistencia",
+    "arma": "poder-troca-de-arma",
 }
 
 

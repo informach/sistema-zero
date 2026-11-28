@@ -1,0 +1,422 @@
+[
+  {
+    "id": "encontre",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Cada montagem do Poder, bloco por bloco, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "Os vídeos montam cada parte com você. Este caderno guarda os mesmos passos: o caminho na paleta, o bloco, onde encaixar e como testar. Volte aqui sempre que esquecer um passo."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Um chefão que aguenta",
+        "text": "Na Nave Contra Asteroides: a vida do chefão na barra, o laser que tira 1, o fim no zero e a guarda que faz o prêmio valer uma vez.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-uma-vez}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. O chefão na patrulha",
+        "text": "O mesmo chefão na Patrulha Espacial: a vida no texto, o acerto conferido no quadro, o fim no zero e a guarda.",
+        "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-uma-vez}}"
+      },
+      {
+        "kind": "note",
+        "text": "O jogo da trilha já vem pronto, com as peças novas do Poder. Você programa a regra nova e testa cada parte."
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3",
+    "title": "A experiência: a resistência do chefão",
+    "subtitle": "O chefão tem uma vida própria, guardada numa variável. Cada laser que acerta tira 1. Um laser só não derrota; quando a vida chega a zero, o chefão cai, e o prêmio precisa valer uma vez só.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O que investigar",
+        "text": "Acerte o chefão uma vez e olhe a vida dele.<br>Continue acertando e veja a vida descer.<br>Acerte até a vida chegar a 0.<br>Com o chefão derrotado, compare o prêmio com a guarda ligada e desligada."
+      },
+      {
+        "kind": "note",
+        "text": "Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Um chefão no céu",
+    "subtitle": "Jogue a versão pronta antes de programar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. O chefão espera no alto, com a barra de vida embaixo. Deixe a nave no meio, dispare e conte quantos lasers ele aguenta. Depois olhe o placar."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-vida",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "A vida do chefão",
+    "subtitle": "Criar a variável vidaDoChefao com 5 e a barra que mostra a vida embaixo do chefão.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar a variável vidaDoChefao com 5 e a barra que mostra a vida embaixo do chefão."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, logo abaixo de Criar sprite chefao: Criar variável vidaDoChefao com valor 5 (Programação → Variáveis)."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No fim de A cada quadro do jogo: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:inicio",
+        "after": "2d:vida"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["A barra aparece cheia embaixo do chefão."]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-acerto",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "Cada laser tira 1",
+    "subtitle": "Usar o encontro do chefão com o grupo tiros: o laser sai e a vida perde 1.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Usar o encontro do chefão com o grupo tiros: o laser sai e a vida perde 1."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro do jogo, logo abaixo do encontro das pedras com a nave: Para cada sprite do grupo tiros que colidir com o sprite chefao, chamando de tiroNoChefao."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro: Tirar o sprite tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:vida",
+        "after": "2d:acerto"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Cada laser que acerta tira um pedaço da barra; um laser só não acaba com ela."]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-fim",
+    "lesson": "aula-1",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "No zero, o chefão cai",
+    "subtitle": "Quando a vida chega a 0, levar o chefão para longe e somar 10 pontos de prêmio.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Quando a vida chega a 0, levar o chefão para longe e somar 10 pontos de prêmio."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro do jogo, logo abaixo do encontro dos tiros com o chefão: Se vidaDoChefao ≤ 0."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho) e Somar 10 em variável pontos."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:acerto",
+        "after": "2d:fim"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com cinco acertos, o chefão explode e sai da tela.",
+          "O placar dispara: o prêmio ainda soma a cada quadro."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-uma-vez",
+    "lesson": "aula-1",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "O prêmio vale uma vez",
+    "subtitle": "Guardar o prêmio com chefaoDerrotado: na primeira vez ele vira verdadeiro, e o prêmio não soma de novo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Guardar o prêmio com chefaoDerrotado: na primeira vez ele vira verdadeiro, e o prêmio não soma de novo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, logo abaixo de vidaDoChefao: Criar variável chefaoDerrotado com valor falso."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro do Se vidaDoChefao ≤ 0: Se chefaoDerrotado = falso, com os blocos do prêmio dentro."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No começo desse então: Alterar variável chefaoDerrotado para verdadeiro."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:fim",
+        "after": "2d:uma-vez"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Ao derrotar o chefão, o placar ganha 10 uma vez e para."]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-abertura",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "O chefão chegou à patrulha",
+    "subtitle": "O mesmo Poder, agora em três dimensões.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. O chefão espera lá na frente, e o texto Chefão, no alto à esquerda, mostra a vida dele. Dispare com a nave no meio."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-vida",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "A vida do chefão",
+    "subtitle": "Criar a variável vidaDoChefao com 5 e o texto que mostra a vida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar a variável vidaDoChefao com 5 e o texto que mostra a vida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, logo abaixo de Dar 3 de vida a nave: Criar variável vidaDoChefao com valor 5."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Logo abaixo do placar dos acertos: Escrever na tela, em cima, à esquerda, \"Chefão: \" + vidaDoChefao."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:inicio",
+        "after": "3d:vida"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["O texto Chefão: 5 aparece no alto à esquerda."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-acerto",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "Cada laser tira 1",
+    "subtitle": "No quadro, para cada laser que encosta no chefão: o laser sai, a vida perde 1 e o texto é escrito de novo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "No quadro, para cada laser que encosta no chefão: o laser sai, a vida perde 1 e o texto é escrito de novo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro, logo abaixo do movimento dos asteroides: Para cada objeto tiro do grupo tiros."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro: Se o objeto tiro está encostando em chefao."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No então: Tirar o objeto tiro do grupo tiros, Somar −1 em variável vidaDoChefao e Escrever na tela, em cima, à esquerda, \"Chefão: \" + vidaDoChefao."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:vida",
+        "after": "3d:acerto"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Cada laser que acerta tira 1 do texto Chefão."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-fim",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "No zero, o chefão cai",
+    "subtitle": "Quando a vida chega a 0, levar o chefão para longe e somar 10 pontos.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Quando a vida chega a 0, levar o chefão para longe e somar 10 pontos."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro, logo abaixo do acerto no chefão: Se vidaDoChefao ≤ 0."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então: Colocar o objeto chefao em x 0, y 1, z −200, Somar 10 em pontos e escrever o placar dos acertos."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:acerto",
+        "after": "3d:fim"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com cinco acertos, o chefão sai.",
+          "O placar dispara: o prêmio ainda soma a cada quadro."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-uma-vez",
+    "lesson": "aula-2",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "O prêmio vale uma vez",
+    "subtitle": "Guardar o prêmio com chefaoDerrotado, como no jogo 2D.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Guardar o prêmio com chefaoDerrotado, como no jogo 2D."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar: Criar variável chefaoDerrotado com valor falso."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro do Se vidaDoChefao ≤ 0: Se chefaoDerrotado = falso, com o prêmio dentro, começando com Alterar variável chefaoDerrotado para verdadeiro."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:fim",
+        "after": "3d:uma-vez"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Ao derrotar o chefão, o placar ganha 10 uma vez e para."]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "poder-pronto",
+    "kicker": "Poder do Construtor",
+    "title": "Poder pronto",
+    "subtitle": "A mesma regra nova em duas dimensões e em três.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "O que você programou",
+        "text": "Uma variável com a vida do chefão, o encontro que tira o laser e 1 da vida, o Se que derruba o chefão no zero e a guarda que faz o prêmio valer uma vez só. As mesmas ideias nas duas dimensões."
+      },
+      {
+        "kind": "note",
+        "text": "O Poder conta quando as duas aulas estão concluídas. Para subir de posto, a jornada pede dois Poderes diferentes."
+      }
+    ]
+  }
+]
