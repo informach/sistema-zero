@@ -1,6 +1,6 @@
 # LG05 — regras e projeções do Pinta
 
-**Correção do motor concluída localmente; requalificação — 2026-11-28T09:10:19.458Z**
+**Imagem qualificada; fontes em validação final — 2026-11-28T10:12:42.330Z**
 
 A factory portátil agora é gerada a partir da única implementação de origem antes da minificação. As cópias publicadas pelo navegador foram verificadas contra o motor oficial e permanecem reconhecidas sem reescrever os projetos da conta. O projeto reproduzido passou de 1.983 diagnósticos internos para zero; erros autorais e motores alterados continuam sendo diagnosticados ou recusados. A assinatura variável foi reproduzida antes da correção em teste de bundle minificado.
 
