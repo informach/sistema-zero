@@ -1,12 +1,22 @@
 # LG05 — oficina projetada e destinos
 
-**Correção de admissão em qualificação — 2026-11-28T15:32:41.580Z**
+**Origem pública da prévia em qualificação — 2026-11-28T16:03:01.218Z**
+
+O aceite `5d273b258` abriu o editor sem problemas de código e observou o POST público com metadados regionais preservados, HTTP 200 e artefato válido. O iframe foi bloqueado porque o BFF derivava `parentOrigin` da URL interna do proxy (`https://[::]:3007`). A correção usa exclusivamente `APP_PUBLIC_URL`, já conferida nos dois aplicativos de staging e produção; não aceita origem enviada no corpo ou nos cabeçalhos do cliente. Configuração ausente/inválida recusa o build antes de chamar o executor. O sandbox e a política de recursos continuam preservados.
+
+- Leitores PR 299: `5d539c237`; CI [46162841776](https://github.com/informach/sistema-zero/actions/runs/46162841776), plano `46162841848` e Classic `46162841762` em validação.
+- Gravador único PR 301: `f53f1745e`; CI [46162845133](https://github.com/informach/sistema-zero/actions/runs/46162845133), plano `46162845159` e Classic `46162845247` em validação.
+- Staging `184e92f05`: onda explícita dos oito serviços [46162858133](https://github.com/informach/sistema-zero/actions/runs/46162858133). A rodada automática desta própria fonte foi encerrada antes de operações; a onda anterior havia concluído integralmente.
+
+RED/GREEN do proxy realista confirmado. Após a correção: 16 testes/107 expectativas, incluindo a CSP do artefato servido, e tipos Member Shell aprovados. Os três arquivos alterados ficam fora do fechamento da imagem; Worker de staging, imagem `8a7bef4a…` e perfil `7c1ad83a…` continuam qualificados e idênticos. Campanhas: 121 arquivos idênticos nas duas candidatas de produção. Faltam validar as fontes novas, observar a prévia visível e a reabertura pela interface e concluir as duas ondas de produção. Nenhum deploy LG05 de produção foi realizado.
+
+**Qualificação anterior da admissão — 2026-11-28T15:32:41.580Z**
 
 O aceite da fonte `434fde8e0` encontrou a recusa `$.tree`: o transporte novo anunciava cotas do compilador durante a abertura do documento, antes da projeção regional. O teste reproduziu a mesma recusa; a correção preserva os limites documentais existentes e mantém as cotas do BFF após a projeção. São três arquivos alterados, fora do fechamento da imagem: 14 testes/95 expectativas e tipos Member Shell aprovados.
 
-- Leitores PR 299: `8f020f99f`; CI [46154392870](https://github.com/informach/sistema-zero/actions/runs/46154392870), plano `46154392875` e Classic `46154392872` aprovados; CI com 12/13 checks aprovados, sem falhas.
+- Leitores PR 299: `8f020f99f`; CI [46154392870](https://github.com/informach/sistema-zero/actions/runs/46154392870), plano `46154392875` e Classic `46154392872` aprovados; CI concluída integralmente, 13/13 checks na tentativa 1.
 - Gravador único PR 301: `669571418`; CI [46154398004](https://github.com/informach/sistema-zero/actions/runs/46154398004), plano `46154397972` e Classic `46154397853` aprovados; CI concluída integralmente, 13/13 checks na tentativa 1.
-- Staging candidata `5d273b258`: onda explícita dos oito serviços [46154408250](https://github.com/informach/sistema-zero/actions/runs/46154408250). Aprovada integralmente, 13/13 checks na tentativa 1; implantação canônica dos oito serviços em execução. A rodada automática desta própria fonte foi encerrada antes de qualquer operação, para usar a seleção explícita; nenhuma onda concorrente foi cancelada.
+- Staging candidata `5d273b258`: onda explícita dos oito serviços [46154408250](https://github.com/informach/sistema-zero/actions/runs/46154408250). Concluída integralmente: 13/13 checks na tentativa 1, oito serviços saudáveis, oito predecessores retirados e barreira publicada na versão 3. A rodada automática desta própria fonte foi encerrada antes de qualquer operação, para usar a seleção explícita; nenhuma onda concorrente foi cancelada.
 
 A fonte `434fde8e0` concluiu 13/13 checks, os oito serviços saudáveis, oito predecessores retirados e barreira Jornada publicada na versão 3. As três projeções reais preservaram PNGs e passaram tipos, build, execução e captura; aquecimento 3D passou. Esses recibos são da fonte anterior. A imagem `8a7bef4a…`/perfil `7c1ad83a…` permanece idêntica e qualificada; não requer novo Worker de staging. Falta qualificar as fontes novas, repetir o aceite real e concluir as duas ondas de produção. LG05 ainda não está em produção.
 
