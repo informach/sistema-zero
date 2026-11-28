@@ -1,0 +1,198 @@
+{
+  "item-escudo-redondo": {
+    "sha": "4e1a0f1c52920e658e3d9b307aa26dee05cdc189fb5a9ccbcc84bb9936a9a5bc",
+    "bytes": 23268,
+    "categoria": "item-escudo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-escudo-hexagono": {
+    "sha": "1d3964a05732eeda789375c6cca375ff46bfaf69a93921c1876b7e1dff8f3a3c",
+    "bytes": 16064,
+    "categoria": "item-escudo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-escudo-losango": {
+    "sha": "e2b5035ef0a0c3c44de39978f0828258ee04e6ae2fd845f5777e02827005aa35",
+    "bytes": 14560,
+    "categoria": "item-escudo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-escudo-octogono": {
+    "sha": "767e848d78625a8fac893bc23e7d145bb325650b1e7e19276c80ae74508f65ca",
+    "bytes": 17828,
+    "categoria": "item-escudo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-triplo-redondo": {
+    "sha": "9dfac649511b1d6bd4ade5da51c5c852fec96925b7614b2c8e1ff0f6e89a0800",
+    "bytes": 24232,
+    "categoria": "item-triplo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-triplo-hexagono": {
+    "sha": "c2c032040472181aac5261f3df56289664b50b078dd21ef6a6ba35b232b89d67",
+    "bytes": 17032,
+    "categoria": "item-triplo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-triplo-losango": {
+    "sha": "d8c52e27fcdd1795b8c277016d539a3a0fa0ca78259048e6830a52b52f1e01a2",
+    "bytes": 15524,
+    "categoria": "item-triplo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-triplo-octogono": {
+    "sha": "64646f9d2d315795ecba42f94855ac9abafe941944a60a09aa11f46a4f440487",
+    "bytes": 18792,
+    "categoria": "item-triplo",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-plasma-redondo": {
+    "sha": "4cd878fa1e8467d97e5c26d478133be717b5abf6fa86c255acc4fff34d18a32c",
+    "bytes": 24928,
+    "categoria": "item-plasma",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-plasma-hexagono": {
+    "sha": "285a689a10036fd4a356db0639df73d62707c431fff173e9a8ed2b535e11582e",
+    "bytes": 17728,
+    "categoria": "item-plasma",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-plasma-losango": {
+    "sha": "3127760ac6c6a9379a69b9ff3d6441e98ec57e38d47023099e8f9038b44d39af",
+    "bytes": 16220,
+    "categoria": "item-plasma",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "item-plasma-octogono": {
+    "sha": "19c8fbef35b41af9e617c4091429ed15921396917784ef23cb6b62a9ad232ac9",
+    "bytes": 19492,
+    "categoria": "item-plasma",
+    "center": [0, 0, 0],
+    "size": 1.2
+  },
+  "inimiga-garra-vermelha": {
+    "sha": "14da4d8ad106725af5d40e1696e70e4747a7010e5bb7d5231f968d549d23bd82",
+    "bytes": 31668,
+    "categoria": "inimiga",
+    "center": [0, 0.06, 0],
+    "size": 3
+  },
+  "inimiga-disco-roxo": {
+    "sha": "71a0d035a5f9b246be6752a5feb551c83c2b2f519af2d00cacd89033f86e03d0",
+    "bytes": 40236,
+    "categoria": "inimiga",
+    "center": [0, 0.06, 0],
+    "size": 3
+  },
+  "inimiga-vespa-amarela": {
+    "sha": "b406300e8253bf80885e3eb9f6a72d94cd8ede0e4dfccfc8dd622708b300a6fe",
+    "bytes": 26028,
+    "categoria": "inimiga",
+    "center": [0, 0.06, 0],
+    "size": 3
+  },
+  "inimiga-tridente-cinza": {
+    "sha": "af3c82e79f76c3449d05c5290b70df5e876b0a7549f0042f5f96e3f3506f1c30",
+    "bytes": 32616,
+    "categoria": "inimiga",
+    "center": [0, 0.06, 0],
+    "size": 3
+  },
+  "laser-inimigo-vermelho": {
+    "sha": "6fcb11ff13af332fe478dd07ea35da3963c5cb07d6040c541ac7d91553bb0513",
+    "bytes": 3216,
+    "categoria": "laser-inimigo",
+    "center": [0, 0, 0],
+    "size": 0.9
+  },
+  "laser-inimigo-laranja": {
+    "sha": "6789ee2f8213bd71a11d8ee8f240ea11a0e0f35b334e7a7c9a938d7f16b16405",
+    "bytes": 8800,
+    "categoria": "laser-inimigo",
+    "center": [0, 0, 0],
+    "size": 0.9
+  },
+  "laser-inimigo-rosa": {
+    "sha": "faf56dc67d59a776909821734c7eed1733d657186322272ed535c41d58f38209",
+    "bytes": 13212,
+    "categoria": "laser-inimigo",
+    "center": [0, 0, 0],
+    "size": 0.9
+  },
+  "laser-inimigo-amarelo": {
+    "sha": "c92953824a8f09a3dfe84bf4676d9545180229fdc092c9da8547782fec84ba4f",
+    "bytes": 19604,
+    "categoria": "laser-inimigo",
+    "center": [0, 0, 0],
+    "size": 0.9
+  },
+  "chefao-cruzador": {
+    "sha": "89d537975cbbf0416dbe1f65262f3e85240b6fa81235c073d9989b43f1b00067",
+    "bytes": 53992,
+    "categoria": "chefao",
+    "center": [0, 0.2, 0],
+    "size": 6
+  },
+  "chefao-disco-mae": {
+    "sha": "1237eedb20b14ea64f6830d38d09f10031bad8605a1ffa10f170986d4129bd1b",
+    "bytes": 63908,
+    "categoria": "chefao",
+    "center": [0, 0.2, 0],
+    "size": 6
+  },
+  "chefao-escorpiao": {
+    "sha": "d6d97b4ae33c6eea41a7ae7ebc2f8528612b530b4f266715779c77ce6a367b60",
+    "bytes": 25692,
+    "categoria": "chefao",
+    "center": [0, 0.2, 0],
+    "size": 6
+  },
+  "chefao-fortaleza": {
+    "sha": "66710eb7762e62518534443e9da8f46458fa6cac55a6b662cfbf7688a4c5aa87",
+    "bytes": 61592,
+    "categoria": "chefao",
+    "center": [0, 0.2, 0],
+    "size": 6
+  },
+  "plasma-roxo": {
+    "sha": "bb67ceab33e095db1d1e0ccf3213818ef489252554965e912eb2af86371885dd",
+    "bytes": 18800,
+    "categoria": "plasma",
+    "center": [0, 0, 0],
+    "size": 0.8
+  },
+  "plasma-verde": {
+    "sha": "045d626ba955908947e2b7feb5ba61ace18c45072006247096c0379d0b0d299a",
+    "bytes": 15848,
+    "categoria": "plasma",
+    "center": [0, 0, 0],
+    "size": 0.8
+  },
+  "plasma-laranja": {
+    "sha": "2d07858bfc7c789ffd47b06f0ca0e38dbe5c178e954d613e4cc7dcaf05a1f492",
+    "bytes": 10604,
+    "categoria": "plasma",
+    "center": [0, 0, 0],
+    "size": 0.8
+  },
+  "plasma-azul": {
+    "sha": "d4186b20b8e6d1812f793c4a4dea6be62e111ce25783c91e03b14b95422114e5",
+    "bytes": 6888,
+    "categoria": "plasma",
+    "center": [0, 0, 0],
+    "size": 0.8
+  }
+}
