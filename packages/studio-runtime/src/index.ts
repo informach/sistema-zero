@@ -62,6 +62,7 @@ import {
   trustedPackageJson,
   trustedViteConfig,
   undeclaredDependencyMessage,
+  verifiedValidationPlatformFiles,
   verifyBuildBinaries,
 } from './contracts'
 import { prepareRuntimeDependencyLock } from './dependency-lock'
@@ -618,7 +619,7 @@ export function createStudioRuntimeHandler(
         }
         const raw = await readJsonBodyWithLimit(request, PRO_BUILD_LIMITS.maxRequestBytes)
         const input = await readBuildRequest(raw)
-        await verifyBuildBinaries(input.binaries)
+        const platformFiles = await verifiedValidationPlatformFiles(input)
         const rate = await env.BUILD_RATE_LIMITER.limit({ key: input.executionId })
         if (!rate.success) {
           return json(
@@ -694,7 +695,7 @@ export function createStudioRuntimeHandler(
           if (input.validate) {
             await sandbox.writeFile(
               `${cwd}/validation-options.json`,
-              JSON.stringify({ templateId: input.templateId }),
+              JSON.stringify({ templateId: input.templateId, platformFiles }),
             )
             const checked = await sandbox.exec(
               'ln -s /opt/sz-runtime/node_modules ./node_modules && node /opt/sz-runtime/check-project.mjs',

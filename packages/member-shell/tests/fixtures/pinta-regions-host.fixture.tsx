@@ -4,11 +4,9 @@ import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal
 import type { ReactNode } from 'react'
 import { PintaAccountScope } from '../../src/components/creator/pinta-account-scope'
 
-// Etapa 1 das regiões e o fim das flags (23/11/2026): o host do Pinta monta a oficina regional
-// (teto nativo 8) sempre que a conta do perfil pode guardar o regional, e anuncia leitor e escritor
-// 7 na fila causal. Quem decide é o escopo da conta que o servidor entrega a todo aluno ativo; não
-// há variável de ambiente. Só as fronteiras externas (pacote, nuvem e espelho) são trocadas; o que
-// se confere é a escolha real do `PintaClient`.
+// A oficina com conta e a oficina local compartilham teto nativo 9, leitor e escritor 8.
+// O escopo entregue pelo servidor decide a autoridade da conta, sem flags de ambiente.
+// Só as fronteiras externas são trocadas: a prova confere a escolha real do PintaClient.
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act } = await import('react')
@@ -136,7 +134,7 @@ async function render({
   return mounted
 }
 
-test('LG05 A: o host monta teto 8, leitor 8 e escritor 7 sem antecipar a autoria nova', async () => {
+test('LG05: o host monta teto 9, leitor e escritor 8 pelo caminho único da oficina', async () => {
   const view = await render({ viewerId: 'perfil', scope: account })
   expect(clouds.at(-1)).toMatchObject({
     maxFormatVersion: 6,
@@ -148,12 +146,12 @@ test('LG05 A: o host monta teto 8, leitor 8 e escritor 7 sem antecipar a autoria
     {
       kind: 'workshop',
       namespace: 'perfil',
-      options: { namespace: 'perfil', guardCausalWrites: true, nativeCeiling: 8 },
+      options: { namespace: 'perfil', guardCausalWrites: true, nativeCeiling: 9 },
     },
   ])
   expect(mirrors).toHaveLength(1)
   expect(mirrors[0]?.local.kind).toBe('workshop')
-  expect(mirrors[0]?.causal).toMatchObject({ reader: 8, writer: 7 })
+  expect(mirrors[0]?.causal).toMatchObject({ reader: 8, writer: 8 })
   expect(view.persistence).toMatchObject({ mirrored: 'workshop' })
 })
 
@@ -187,7 +185,7 @@ test('sem conta, a oficina regional fica só neste aparelho, com o mesmo teto', 
   expect(clouds).toEqual([])
   expect(mirrors).toEqual([])
   expect(built).toEqual([
-    { kind: 'workshop', namespace: '', options: { namespace: '', nativeCeiling: 8 } },
+    { kind: 'workshop', namespace: '', options: { namespace: '', nativeCeiling: 9 } },
   ])
   expect(view.persistence).toMatchObject({ kind: 'workshop' })
 })
@@ -214,6 +212,6 @@ test('o Pinta do Arquipélago, sob o escopo da conta, monta a oficina causal e c
   })
   expect(clouds.at(-1)).toMatchObject({ pintaCausalEnabled: true })
   expect(built.map(({ kind }) => kind)).toEqual(['workshop'])
-  expect(mirrors[0]?.causal).toMatchObject({ reader: 8, writer: 7 })
+  expect(mirrors[0]?.causal).toMatchObject({ reader: 8, writer: 8 })
   expect(typeof view.onCompletionControlChange).toBe('function')
 })

@@ -12,6 +12,26 @@ function fixture() {
   const scene = { ...scene4Fixture(), physics: 'precise' }
   return { format: 'pinta', version: 5, kind: 'map', name: scene.name, scale: 1, scene }
 }
+
+test('PNG 6 admits projected geometry through the same bounded reader and rejects mismatched envelopes', () => {
+  const previous = fixture()
+  const scene = {
+    ...previous.scene,
+    version: 5,
+    projection: { kind: 'isometric' as const, tileWidth: 32, tileHeight: 16 },
+  }
+  const source = { ...previous, version: 6, scene }
+  const data = readPintaRegionImageData(JSON.stringify(source))
+  expect(data?.version).toBe(6)
+  expect(data?.scene.version).toBe(5)
+  if (data?.scene.version !== 5) throw Error('Projected scene was not admitted')
+  expect(data.scene.projection).toEqual(scene.projection)
+  const old = readPintaRegionScene(JSON.stringify(previous.scene))
+  if (!old) throw Error('Old scene was not admitted')
+  expect(data.scene.layers).toEqual(old.layers)
+  expect(readPintaRegionImageData(JSON.stringify({ ...source, version: 5 }))).toBeNull()
+  expect(readPintaRegionImageData(JSON.stringify({ ...previous, version: 6 }))).toBeNull()
+})
 test('PNG 5 metadata reuses the admitted scene-4 codec and preserves signed cells, properties and physics', () => {
   const source = fixture(),
     data = readPintaRegionImageData(JSON.stringify(source))
@@ -22,9 +42,9 @@ test('PNG 5 metadata reuses the admitted scene-4 codec and preserves signed cell
   if (layer?.kind !== 'tiles') throw Error('Missing positive control')
   expect(layer.cells.chunks[0]!.cells).toBeInstanceOf(Int16Array)
   expect(layer.cells.chunks[0]!.cells[7]).toBe(7 * 4096 + 2)
-  expect(
-    data?.scene.layers.find((layer) => layer.kind === 'objects')?.objects[0]?.properties,
-  ).toEqual({ life: { type: 'int', value: 3 } })
+  const objects = data?.scene.layers.find((entry) => entry.kind === 'objects')
+  if (objects?.kind !== 'objects') throw Error('Missing objects')
+  expect(objects.objects[0]?.properties).toEqual({ life: { type: 'int', value: 3 } })
 })
 test('PNG 5 is a new strict envelope, while the public derivation still refuses its activation', () => {
   const source = fixture()

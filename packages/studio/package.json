@@ -66,7 +66,8 @@
     "./pinta-regional-pro-runtime": "./src/modes/pro/pintaRegionalProRuntime.ts",
     "./python-snapshot": "./src/runtime/python/snapshot.ts",
     "./python-project-validation": "./src/state/pythonProjectValidation.ts",
-    "./blockly-theme": "./src/blockly/publicTheme.ts"
+    "./blockly-theme": "./src/blockly/publicTheme.ts",
+    "./pro-runtime-declarations": "./src/modes/pro/runtimeDeclarations.ts"
   },
   "imports": {
     "#core": "./src/core/index.ts",
@@ -86,7 +87,7 @@
     "check:scene3d-runtime": "bun scripts/generate-scene3d-runtime.ts --check",
     "gen:pinta-region-runtime": "bun scripts/gen-pinta-region-runtime.ts",
     "check:pinta-region-runtime": "bun scripts/gen-pinta-region-runtime.ts --check",
-    "gen:pro-engine-copies": "bun scripts/gen-pro-engine-copies.ts",
+    "gen:pro-engine-copies": "bun scripts/gen-project-run-context.ts && bun scripts/gen-pro-engine-copies.ts",
     "check:pro-engine-copies": "bun scripts/gen-pro-engine-copies.ts --check",
     "test:e2e:pinta-scenes": "playwright test --config playwright.pinta.config.ts",
     "dev": "vite --config playground/vite.config.ts",
@@ -137,7 +138,11 @@
     "serve:e2e": "node scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts"
+    "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts",
+    "gen:pro-runtime-declarations": "bun scripts/gen-pro-runtime-declarations.ts",
+    "check:pro-runtime-declarations": "bun scripts/gen-pro-runtime-declarations.ts --check",
+    "gen:project-run-context": "bun scripts/gen-project-run-context.ts",
+    "check:project-run-context": "bun scripts/gen-project-run-context.ts --check"
   },
   "dependencies": {
     "@astral-sh/ruff-wasm-web": "0.17.1",

@@ -1,15 +1,16 @@
 # CLAUDE.md — @sistemazero/pinta
 
-## LG05 leitor A (27/11/2026, implementação local)
+## LG05 — oficina única, autoria 9 (27/11/2026)
 
-Plano vigente: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`.
-O core prepara leitor causal 8 e o BFF admite o nativo 9 integral. O host público continua
-com teto nativo 8 e gravador nuvem 7. A autoridade de instalação de um pull canônico é separada
-da autoridade de escrita local: a conta pode baixar e preservar nativo 9 sem permitir sua
-edição/importação/enfileiramento por um gravador 7. Não subir o teto público por isso.
-A autoria projetada, PNG 6/destinos e o gravador público 8 continuam na entrega B da LG05;
-produção ainda depende da qualificação e implantação próprias. As seções datadas de 23/11
-abaixo são o corte anterior; o leitor 7 citado ali é histórico.
+Plano e recibos: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`. O contrato desta fonte é leitor causal 8, gravador 8 e teto nativo 9, definido uma vez em `pinta-workshop-capabilities.ts` e usado pelos hosts Kids, adulto e Arquipélago. A promoção do gravador depende da implantação prévia de todos os leitores e da imagem compatível; preparar a fonte não comprova implantação.
+
+Mapas ortogonais, isométricos e hexagonais e livros de autorregras usam o catálogo, a autoridade, o histórico, o autosave e a fila causal comuns. O gesto publica cada pincelada na autoridade e registra um desfazer ao terminar; regras armadas permanecem prévia até aplicar. PNG 6/cena 5 passa pelo mesmo ponto de admissão do PNG 5. O preparador comum substitui o exportador anterior. Não conservar gravador, seletor ou implementação pública alternativa.
+
+Arquivos anteriores continuam legíveis/importáveis e migram pela mesma autoridade; o codec conserva o envelope mínimo exigido pelo conteúdo. O contexto de aula mantém seu isolamento e suas permissões. Os registros de 23/11 abaixo são históricos: recusas de editor projetado, PNG 6 e teto público 8 não descrevem este contrato. Python e seus catálogos continuam na LG08.
+
+## Painéis da oficina regional — revisão visual de 27/11/2026
+
+`MapSidePanels` em `TilemapPanels.tsx` é a coluna compartilhada do editor regional, janela focal e mapas projetados: 12 px internos, 12 px entre grupos, largura 272 px em desktop e rolagem própria no celular. O `Panel` continua usando o visual existente. A janela focal usa `.pin-bar`, `.pin-bar-name` e o `SaveBadge` compartilhado (`EditorSaveBadge.tsx`), preservando as mensagens anteriores de falha. Seu rodapé usa duas linhas em tela estreita para manter desfazer/refazer, dimensões e zoom inteiros. Provas: 37 testes focados, tipos Pinta e oito percursos de projeção em desktop/toque; medidas reais em 390 px sem transbordamento e alvos de 44 px. Publicação da fonte é conferida no plano LG05, não inferida por este registro.
 
 ## Oficina de cenários: como está em 23/11/2026
 

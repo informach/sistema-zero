@@ -94,6 +94,7 @@ export async function createPublicRuntimeProbe(
     { reservationId: string; playId: string; snapshotHash: string }
   >()
   const finalized = new Map<string, { id: string; playId: string; studioMeta?: unknown }>()
+  const projectThreads = new Map<string, { id: string; playId: string; studioMeta?: unknown }>()
   let status: 'active' | 'revoked' = 'active'
   let policy = await runtimePolicy()
   let publicRuntime = new AuthorizePublicRuntimeService(policy)
@@ -171,12 +172,23 @@ export async function createPublicRuntimeProbe(
       prepareShowcaseThreadStudioStandalone: async (input: {
         clientIdempotencyKey: string
         snapshotHash: string
+        sourceProjectId?: string
       }) => {
         const thread = finalized.get(input.clientIdempotencyKey)
         if (thread)
           return {
             status: 200,
             body: { state: 'finalized', deduped: true, thread: { ...thread, status: 'visible' } },
+          }
+        const existing = input.sourceProjectId && projectThreads.get(input.sourceProjectId)
+        if (existing)
+          return {
+            status: 200,
+            body: {
+              state: 'existing',
+              playId: existing.playId,
+              thread: { ...existing, status: 'visible' },
+            },
           }
         let reservation = reservations.get(input.clientIdempotencyKey)
         if (reservation && reservation.snapshotHash !== input.snapshotHash)
@@ -195,6 +207,7 @@ export async function createPublicRuntimeProbe(
         playId: string
         clientIdempotencyKey: string
         studioMeta?: unknown
+        sourceProjectId?: string
       }) => {
         visible.set(input.playId, true)
         const thread = {
@@ -203,9 +216,25 @@ export async function createPublicRuntimeProbe(
           studioMeta: input.studioMeta,
         }
         finalized.set(input.clientIdempotencyKey, thread)
+        if (input.sourceProjectId) projectThreads.set(input.sourceProjectId, thread)
         return {
           status: 200,
           body: { thread: { ...thread, status: 'visible' }, deduped: false },
+        }
+      },
+      updateShowcaseThreadStudioStandalone: async (input: {
+        sourceProjectId?: string
+        playId: string
+        studioMeta?: unknown
+      }) => {
+        const thread = input.sourceProjectId && projectThreads.get(input.sourceProjectId)
+        if (!thread || thread.playId !== input.playId) return { status: 409, body: null }
+        return {
+          status: 200,
+          body: {
+            thread: { ...thread, status: 'visible', studioMeta: input.studioMeta },
+            previousCoverUrl: null,
+          },
         }
       },
       resolveStudioPlay: async (id: string) => ({

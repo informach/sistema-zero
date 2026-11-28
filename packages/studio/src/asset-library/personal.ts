@@ -223,7 +223,7 @@ async function readPersonalAssetCopies(
           !('version' in regional) ||
           regional.version !== 1 ||
           !('dataVersion' in regional) ||
-          regional.dataVersion !== 5
+          (regional.dataVersion !== 5 && regional.dataVersion !== 6)
         )
           return null
         const { admitPersonalRegionalRecord } = await import('./personalRegional')
@@ -236,7 +236,7 @@ async function readPersonalAssetCopies(
           width: record.width,
           height: record.height,
           updatedAt: record.updatedAt ?? 0,
-          regional: { dataVersion: 5 as const, sourceId: id, sha256: record.sha256 },
+          regional: { dataVersion: record.dataVersion, sourceId: id, sha256: record.sha256 },
         }
       }
       const legacy = values[i * 2 + 1]

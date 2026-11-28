@@ -1,11 +1,14 @@
 import {
   createRegionCellReader,
-  indexRegionChunks as indexOf,
+  isPintaHexCell,
   regionChunkKey as keyOf,
   compareRegionChunks as order,
+  PINTA_HEX_EMPTY_CELL,
+  PINTA_HEX_REGION_MAX_CHUNKS,
   PINTA_REGION_CELL_COUNT,
   PINTA_REGION_LIMITS,
   PINTA_REGION_SIDE,
+  type PintaHexRegionCells,
   type PintaRegionBounds,
   type PintaRegionCells,
   parsePintaRegionBounds,
@@ -38,17 +41,62 @@ export function editRegionCells(
   edits: readonly RegionCellEdit[],
   maxChunks: number = PINTA_REGION_LIMITS.maxChunks,
 ): RegionEditResult {
+  const result = editSparseRegionCells(grid.chunks, rawBounds, edits, maxChunks, {
+    empty: EMPTY_CELL,
+    valid: isValidCell,
+    create: () => new Int16Array(PINTA_REGION_CELL_COUNT).fill(EMPTY_CELL),
+    clone: (cells) => cells.slice(),
+  })
+  return result.ok
+    ? { ok: true, cells: result.chunks === grid.chunks ? grid : { ...grid, chunks: result.chunks } }
+    : result
+}
+
+/** The same atomic sparse writer, with the hexagonal cell dialect kept in Uint32Array. */
+export function editHexRegionCells(
+  grid: PintaHexRegionCells,
+  rawBounds: PintaRegionBounds,
+  edits: readonly RegionCellEdit[],
+  maxChunks: number = PINTA_HEX_REGION_MAX_CHUNKS,
+): { ok: true; cells: PintaHexRegionCells } | Extract<RegionEditResult, { ok: false }> {
+  if (!Number.isInteger(maxChunks) || maxChunks < 0 || maxChunks > PINTA_HEX_REGION_MAX_CHUNKS)
+    return { ok: false, reason: 'invalid-edit' }
+  const result = editSparseRegionCells(grid.chunks, rawBounds, edits, maxChunks, {
+    empty: PINTA_HEX_EMPTY_CELL,
+    valid: isPintaHexCell,
+    create: () => new Uint32Array(PINTA_REGION_CELL_COUNT).fill(PINTA_HEX_EMPTY_CELL),
+    clone: (cells) => cells.slice(),
+  })
+  return result.ok
+    ? { ok: true, cells: result.chunks === grid.chunks ? grid : { ...grid, chunks: result.chunks } }
+    : result
+}
+
+type SparseChunk<Cells> = { col: number; row: number; cells: Cells }
+
+function editSparseRegionCells<Cells extends Int16Array | Uint32Array>(
+  chunks: SparseChunk<Cells>[],
+  rawBounds: PintaRegionBounds,
+  edits: readonly RegionCellEdit[],
+  maxChunks: number,
+  codec: {
+    empty: number
+    valid(cell: number): boolean
+    create(): Cells
+    clone(cells: Cells): Cells
+  },
+): { ok: true; chunks: SparseChunk<Cells>[] } | Extract<RegionEditResult, { ok: false }> {
   if (edits.length > REGION_EDIT_LIMIT) return { ok: false, reason: 'work-budget' }
   const bounds = parsePintaRegionBounds(rawBounds)
   if (!bounds || !validBudget(maxChunks)) return { ok: false, reason: 'invalid-edit' }
-  const original = indexOf(grid)
+  const original = new Map(chunks.map((chunk) => [keyOf(chunk.col, chunk.row), chunk]))
   const patches = new Map<string, { col: number; row: number; values: Map<number, number> }>()
   for (const point of edits) {
     if (
       !point ||
       !Number.isInteger(point.col) ||
       !Number.isInteger(point.row) ||
-      !isValidCell(point.cell)
+      !codec.valid(point.cell)
     )
       return { ok: false, reason: 'invalid-edit' }
     if (
@@ -84,7 +132,7 @@ export function editRegionCells(
     if (!previous) {
       // A large gesture can touch many empty world regions. Inspect its edits,
       // never 1024 nonexistent cells per region, before deciding admission.
-      if ([...patch.values.values()].some((cell) => cell !== EMPTY_CELL)) {
+      if ([...patch.values.values()].some((cell) => cell !== codec.empty)) {
         count++
         changes.push({ key, patch, occupied: true })
       }
@@ -93,9 +141,9 @@ export function editRegionCells(
     let occupied = false,
       changed = false
     for (let index = 0; index < PINTA_REGION_CELL_COUNT; index++) {
-      const before = previous?.cells[index] ?? EMPTY_CELL
+      const before = previous?.cells[index] ?? codec.empty
       const after = patch.values.get(index) ?? before
-      occupied ||= after !== EMPTY_CELL
+      occupied ||= after !== codec.empty
       changed ||= before !== after
     }
     if (!changed) continue
@@ -103,19 +151,19 @@ export function editRegionCells(
     changes.push({ key, patch, occupied })
   }
   if (count > maxChunks) return { ok: false, reason: 'cell-budget' }
-  if (!changes.length) return { ok: true, cells: grid }
+  if (!changes.length) return { ok: true, chunks }
   const next = new Map(original)
   for (const { key, patch, occupied } of changes) {
     if (!occupied) {
       next.delete(key)
       continue
     }
-    const cells =
-      original.get(key)?.cells.slice() ?? new Int16Array(PINTA_REGION_CELL_COUNT).fill(EMPTY_CELL)
+    const previous = original.get(key)
+    const cells = previous ? codec.clone(previous.cells) : codec.create()
     for (const [index, value] of patch.values) cells[index] = value
     next.set(key, { col: patch.col, row: patch.row, cells })
   }
-  return { ok: true, cells: { ...grid, chunks: [...next.values()].sort(order) } }
+  return { ok: true, chunks: [...next.values()].sort((a, b) => a.row - b.row || a.col - b.col) }
 }
 
 /** Explicit migration; counts occupied chunks before allocating their buffers. */

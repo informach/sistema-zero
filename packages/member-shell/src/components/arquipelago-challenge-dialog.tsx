@@ -24,7 +24,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import { challengeDraftScope } from '../lib/arquipelago-challenge'
 import { cn } from '../lib/cn'
-import { createProToolchainPreparer } from '../lib/pro-toolchain'
+import { createProToolchainPreparer, proRuntimeProjectInput } from '../lib/pro-toolchain'
 import { sessionFetch } from '../lib/session-fetch'
 import { useArquipelagoChallengeRuntime } from './studio/use-arquipelago-challenge-runtime'
 
@@ -186,12 +186,7 @@ export function ArquipelagoChallengeDialog({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             revisao: desafio.revisao,
-            project: {
-              kind: 'pro',
-              tree: project.tree,
-              assets: project.assets,
-              proMeta: project.proMeta,
-            },
+            project: proRuntimeProjectInput(project),
           }),
           signal,
         })

@@ -1,5 +1,25 @@
 # @sistemazero/studio
 
+## Identidade portátil do motor (28/11/2026)
+
+`createProjectRunContext` continua sendo a única implementação do ciclo de execução. O texto que
+viaja no motor vem de `projectRunContextFactory.generated.json`, gerado com Bun 1.3.11 por
+`gen:project-run-context`; não serializar a função depois da minificação da aplicação.
+`check:pro-engine-copies` confere também essa origem e as equivalências registradas no Core.
+O fixture publicado de 28/11 guarda a factory e o hash do chunk de staging que a emitiu; seus
+sha256 mantêm as cópias intactas anteriores, sem atualizar arquivos autorais automaticamente.
+A equivalência para a projeção regional exige o mesmo corpo do motor atual, não apenas qualquer
+versão histórica conhecida. Os diagnósticos autorais e a recusa de cópias alteradas permanecem.
+
+
+## LG05 — contratos portáteis na conversão Pro (27/11/2026)
+
+A conversão dos motores 2D leva as declarações `.d.ts` para `src/sz-platform/`, junto do projeto. `scripts/gen-pro-runtime-declarations.ts` emite os contratos existentes de Game 2D, Avançado, mapas, objetos do Core e ciclo de vida; não manter assinaturas manuais paralelas. Ao alterar esses contratos, rodar `gen:pro-runtime-declarations`; o CI confere `check:pro-runtime-declarations`. O objeto do cenário sai estruturalmente do tipo inferido pelo schema, sem depender de Zod no projeto da criança.
+
+`modes/pro/runtimeDeclarations.ts` atende conversão e BFF. Projetos Pro anteriores com motor intacto recebem os mesmos tipos na cópia derivada do build, sem alterar a árvore autoral; um caminho de tipos ocupado por conteúdo diferente é recusado e preservado. O Worker envia ao compilador hashes dos motores reconhecidos no inventário e dos materiais gerados já conferidos. O compilador revalida os bytes e conserva as verificações de sintaxe/importação; checagem semântica autoral continua inclusive nos arquivos fechados e nas cópias de motor não reconhecidas.
+
+O serviço de linguagem do Pro também confere os hashes do inventário comum: bibliotecas compiladas recebem verificação de sintaxe, enquanto arquivos autorais e cópias alteradas conservam a checagem semântica. Uma prova antiga não isenta texto novo. A fonte do gravador único 8/nativo 9 só é promovida depois dos leitores; implantação e recibos ficam no plano LG05.
+
 ## Miniaturas dos modelos 3D (23/11/2026)
 
 Pedido dela: no seletor de modelo do bloco só aparecia o 📦, e a criança escolhia pelo nome.

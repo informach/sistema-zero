@@ -6,6 +6,7 @@ import {
   type StudioProEngineInventory as ProEngineInventory,
   type StudioProEngineVariant as ProEngineVariant,
   studioProEngineCopyPath as proEngineCopyPath,
+  studioProEngineCopyEquivalent,
 } from '@sistemazero/core/studio/pro-engine-copies'
 import { type StudioProPlatformFiles, studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import { isDocumentRecord } from '../../core/projectDocument'
@@ -91,6 +92,15 @@ export async function classifyProEngineCopy(
   if (PRO_ENGINE_VARIANTS.some((variant) => current[variant] === content))
     return { kind: 'current' }
   const digest = await studioProDigest(content)
+  const currentDigests = await Promise.all(
+    PRO_ENGINE_VARIANTS.map((variant) => studioProDigest(current[variant])),
+  )
+  if (
+    currentDigests.some((currentDigest) =>
+      studioProEngineCopyEquivalent(extensionId, currentDigest, digest),
+    )
+  )
+    return { kind: 'current' }
   const variant = PRO_ENGINE_VARIANTS.find((name) => known[extensionId][name].includes(digest))
   return variant ? { kind: 'known', variant } : { kind: 'changed' }
 }

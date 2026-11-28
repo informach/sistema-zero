@@ -378,15 +378,6 @@ export const COPY = {
       'Antes de apagar este conjunto, apague os mapas abaixo ou crie versões deles com outras peças:',
     tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
     drawingInUse: 'Este desenho ainda é usado por um mapa ou conjunto.',
-    /** Mapa feito numa versão que já abre mapas em losango ou colmeia: guardado, sem cartão. */
-    projectedUnavailable: (names: readonly string[]) =>
-      names.length === 1
-        ? `O mapa "${names[0]}" ainda não abre nesta versão do Pinta. Ele continua guardado.`
-        : `${names.length} mapas ainda não abrem nesta versão do Pinta. Eles continuam guardados.`,
-    tilesetUsedByProjected:
-      'Esta folha é usada por um mapa que ainda não abre nesta versão do Pinta. Ela continua guardada.',
-    drawingUsedByProjected:
-      'Este desenho é usado por um mapa que ainda não abre nesta versão do Pinta. Ele continua guardado.',
     cancel: 'Cancelar',
     recoveredLocal:
       'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
@@ -663,6 +654,8 @@ export const COPY = {
     saved: 'Salvo',
     saving: 'Salvando…',
     saveError: 'Não consegui salvar',
+    nativeWriterUnavailable:
+      'Este mapa tem regras ou formas que esta versão do Pinta ainda não guarda. Nada foi alterado.',
     lessonMapLimit:
       'Este desenho chegou ao limite da aula. Você pode criar um cenário maior na sua galeria.',
     taskLinkError: 'Não consegui vincular o desenho à tarefa. Confira a internet e tente de novo.',

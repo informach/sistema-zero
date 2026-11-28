@@ -1,7 +1,8 @@
 import { type JSX, useState } from 'react'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import type { PintaWorkshopAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import type { RegionTilemapAsset, TilemapAsset } from '../../core/project'
+import type { WorkshopProjectedMap } from '../../core/projectedDocument'
 import { triggerDownload } from '../../export/download'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
@@ -9,7 +10,7 @@ import { useToast } from '../ui/Toast'
 
 type Props =
   | { map: TilemapAsset; inventory?: never }
-  | { map: RegionTilemapAsset; inventory: readonly PintaMemoryAsset[] }
+  | { map: RegionTilemapAsset | WorkshopProjectedMap; inventory: readonly PintaWorkshopAsset[] }
 
 export function SceneExportButtons(props: Props): JSX.Element {
   const { map } = props
@@ -24,22 +25,7 @@ export function SceneExportButtons(props: Props): JSX.Element {
         ...(props.inventory ?? gallery.getState().assets).filter((asset) => asset.id !== map.id),
         map,
       ]
-      const { pintaWorkshopBody, isLegacyWorkshopAsset } = await import('../../core/workshopAsset')
-      const { sceneMapClosure } = await import('../../core/sceneMapClosure')
-      const body = pintaWorkshopBody(map)
-      if (body.kind !== 'tilemap') throw Error(COPY.scene.naoFoiPossivelPrepararOPacote)
-      const closure = sceneMapClosure(body, catalog.map(pintaWorkshopBody))
-      let files: Awaited<ReturnType<typeof buildScenePackage>>
-      if (!('origin' in body) && closure.assets.every(isLegacyWorkshopAsset)) {
-        files = await buildScenePackage(body, closure.assets, target)
-      } else {
-        const prepared =
-          'origin' in body
-            ? { ok: true as const, map: body }
-            : (await import('../../tiles/regionMap')).prepareMapRegions(body)
-        if (!prepared.ok) throw Error(COPY.scene.naoFoiPossivelPrepararOPacote)
-        files = await buildScenePackage(prepared.map, closure.assets, target)
-      }
+      const files = await buildScenePackage(map, catalog, target)
       triggerDownload(await scenePackageBlob(files), `${map.name}-${target}.zip`)
       showToast(COPY.scene.oPacoteDoCenarioEstaPronto)
     } catch (e) {

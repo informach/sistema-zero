@@ -826,7 +826,7 @@ async function syncPrivateRegionalDrawings(
             width: row.width,
             height: row.height,
             dataUrl: row.dataUrl,
-            regional: { dataVersion: 5, sourceId, sha256: row.sha256 },
+            regional: { dataVersion: row.dataVersion, sourceId, sha256: row.sha256 },
           },
         })
         // A project that cannot run the regional material keeps its drawing; nothing to retry.

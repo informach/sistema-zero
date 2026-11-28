@@ -15,10 +15,13 @@ import {
 import type { PintaEditorStore } from '../../state/editorStore'
 import type { LocalRegionAuthorSession } from '../../state/localRegionAuthorSession'
 import { isMapObjectTool, type PintaSessionStore } from '../../state/sessionStore'
+import { createAutomapBook } from '../../tiles/automapping/book'
 import type { CellPos } from '../../tiles/cellGeometry'
 import { type MapViewport, TileChunkCache } from '../../tiles/chunks'
 import { resolveMapTilesets } from '../../tiles/mapTilesets'
 import { expandRegionMap } from '../../tiles/regionMap'
+import { usePintaApp } from '../appContext'
+import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useToolCuration } from './editorContext'
@@ -38,7 +41,13 @@ import { useMapKeyboard } from './mapTools/useMapKeyboard'
 import { useMapLevel } from './mapTools/useMapLevel'
 import { useMapSheets } from './mapTools/useMapSheets'
 import { stageCursor } from './stageCursor'
-import { MAP_SELECT_CLASS, MapLevelSelect, type MapTool, TilemapToolbar } from './TilemapPanels'
+import {
+  MAP_SELECT_CLASS,
+  MapLevelSelect,
+  MapSidePanels,
+  type MapTool,
+  TilemapToolbar,
+} from './TilemapPanels'
 import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
@@ -93,6 +102,7 @@ function RegionalMapStage({
   gallery,
   map,
 }: CompleteRegionMapWorkspaceProps & { map: RegionTilemapAsset }): JSX.Element {
+  const { persistence, lesson } = usePintaApp()
   const { showToast } = useToast()
   const wide = useMediaQuery('(min-width: 768px)')
   const tool = useStore(session, (state) => state.tool) as MapTool
@@ -369,7 +379,7 @@ function RegionalMapStage({
             />
           </MapPaper>
         </div>
-        <aside className="max-h-72 w-full shrink-0 overflow-y-auto bg-pin-surface md:max-h-none md:w-64">
+        <MapSidePanels>
           <Panel title={COPY.scene.criarDoMeuJeito}>
             <MapLevelSelect level={level} onChange={setLevel} />
           </Panel>
@@ -396,6 +406,19 @@ function RegionalMapStage({
                 ))}
             </select>
           </Panel>
+          {level === 'advanced' &&
+          (persistence.nativeWriterVersion ?? 0) >= 9 &&
+          !lesson &&
+          !(map.schema === 9 && map.automapping) ? (
+            <Button
+              variant="barOutline"
+              onClick={() =>
+                editor.getState().commit({ ...map, schema: 9, automapping: createAutomapBook() })
+              }
+            >
+              Criar regras por exemplo
+            </Button>
+          ) : null}
           {level === 'advanced' && map.schema === 9 && map.automapping ? (
             <Suspense fallback={null}>
               <RegionalRules
@@ -450,7 +473,7 @@ function RegionalMapStage({
               />
             </>
           ) : null}
-        </aside>
+        </MapSidePanels>
       </div>
       <div className="pin-band flex shrink-0 items-center justify-between gap-2 px-4 py-2">
         <MapStatusBar

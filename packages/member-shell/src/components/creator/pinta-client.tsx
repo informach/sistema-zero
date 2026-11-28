@@ -43,12 +43,6 @@ import {
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
 type PintaModule = typeof import('@sistemazero/pinta')
 
-/**
- * Compatibility export for regional consumers. LG05 reader A separates the account reader
- * from the writer: native 9/cloud 8 is readable; public editing still stops at native 8/cloud 7.
- */
-export const PINTA_REGIONS_CLOUD_FORMAT = PINTA_WORKSHOP_CAPABILITIES.writer
-
 type PintaLoad =
   | {
       key: string
@@ -187,7 +181,7 @@ export function PintaClient({
             pintaCausalReader: PINTA_WORKSHOP_CAPABILITIES.reader,
           })
           if (cloud.pintaCausal) {
-            // The account reads native 9 whole, without enabling its public editor/writer yet.
+            // The account and editor share the same native-9 authority and causal writer.
             const workshop = await import('@sistemazero/pinta/workshop-reader')
             if (retired) return
             const regional = workshop.createWorkshopPintaPersistence({

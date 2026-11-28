@@ -1,3 +1,4 @@
+import { SaveBadge } from './EditorSaveBadge'
 /**
  * Tela do editor de UM asset: cria as stores (editor + sessão), liga o flush
  * do autosave em pagehide/unmount/voltar e monta o layout por tipo de asset.
@@ -18,7 +19,12 @@
 import type { JSX } from 'react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import {
+  isPintaMemoryAsset,
+  isWorkshopProjectedMap,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from '../../core/assetMemory'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
@@ -31,11 +37,11 @@ import {
   type PintaAsset,
   type PintaAssetRole,
 } from '../../core/project'
+import type { WorkshopProjectedMap } from '../../core/projectedDocument'
 import { observePintaReferences, SceneMapClosureError } from '../../core/sceneMapClosure'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
 import { buildStudioMapBundle, StudioMapBundleError } from '../../export/studioMapBundle'
-import type { PintaEditorState } from '../../state/editorStore'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import {
@@ -60,7 +66,6 @@ import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChro
 import { Button, IconButton } from '../ui/Button'
 import {
   ArrowLeft,
-  Check,
   ChevronDown,
   Download,
   Gamepad2,
@@ -73,7 +78,6 @@ import {
   Redo2,
   Rocket,
   Scaling,
-  TriangleAlert,
   Undo2,
 } from '../ui/icons'
 import { PanelLook } from '../ui/Panel'
@@ -85,6 +89,7 @@ import { MapSetEditor, RegionalSetEditor } from './MapSetEditor'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
+import { ProjectedMapWorkspace } from './ProjectedMapWorkspace'
 import { ResizeAssetDialog } from './ResizeAssetDialog'
 import { ScrollMoreHint } from './ScrollMoreHint'
 import { ShortcutsDialog, type ShortcutsDialogTool } from './ShortcutsDialog'
@@ -104,36 +109,6 @@ import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
 import { TOOLS as VECTOR_TOOLS } from './vector/vectorTools'
 import { ZoomControls } from './ZoomControls'
-
-/**
- * O salvamento local na pílula da tela-modelo: menta com o visto quando está salvo, quieta
- * enquanto salva e vermelha (com o recado do erro) quando falhou. O texto mora DIRETO na região
- * viva (`role="status"`), que é como o leitor anuncia e como os testes a encontram.
- */
-function SaveBadge({
-  saveState,
-  saveError,
-}: Pick<PintaEditorState, 'saveState' | 'saveError'>): JSX.Element {
-  const label =
-    saveState === 'saved'
-      ? COPY.editor.saved
-      : saveState !== 'error'
-        ? COPY.editor.saving
-        : (saveError ?? COPY.editor.saveError)
-  const tone = saveState === 'saved' ? 'ok' : saveState !== 'error' ? 'muted' : 'danger'
-  return (
-    <span
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      className={`pin-bar-seal pin-bar-seal--${tone}`}
-    >
-      {tone === 'ok' ? <Check aria-hidden="true" /> : null}
-      {tone === 'danger' ? <TriangleAlert aria-hidden="true" /> : null}
-      {label}
-    </span>
-  )
-}
 
 /** O ícone de linha de cada PAPEL (os mesmos dos filtros da galeria), na cor do papel. */
 const ROLE_ICON: Record<PintaAssetRole, LucideIcon> = {
@@ -374,7 +349,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
 }
 
 type WorkshopToolbarStore = Pick<
-  PintaEditorStore<PintaMemoryAsset>,
+  PintaEditorStore<PintaWorkshopAsset>,
   'getState' | 'getInitialState' | 'subscribe'
 >
 function EditorTopbar({
@@ -410,7 +385,9 @@ function EditorTopbar({
   // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor), OU aula em que o
   // professor fixou o tamanho.
   const resizeTarget =
-    (lesson && !lesson.allowResize) || isLocalRegionAsset(asset) ? null : resizeTargetOf(asset)
+    (lesson && !lesson.allowResize) || isWorkshopProjectedMap(asset) || isLocalRegionAsset(asset)
+      ? null
+      : resizeTargetOf(asset)
   const canExport = !lesson || lesson.allowExport
   const resynced = useStudioResync({
     asset: savedAsset,
@@ -580,7 +557,7 @@ function EditorTopbar({
           </Button>
         ) : null}
       </div>
-      {resizeTarget && !isLocalRegionAsset(asset) ? (
+      {resizeTarget && !isWorkshopProjectedMap(asset) && !isLocalRegionAsset(asset) ? (
         <ResizeAssetDialog
           open={resizeOpen}
           onClose={() => setResizeOpen(false)}
@@ -595,9 +572,9 @@ function EditorTopbar({
           }}
         />
       ) : null}
-      {canExport && isLocalRegionAsset(asset) ? (
+      {canExport && (isWorkshopProjectedMap(asset) || isLocalRegionAsset(asset)) ? (
         <WorkshopMapDownload open={exportOpen} asset={asset} onClose={() => setExportOpen(false)} />
-      ) : canExport && !isLocalRegionAsset(asset) ? (
+      ) : canExport && !isWorkshopProjectedMap(asset) && !isLocalRegionAsset(asset) ? (
         <ExportDialog
           open={exportOpen}
           asset={asset}
@@ -617,7 +594,7 @@ function EditorTopbar({
 }
 
 /** Qual catálogo de atalhos vale para o asset aberto (pixel · vetor · mapa). */
-function shortcutEditorFor(asset: PintaMemoryAsset): ShortcutEditor {
+function shortcutEditorFor(asset: PintaWorkshopAsset): ShortcutEditor {
   if (asset.kind === 'tilemap') return 'tilemap'
   return assetStyle(asset.kind) === 'vector' ? 'vector' : 'pixel'
 }
@@ -637,7 +614,7 @@ function shortcutToolsFor(
  * (o palco desenha em px de documento) e começa num zoom confortável para o
  * tamanho; o mapa usa níveis onde o fator É a escala real da célula.
  */
-function sessionDefaultsFor(asset: PintaMemoryAsset, fit = false): Partial<PintaSessionState> {
+function sessionDefaultsFor(asset: PintaWorkshopAsset, fit = false): Partial<PintaSessionState> {
   // A tela com molde (o host) abre com a planificação inteira à vista.
   if (fit && asset.kind === 'pixel-background') {
     const cel = asset.cels[0]
@@ -714,21 +691,29 @@ export function EditorScreen({
   const [stores] = useState(() => {
     const asset = gallery.getState().assets.find((a) => a.id === assetId)
     if (!asset) return null
-    function build<Asset extends PintaMemoryAsset>(
+    function build<Asset extends PintaWorkshopAsset>(
       initial: Asset,
-      accepts: (candidate: PintaMemoryAsset) => candidate is Asset,
+      accepts: (candidate: PintaWorkshopAsset) => candidate is Asset,
     ) {
       return createEditorStore<Asset>({
         asset: initial,
-        ...(lesson
-          ? {
-              acceptEdit: (next: Asset) => {
-                if (!isLocalRegionAsset(next) && withinLessonMapLimits(next)) return true
-                showToast(COPY.editor.lessonMapLimit)
-                return false
-              },
-            }
-          : {}),
+        acceptEdit: (next: Asset) => {
+          if (
+            persistence.nativeWriterVersion !== undefined &&
+            ('schema' in next ? (next.schema ?? 0) : 0) > persistence.nativeWriterVersion
+          ) {
+            showToast(COPY.editor.nativeWriterUnavailable)
+            return false
+          }
+          if (
+            lesson &&
+            (!isPintaMemoryAsset(next) || isLocalRegionAsset(next) || !withinLessonMapLimits(next))
+          ) {
+            showToast(COPY.editor.lessonMapLimit)
+            return false
+          }
+          return true
+        },
         ...(persistence.observesReferences
           ? {
               observeResources: (next: Asset) =>
@@ -749,7 +734,7 @@ export function EditorScreen({
         onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),
         recoverPersisted: (error, sourceId) => {
           if (!(error instanceof PintaLocalConflictError)) return null
-          const copies: ReadonlyMap<string, PintaMemoryAsset> = error.forks
+          const copies: ReadonlyMap<string, PintaWorkshopAsset> = error.forks
           const copy = copies.get(sourceId),
             linked = [...copies.values()].filter((a) => a.id !== copy?.id)
           if (!copy || !accepts(copy) || !linked.every(accepts)) return null
@@ -760,10 +745,18 @@ export function EditorScreen({
       })
     }
     const session = createSessionStore(sessionDefaultsFor(asset, fit))
+    if (isWorkshopProjectedMap(asset))
+      return {
+        projected: true as const,
+        regional: false as const,
+        session,
+        editor: build<WorkshopProjectedMap>(asset, isWorkshopProjectedMap),
+      }
     if (persistence.workshopReader && isTilesetKind(asset)) {
-      const owner = build<PintaMemoryAsset>(asset, (a): a is PintaMemoryAsset => true)
+      const owner = build<PintaMemoryAsset>(asset, isPintaMemoryAsset)
       const lens = createTilesetEditorView(owner)
       return {
+        projected: false as const,
         regional: false as const,
         session,
         editor: lens.view,
@@ -773,14 +766,19 @@ export function EditorScreen({
     }
     if (isLocalRegionAsset(asset))
       return {
+        projected: false as const,
         regional: true as const,
         session,
-        editor: build<PintaMemoryAsset>(asset, (a): a is PintaMemoryAsset => true),
+        editor: build<PintaMemoryAsset>(asset, isPintaMemoryAsset),
       }
     return {
+      projected: false as const,
       regional: false as const,
       session,
-      editor: build<PintaAsset>(asset, (a): a is PintaAsset => !isLocalRegionAsset(a)),
+      editor: build<PintaAsset>(
+        asset,
+        (a): a is PintaAsset => !isWorkshopProjectedMap(a) && !isLocalRegionAsset(a),
+      ),
     }
   })
   useLayoutEffect(() => (stores && 'listen' in stores ? stores.listen?.() : undefined), [stores])
@@ -797,7 +795,7 @@ export function EditorScreen({
   // galeria já na tela, e um `flush()` do host nessa janela recebia o desenho já fechado.
   useLayoutEffect(() => {
     if (!stores) return
-    if (stores.regional) {
+    if (stores.regional || stores.projected) {
       onWorkshopEditorReady?.(stores.editor)
       return () => onWorkshopEditorReady?.(null)
     }
@@ -891,7 +889,7 @@ export function EditorScreen({
 
   const editorContext = useMemo(
     () =>
-      stores && !stores.regional
+      stores && !stores.regional && !stores.projected
         ? {
             editor: stores.editor,
             workshopEditor: stores.workshopEditor,
@@ -903,7 +901,11 @@ export function EditorScreen({
   )
   if (!stores) return null
   const region = stores.regional
-    ? { editor: stores.editor, session: stores.session, gallery: catalog }
+    ? {
+        editor: stores.editor,
+        session: stores.session,
+        gallery: catalog.filter(isPintaMemoryAsset),
+      }
     : null
   const screen = (
     <>
@@ -932,7 +934,13 @@ export function EditorScreen({
               })
           }}
         />
-        {region ? (
+        {stores.projected ? (
+          <ProjectedMapWorkspace
+            editor={stores.editor}
+            catalog={catalog}
+            readOnly={(persistence.nativeWriterVersion ?? 0) < 9}
+          />
+        ) : region ? (
           region.editor.getState().asset.kind === 'map-set' ? (
             <RegionalSetEditor workspace={region} />
           ) : (

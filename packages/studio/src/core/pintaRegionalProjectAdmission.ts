@@ -4,6 +4,7 @@ import {
   validPintaRegionImageMetadataBudget,
 } from '@sistemazero/core/studio/pinta-region-image-limits'
 import { checkAdmittedPintaPngPixels } from '@sistemazero/core/studio/pinta-region-png-pixels'
+import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
 import { admitLegacyPintaPngMetadata } from './pintaPngMetadataAdmission'
 import {
   type AdmittedPintaRegionalMaterial,
@@ -12,6 +13,7 @@ import {
   readPintaRegionalMarker,
 } from './pintaRegionalMaterial'
 import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
+import { validProMaterialPath } from './proAssetPaths'
 import { MAX_ASSETS_COUNT, MAX_ASSETS_TOTAL_CHARS } from './projectAssetBudget'
 import { ProjectDocumentError } from './projectDocumentGuards'
 
@@ -58,6 +60,13 @@ function primitive(value: unknown): Primitive {
     typeof value === 'boolean'
     ? value
     : null
+}
+
+/** PNG admission is shared; each project reader keeps its language's placement policy. */
+function validRegionalMaterialPath(path: unknown): path is string {
+  return (
+    validProMaterialPath(path, 'image') || (isStudioPythonAssetPath(path) && /\.png$/i.test(path))
+  )
 }
 
 /** Snapshot only the fields that govern admission, never a caller's nested content graph. */
@@ -211,9 +220,7 @@ export async function admitRegionalProjectAssets(
       (source !== 'upload' && source !== 'library') ||
       libOrigin === 'molda' ||
       (proPath !== undefined &&
-        (typeof proPath !== 'string' ||
-          !/\.png$/i.test(proPath) ||
-          paths.get(proPath.toLowerCase()) !== 1)) ||
+        (!validRegionalMaterialPath(proPath) || paths.get(proPath.toLowerCase()) !== 1)) ||
       (libId !== undefined && (libOrigin !== 'pinta' || libId !== `personal:${regional.sourceId}`))
     )
       throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)

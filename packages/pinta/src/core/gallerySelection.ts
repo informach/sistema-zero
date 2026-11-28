@@ -1,4 +1,4 @@
-import type { PintaMemoryAsset } from './assetMemory'
+import type { PintaWorkshopAsset } from './assetMemory'
 import { isTilesetKind, pintaAssetDependencyIds } from './project'
 
 /**
@@ -12,13 +12,13 @@ import { isTilesetKind, pintaAssetDependencyIds } from './project'
  * o "Baixar tudo", que também não o filtra (o restauro avisa e pula o mapa).
  */
 export interface ExpandedSelection {
-  assets: PintaMemoryAsset[]
+  assets: PintaWorkshopAsset[]
   /** Tilesets incluídos SEM estarem na seleção (a UI avisa por toast). */
   autoIncludedTilesetIds: string[]
 }
 
 export function expandSelection(
-  assets: readonly PintaMemoryAsset[],
+  assets: readonly PintaWorkshopAsset[],
   selectedIds: ReadonlySet<string>,
 ): ExpandedSelection {
   const wanted = new Set<string>()

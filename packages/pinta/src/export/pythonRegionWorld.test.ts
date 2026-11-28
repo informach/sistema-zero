@@ -58,7 +58,13 @@ async function world(root = scene(), child = scene('cabana', root.tilesets[0].im
     })
   ).png
 }
-function expectedScene(source: PintaRegionScene): unknown {
+function expectedScene(
+  source:
+    | PintaRegionScene
+    | import('@sistemazero/core/studio/pinta-projected-scene').PintaProjectedScene,
+): unknown {
+  if (source.version !== 4)
+    throw Error('Este teste qualifica o leitor Python regional, anterior ao projetado.')
   const map = (current: Pick<PintaRegionScene, 'origin' | 'cols' | 'rows' | 'layers'>) => ({
     ...current,
     layers: current.layers.map((layer) => {

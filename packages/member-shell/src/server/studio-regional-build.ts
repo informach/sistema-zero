@@ -27,7 +27,10 @@ const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest(
  * a platform engine. Never trust a caller's proposed executable projection.
  */
 export async function projectStudioRegionalBuild(input: StudioProBuildEnvelope) {
-  const files = { ...input.files }
+  const { withKnownProRuntimeDeclarations } = await import(
+    '@sistemazero/studio/pro-runtime-declarations'
+  )
+  const files = await withKnownProRuntimeDeclarations({ ...input.files })
   const binaries = input.binaries
   const manifestEntry = binaries?.[marker]
   if (!manifestEntry) return files

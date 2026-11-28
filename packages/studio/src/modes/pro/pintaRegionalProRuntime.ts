@@ -6,54 +6,61 @@ import { buildProAssetBundle } from '../../core/proAssets'
 import { sanitizeProjectAssets } from '../../core/projectAssets'
 import { isDocumentRecord } from '../../core/projectDocument'
 import { assertProjectContentPreserved } from '../../core/projectDocumentGuards'
-import { loadExtensionBootstrapScript } from '../../extensions/runtime'
-import { findExtension } from '../../official-extensions'
-import { isRegionalProjectScope, type ProjectStorageScope } from '../../state/projectStorageRuntime'
+import {
+  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
+  type ProjectStorageScope,
+} from '../../state/projectStorageRuntime'
 import type { StudioProRuntimeAdapter } from '../../studio/pro-runtime'
+import { classifyProEngineCopy, PRO_ENGINE_EXTENSION_IDS } from './proEngineCopies'
 
 const proRegionalEnginePath = (extensionId: string) => `public/sz-ext/${extensionId}.js`
 
 /**
  * The regional build replaces the converted engine copy, so it may only do that while the copy is
- * still byte for byte the engine the conversion wrote (full or minimal variant). A changed copy is
- * the student's (or an older engine's) and stays untouched.
+ * still the current engine (full or minimal variant), including its attested browser serialization.
+ * A changed implementation is the student's (or an older engine's) and stays untouched.
  */
 export async function proRegionalEngineCopy(
   tree: Readonly<Record<string, unknown>> | undefined,
   extensionId: string,
 ): Promise<'missing' | 'changed' | 'current'> {
-  const extension = findExtension(extensionId)
+  const id = PRO_ENGINE_EXTENSION_IDS.find((candidate) => candidate === extensionId)
   const source = tree?.[proRegionalEnginePath(extensionId)]
   if (
-    !extension ||
+    !id ||
     !isDocumentRecord(source) ||
     source.kind !== 'file' ||
     typeof source.content !== 'string'
   )
     return 'missing'
-  const [full, minimal] = await Promise.all([
-    loadExtensionBootstrapScript(extension),
-    loadExtensionBootstrapScript(extension, { code: '' }),
-  ])
-  return source.content === full || source.content === minimal ? 'current' : 'changed'
+  return (await classifyProEngineCopy(id, source.content)).kind === 'current'
+    ? 'current'
+    : 'changed'
 }
 
-/** Converted JS projects use the existing local Pro planner/iframe. No hosted build fallback. */
+/** Local planning preserves source; public account projects keep their configured hosted fallback. */
 export function createPintaRegionalProRuntime(
   scope: ProjectStorageScope,
   limits?: StudioProBuildLimits,
+  configuredHost?: StudioProRuntimeAdapter,
 ): StudioProRuntimeAdapter {
   if (!isRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
+  const hosted = isPrivateRegionalProjectScope(scope) ? undefined : configuredHost
+  const buildLimits = limits ?? hosted?.limits
+  const signal =
+    scope.signal && hosted?.signal
+      ? AbortSignal.any([scope.signal, hosted.signal])
+      : (scope.signal ?? hosted?.signal)
   return {
-    limits,
-    signal: scope.signal,
+    limits: buildLimits,
+    signal,
+    ...(hosted?.prepareDependencies ? { prepareDependencies: hosted.prepareDependencies } : {}),
     async build(input) {
       const start = performance.now()
       const captured = copyStudioProjectJson(input.project) as Project
       const lifetime =
-        input.signal && scope.signal
-          ? AbortSignal.any([input.signal, scope.signal])
-          : (input.signal ?? scope.signal)
+        input.signal && signal ? AbortSignal.any([input.signal, signal]) : (input.signal ?? signal)
       lifetime?.throwIfAborted()
       const [{ planLightProBuild }, { prepareJavaScriptRegionalMaterials }] = await Promise.all([
         import('./lightProBuild'),
@@ -97,9 +104,15 @@ export function createPintaRegionalProRuntime(
           })()
         : undefined
       lifetime?.throwIfAborted()
-      const plan = planLightProBuild(captured, limits, projection)
-      if (plan.kind === 'hosted')
+      const plan = planLightProBuild(captured, buildLimits, projection)
+      if (plan.kind === 'hosted') {
+        if (hosted) {
+          const result = await hosted.build({ ...input, project: captured, signal: lifetime })
+          lifetime?.throwIfAborted()
+          return result
+        }
         throw new Error(`Este projeto Pro ainda não abre neste ambiente local (${plan.reason}).`)
+      }
       if (plan.html.length > STUDIO_PRO_BUILD_LIMITS.maxOutputChars)
         throw new Error('O documento de execução ficou grande demais para o modo Pro.')
       lifetime?.throwIfAborted()

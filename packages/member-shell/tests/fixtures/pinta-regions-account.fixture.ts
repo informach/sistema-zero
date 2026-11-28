@@ -535,7 +535,7 @@ test('aba antiga com a mesma fila: ela não sobe nem descarta a unidade regional
   }
 })
 
-test('o nativo 9 não é anunciado: a conta recusa guardar um mapa com regras sem tocar na fila', async () => {
+test('cliente anterior: o teto nativo 8 recusa guardar um mapa com regras sem tocar na fila', async () => {
   const { host, namespace } = await accountWithWorld('regioes-sem-nove')
   const { map, sheet, book } = await automapFixture()
   const authored = attachWorkshopBook(map, book)
@@ -552,7 +552,7 @@ test('o nativo 9 não é anunciado: a conta recusa guardar um mapa com regras se
   }
 })
 
-test('LG05 A: o host público baixa as três variantes nativas 9 por leitura 8 e conserva os bytes ao reabrir', async () => {
+test('retorno LG05 A: o leitor anterior baixa as três variantes nativas 9 sem permitir escrita incompatível', async () => {
   const { sheet, variants } = await nativeNineGallery()
   const seed = await Promise.all(
     [sheet, ...variants.map(({ asset }) => asset)].map((asset) => published(asset, 1, '3')),
@@ -560,7 +560,7 @@ test('LG05 A: o host público baixa as três variantes nativas 9 por leitura 8 e
   const server = causalServer(seed)
   const namespace = 'lg05-leitor-frio'
   setPintaStorageNamespace(namespace)
-  const host = newHost(namespace, server.transport(8), PINTA_WORKSHOP_CAPABILITIES)
+  const host = newHost(namespace, server.transport(8), { reader: 8, writer: 7, nativeCeiling: 8 })
   try {
     await reconciled(host.mirror)
     const reopened = createWorkshopPintaPersistence({
@@ -623,12 +623,13 @@ test('LG05 A: leitor anterior 7 não baixa o inventário 8 nem muda os documento
   }
 })
 
-test('LG05 privada: fila 8 conserva os três documentos offline e resolve ACK perdido sem outra versão', async () => {
+test('LG05 pública: a mesma fila 8 conserva os três documentos offline e resolve ACK perdido sem outra versão', async () => {
   const { sheet, variants } = await nativeNineGallery()
   const server = causalServer([])
   const namespace = 'lg05-gravador-qualificacao'
   setPintaStorageNamespace(namespace)
-  const host = newHost(namespace, server.transport(8), { reader: 8, writer: 8, nativeCeiling: 9 })
+  expect(PINTA_WORKSHOP_CAPABILITIES).toEqual({ reader: 8, writer: 8, nativeCeiling: 9 })
+  const host = newHost(namespace, server.transport(8), PINTA_WORKSHOP_CAPABILITIES)
   try {
     expect(
       await host.local.causal.applyPull(

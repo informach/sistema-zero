@@ -33,7 +33,10 @@ import { PINTA_MAP_FORMAT_LIMITS } from './projectConfig'
 export const PROJECTED_TILEMAP_SCHEMA = 9
 export type ProjectedTileCells = PintaRegionCells | PintaHexRegionCells
 type ProjectedWireCells = PintaRegionWire | PintaHexRegionWire
-type ProjectedTileLayer<Grid> = Omit<TilemapTileLayer<PintaRegionCells>, 'cells'> & { cells: Grid }
+export type ProjectedTileLayer<Grid = ProjectedTileCells> = Omit<
+  TilemapTileLayer<PintaRegionCells>,
+  'cells'
+> & { cells: Grid }
 export type ProjectedMapLayer<Grid = ProjectedTileCells> =
   | ProjectedTileLayer<Grid>
   | TilemapObjectLayer

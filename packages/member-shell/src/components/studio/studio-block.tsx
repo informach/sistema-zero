@@ -3,7 +3,7 @@
 import { compareContentFingerprints } from '@sistemazero/core/creations'
 import { isStudioProArtifact } from '@sistemazero/core/studio'
 import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
-import { createProToolchainPreparer } from '../../lib/pro-toolchain'
+import { createProToolchainPreparer, proRuntimeProjectInput } from '../../lib/pro-toolchain'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { showcaseErrorMessage } from '../../lib/showcase-failure'
 import {
@@ -457,12 +457,7 @@ function LessonStudioBlockView({
             lessonId,
             blockId,
             // Assets seguem como materiais; o BFF valida e materializa os bytes.
-            project: {
-              kind: 'pro',
-              tree: project.tree,
-              assets: project.assets,
-              proMeta: project.proMeta,
-            },
+            project: proRuntimeProjectInput(project),
           }),
           signal,
         })

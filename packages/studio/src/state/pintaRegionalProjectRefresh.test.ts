@@ -51,6 +51,8 @@ import {
   preparePythonExecutionSnapshot,
   requiresAdmittedPythonPintaScenes,
 } from '../runtime/python/snapshot'
+import type { StudioProRuntimeBuildInput } from '../studio/pro-runtime'
+import { THREE_VERSION } from '../three/threeRuntimeContract'
 import { convertClassicToProTree } from './convertToPro'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import { documentFixture } from './fixtures/projectDocuments'
@@ -365,6 +367,64 @@ test('ordinary server admission refuses a complete regional source and sees only
   )
   expect(programOnly.assets).toEqual([])
 })
+
+for (const privateScope of [false, true]) {
+  test(
+    (privateScope ? 'private' : 'public') + ' regional Pro preserves the hosted routing boundary',
+    async () => {
+      const scope = privateScope
+        ? privateRegionalProjectScope('hosted-routing-boundary')
+        : createProjectStorageScope('account-hosted-routing-boundary')
+      const classic = {
+        ...createEmptyProject('hosted-regional', 'Meu mapa'),
+        assets: [{ ...image, ...before }],
+        installedExtensions: [installedEngine(gameTwoDManifest)],
+        files: authoredFiles,
+      }
+      const tree = await convertClassicToProTree(classic)
+      const node = tree['package.json']
+      if (node?.kind !== 'file') throw new Error('Conversão sem package.json')
+      tree['package.json'] = {
+        kind: 'file',
+        content: JSON.stringify({
+          ...JSON.parse(node.content),
+          dependencies: { three: THREE_VERSION },
+        }),
+      }
+      const pro = {
+        ...classic,
+        kind: 'pro' as const,
+        mode: 'code' as const,
+        tree,
+        proMeta: {
+          templateId: 'vanilla-vite',
+          devScript: 'dev',
+          origin: { projectId: 'original', revision: 1 },
+        },
+      }
+      const authored = JSON.stringify(pro)
+      const calls: StudioProRuntimeBuildInput[] = []
+      const hosted = {
+        build: async (input: StudioProRuntimeBuildInput) => {
+          calls.push(input)
+          return { html: '<p>Compilado no executor configurado</p>' }
+        },
+      }
+      const runtime = createPintaRegionalProRuntime(scope, undefined, hosted)
+      if (privateScope) {
+        await expect(runtime.build({ project: pro })).rejects.toThrow('ambiente local')
+        expect(calls).toEqual([])
+      } else {
+        expect(await runtime.build({ project: pro })).toEqual({
+          html: '<p>Compilado no executor configurado</p>',
+        })
+        expect(calls).toHaveLength(1)
+        expect(JSON.stringify(calls[0]!.project)).toBe(authored)
+      }
+      expect(JSON.stringify(pro)).toBe(authored)
+    },
+  )
+}
 
 for (const manifest of [gameTwoDManifest, gameKitManifest]) {
   test(`${manifest.id} prepares the stored material and keeps the original program in Classic and converted Pro`, async () => {

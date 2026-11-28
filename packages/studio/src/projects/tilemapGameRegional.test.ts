@@ -3,20 +3,86 @@ import { afterAll, beforeAll, expect, spyOn, test } from 'bun:test'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { registerExtensionBlocks } from '../blockly/blocks'
 import { ensureBlocklyInitialized } from '../blockly/setup'
+import { admitRegionalProjectAssets } from '../core/pintaRegionalProjectAdmission'
+import { buildProFileMap } from '../export/fileMap'
 import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
-import { loadProjectById } from '../state/persistence'
+import { prepareEditableStudioProject } from '../state/editableProjectValidation'
+import { loadProjectById, persistProject } from '../state/persistence'
 import { listAllProjects } from '../state/projectListStorage'
 import {
   captureProjectStorageScope,
   getProjectStorageScope,
   setProjectStorageNamespace,
 } from '../state/projectStorageRuntime'
-import { loadSanitizedProjectById } from '../state/projectStore'
+import { loadSanitizedProjectById, useProjectStore } from '../state/projectStore'
 import {
   installPngImageBitmap,
+  projectedSceneMaterial,
   regionalSceneMaterial,
 } from '../testing/pintaRegionalMaterialFixture'
 import { buildTilemapGameProject } from './tilemapGame'
+
+for (const projection of ['hexagonal', 'isometric'] as const) {
+  test(`Jogar → Pro preserva o caminho sem extensão e reabre ${projection} no perfil`, async () => {
+    const material = await projectedSceneMaterial(projection)
+    const name = `meu-mapa-${projection}`
+    const scope = getProjectStorageScope(`convert-projected-${crypto.randomUUID()}`)
+    const source = await buildTilemapGameProject(
+      { ...material, name, id: material.regional.sourceId },
+      { namespace: scope.namespace },
+    )
+    if (!source) throw new Error('O jogo do mapa não foi criado.')
+    useProjectStore.setState({ project: source, editingAccess: 'author', isDirty: false })
+    try {
+      await useProjectStore
+        .getState()
+        .convertToPro((original) => persistProject(original, {}, scope))
+      const converted = useProjectStore.getState().project
+      if (!converted || converted.programmingLanguage === 'python')
+        throw new Error('Conversão JavaScript ausente.')
+      expect(converted.kind).toBe('pro')
+      expect(converted.assets?.[0]?.proPath).toBe(`public/${name}`)
+      await persistProject(converted, {}, scope)
+      const reopened = await loadSanitizedProjectById(
+        source.id,
+        getProjectStorageScope(scope.namespace),
+      )
+      expect(reopened?.assets).toEqual(converted.assets)
+      expect(reopened?.assets?.[0]?.dataUrl).toBe(material.dataUrl)
+      for (const proPath of ['public/script.js', 'public/../fora', 'public/.oculto']) {
+        await expect(
+          admitRegionalProjectAssets(converted.assets?.map((asset) => ({ ...asset, proPath }))),
+        ).rejects.toThrow()
+      }
+      await expect(
+        prepareEditableStudioProject({
+          ...converted,
+          assets: converted.assets?.map((asset) => ({ ...asset, proPath: 'assets/mapa.png' })),
+        }),
+      ).rejects.toThrow()
+      const { files } = await buildProFileMap(converted)
+      expect(files[`public/${name}`]).toBeInstanceOf(Uint8Array)
+      expect(files['public/sz-assets.js']).toBeInstanceOf(Uint8Array)
+    } finally {
+      useProjectStore.setState({ project: null, isDirty: false })
+    }
+  })
+
+  test(`o botão Jogar cria e reabre um projeto ${projection} com o PNG 6 original`, async () => {
+    const material = await projectedSceneMaterial(projection)
+    const namespace = `game-projected-${crypto.randomUUID()}`
+    const project = await buildTilemapGameProject(
+      { ...material, id: material.regional.sourceId },
+      { namespace },
+    )
+    expect(project).not.toBeNull()
+    expect(project?.assets?.[0]?.regional?.dataVersion).toBe(6)
+    expect(project?.assets?.[0]?.dataUrl).toBe(material.dataUrl)
+    const reopened = await loadSanitizedProjectById(project!.id, getProjectStorageScope(namespace))
+    expect(reopened?.assets?.[0]?.dataUrl).toBe(material.dataUrl)
+    expect(reopened?.assets?.[0]?.regional).toEqual(material.regional)
+  })
+}
 
 const originals = ['indexedDB', 'IDBKeyRange'].map(
   (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,

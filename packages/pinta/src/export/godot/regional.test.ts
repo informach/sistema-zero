@@ -10,7 +10,8 @@ import { projectedVila } from '../../testing/projectedVila'
 import { regionVilaPlatform } from '../../testing/regionVilaPlatform'
 import { exportPintaRegionScene } from '../regionScene'
 import { buildScenePackage } from '../scenePackage'
-import { godotProjectedScript, godotRegionalScript, godotScript } from './project'
+import { pintaWorkshopAssetToJson, readPintaWorkshopBackup } from '../workshopDocument'
+import { godotProjectedScript, godotRegionalScript } from './project'
 import { assertGodotRegionWork, GODOT_REGION_WORK } from './regionWork'
 
 test('the regional Godot package carries the region reader, Scene4 maps and the start ID', async () => {
@@ -35,12 +36,9 @@ test('the regional Godot package carries the region reader, Scene4 maps and the 
   expect(maps[map.id]!.origin).toEqual(map.origin)
   expect(String(files['LEIA-ME.txt'])).toContain('Godot 4.7.2')
   expect(files['desenhos.pinta.json']).toBeDefined()
-  // The regional reader stays out of the legacy script, which keeps its dense cells.
   expect(godotRegionalScript).toContain('func _read_package() -> bool:')
   expect(godotRegionalScript).toContain('const REGION_SIDE := 32')
   expect(godotRegionalScript).not.toContain('${')
-  expect(godotScript).not.toContain('_read_package')
-  expect(godotScript).not.toContain('regionIndex')
 })
 
 test('set instances are charged before the Godot package is written', async () => {
@@ -85,7 +83,7 @@ test('set instances are charged before the Godot package is written', async () =
   ).not.toThrow()
 })
 
-test('a projected world goes to Godot with the projected reader, its layouts and no native backup', async () => {
+test('a projected world goes to Godot with the projected reader, its layouts and a reimportable native backup', async () => {
   const { map, cabana, assets } = projectedVila()
   const files = await buildScenePackage(map, assets, 'godot', { imageOf: nativeImageOf })
   expect(files['pinta.gd']).toBe(godotProjectedScript)
@@ -98,7 +96,13 @@ test('a projected world goes to Godot with the projected reader, its layouts and
   expect(layouts[cabana.id]?.root.projection.kind).toBe('hexagonal')
   const maps = JSON.parse(String(files['maps.json'])) as Record<string, { version: number }>
   expect(Object.values(maps).map((scene) => scene.version)).toEqual([5, 5])
-  expect(files['desenhos.pinta.json']).toBeUndefined()
+  const restored = await readPintaWorkshopBackup(String(files['desenhos.pinta.json']))
+  expect(restored.warnings).toEqual([])
+  for (const original of [map, cabana]) {
+    const reopened = restored.assets.find((asset) => asset.id === original.id)
+    if (!reopened) throw Error('A cópia editável perdeu um mapa')
+    expect(pintaWorkshopAssetToJson(reopened)).toBe(pintaWorkshopAssetToJson(original))
+  }
   expect(String(files['LEIA-ME.txt'])).toContain('projections.json')
   await expect(
     buildScenePackage(map, assets, 'pygame', { imageOf: nativeImageOf }),

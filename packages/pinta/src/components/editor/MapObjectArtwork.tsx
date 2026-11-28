@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
 import { useAnimationPlayer } from '../../animation/player'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import { isPintaMemoryAsset, type PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import type { MapResourceSource } from '../../core/mapResourceVersions'
 import {
@@ -112,7 +112,7 @@ export function MapObjectArtwork({
     <CatalogMapObjectArtwork
       object={object}
       source={source}
-      assets={assets}
+      assets={assets.filter(isPintaMemoryAsset)}
       resources={resources}
     />
   )

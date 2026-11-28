@@ -186,7 +186,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
         // A projected map is not opened here, so its cells cannot follow the new numbering.
         if (
           renumbers &&
-          [...catalog, ...gallery.getState().projected].some(
+          catalog.some(
             (asset) =>
               isWorkshopProjectedMap(asset) && pintaAssetDependencyIds(asset).includes(current.id),
           )

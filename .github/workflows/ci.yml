@@ -100,6 +100,9 @@ jobs:
       - name: Verificar tipos do promotor operacional Python
         run: bun run --cwd packages/studio-runtime typecheck:promoter
 
+      - name: Conferir declarações portáteis da conversão Pro
+        run: bun run --cwd packages/studio check:pro-runtime-declarations
+
       - name: Verificar barreira de manutenção
         run: bun test scripts/release scripts/ci ./scripts/molda-cenarios-arte.test.ts
 
@@ -794,6 +797,11 @@ jobs:
         working-directory: packages/studio
         run: bun run test:e2e:pinta-scenes
 
+      - name: Regras e projeções no fluxo comum do Pinta
+        if: matrix.shard == 1
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.pinta-projected.config.ts
+
       - name: Autoridade local do Pinta e chunks com leitores históricos reais
         if: matrix.shard == 1
         run: |
@@ -814,12 +822,12 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
 
-      - name: Jogar mapa regional pelo botão real do Pinta
+      - name: Pinta e Studio — jogar, reabrir e atualizar a publicação
         if: matrix.shard == 1
         working-directory: packages/studio
         env:
           PYTHON_PROBE_OUTPUT_DIR: ../../.cache/studio-pinta-play-button
-        run: bunx playwright test --config playwright.lg04.config.ts --project=chromium --grep=the.real.Pinta.play.button
+        run: bunx playwright test --config playwright.lg04.config.ts --project=chromium
 
       - name: Publicar diagnóstico Playwright
         if: failure()
@@ -832,8 +840,10 @@ jobs:
             packages/studio/.cache/pinta-local-chunks-results
             packages/studio/.cache/pinta-render-pressure-results
             packages/studio/.cache/pinta-minimap-results
+            packages/studio/.cache/pinta-projected-results
             .cache/studio-pinta-play-button
           retention-days: 7
+          include-hidden-files: true
 
   studio-e2e-firefox:
     name: studio-e2e-firefox
