@@ -1,5 +1,8 @@
 import type { StudioProPlatformFiles } from './pro-build'
-import { STUDIO_PRO_ENGINE_COPIES } from './pro-engine-copies.generated'
+import {
+  STUDIO_PRO_ENGINE_COPIES,
+  STUDIO_PRO_ENGINE_EQUIVALENT_COPIES,
+} from './pro-engine-copies.generated'
 
 /**
  * As cópias do motor 2D que a conversão para o Pro escreve como arquivo do projeto
@@ -18,11 +21,28 @@ export type StudioProEngineVariant = (typeof STUDIO_PRO_ENGINE_VARIANTS)[number]
 export type StudioProEngineInventory = Readonly<
   Record<StudioProEngineExtensionId, Readonly<Record<StudioProEngineVariant, readonly string[]>>>
 >
+/** Same engine implementation, differing only in its published factory serialization. */
+export type StudioProEngineEquivalentCopies = Readonly<
+  Record<StudioProEngineExtensionId, Readonly<Record<string, readonly string[]>>>
+>
 
 export const studioProEngineCopyPath = (extensionId: StudioProEngineExtensionId) =>
   `public/sz-ext/${extensionId}.js`
 
-export { STUDIO_PRO_ENGINE_COPIES }
+export { STUDIO_PRO_ENGINE_COPIES, STUDIO_PRO_ENGINE_EQUIVALENT_COPIES }
+
+/** Older engine implementations remain distinct; this table only attests identical bodies. */
+export function studioProEngineCopyEquivalent(
+  extensionId: StudioProEngineExtensionId,
+  currentDigest: string,
+  candidateDigest: string,
+): boolean {
+  return (
+    currentDigest === candidateDigest ||
+    STUDIO_PRO_ENGINE_EQUIVALENT_COPIES[extensionId][currentDigest]?.includes(candidateDigest) ===
+      true
+  )
+}
 
 /** Cada caminho do motor com todo sha256 publicado nele, nas duas variantes. */
 export function studioProEnginePlatformFiles(

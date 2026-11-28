@@ -32,6 +32,9 @@ import {
 import { tmpdir } from 'node:os'
 import { dirname, join, posix } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import portableFactorySource from '../src/extensions/projectRunContextFactory.generated.json'
+import publishedBrowser from './fixtures/project-run-context-browser-2026-11-28.json'
+import { checkProjectRunContextFactorySource } from './gen-project-run-context'
 
 const EXTENSIONS = ['game-2d', 'game-2d-advanced'] as const
 const VARIANTS = ['completo', 'sem-cenario-pinta'] as const
@@ -55,6 +58,7 @@ function readInventory(): Inventory {
   let extension: Extension | undefined
   let variant: Variant | undefined
   for (const line of readFileSync(output, 'utf8').split('\n')) {
+    if (line.startsWith('export const STUDIO_PRO_ENGINE_EQUIVALENT_COPIES')) break
     const key = /^ {2}'([a-z0-9-]+)': \{$/.exec(line)?.[1]
     if (key) extension = EXTENSIONS.find((id) => id === key)
     const group = /^ {4}'?([a-z-]+)'?: \[$/.exec(line)?.[1]
@@ -65,7 +69,37 @@ function readInventory(): Inventory {
   return inventory
 }
 
-function writeInventory(inventory: Inventory) {
+function inventorySource(inventory: Inventory) {
+  const equivalents: Record<Extension, Record<string, string[]>> = {
+    'game-2d': {},
+    'game-2d-advanced': {},
+  }
+  for (const copy of publishedBrowser.copies) {
+    const id = EXTENSIONS.find((value) => value === copy.extensionId)
+    const variant = VARIANTS.find((value) => value === copy.variant)
+    if (
+      !id ||
+      !variant ||
+      !inventory[id][variant].includes(copy.canonicalSha256) ||
+      !inventory[id][variant].includes(copy.browserSha256)
+    )
+      throw new Error('A equivalência publicada precisa das duas cópias verificadas.')
+    let aliases = equivalents[id][copy.canonicalSha256]
+    if (!aliases) {
+      aliases = []
+      equivalents[id][copy.canonicalSha256] = aliases
+    }
+    if (!aliases.includes(copy.browserSha256)) aliases.push(copy.browserSha256)
+  }
+  const equivalentBody = EXTENSIONS.map(
+    (id) =>
+      `  '${id}': {\n${Object.entries(equivalents[id])
+        .map(
+          ([canonical, aliases]) =>
+            `    ${/^[a-f]/.test(canonical) ? canonical : `'${canonical}'`}: [\n${aliases.map((hash) => `      '${hash}',\n`).join('')}    ],\n`,
+        )
+        .join('')}  },\n`,
+  ).join('')
   const body = EXTENSIONS.map(
     (id) =>
       `  '${id}': {\n${VARIANTS.map(
@@ -75,17 +109,21 @@ function writeInventory(inventory: Inventory) {
             .join('')}    ],\n`,
       ).join('')}  },\n`,
   ).join('')
-  writeFileSync(
-    output,
-    `// Gerado por \`bun run --cwd packages/studio gen:pro-engine-copies\`. Não editar à mão.
+  return `// Gerado por \`bun run --cwd packages/studio gen:pro-engine-copies\`. Não editar à mão.
 // sha256 (UTF-8) de cada cópia \`public/sz-ext/<id>.js\` que a conversão para o Pro escreveu desde
 // 15106f159 (13/08/2026), na ordem em que apareceram. Ver o cabeçalho do script.
-import type { StudioProEngineInventory } from './pro-engine-copies'
+import type { StudioProEngineEquivalentCopies, StudioProEngineInventory } from './pro-engine-copies'
 
 export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
 ${body}}
-`,
-  )
+
+export const STUDIO_PRO_ENGINE_EQUIVALENT_COPIES: StudioProEngineEquivalentCopies = {
+${equivalentBody}}
+`
+}
+
+function writeInventory(inventory: Inventory) {
+  writeFileSync(output, inventorySource(inventory))
 }
 
 function add(inventory: Inventory, id: Extension, variant: Variant, hash: string): boolean {
@@ -94,20 +132,52 @@ function add(inventory: Inventory, id: Extension, variant: Variant, hash: string
   return true
 }
 
-async function currentHashes() {
+async function currentHashes(inventory: Inventory) {
+  checkProjectRunContextFactorySource()
   const { currentProEngineCopies } = await import('../src/modes/pro/proEngineCopies')
   const { mapTwoDRegionalEngineBootstrap } = await import(
     '../src/official-extensions/map-2d/regionBootstrap'
   )
   const rows: Array<[Extension, Variant, string]> = []
+  const sources: Array<{ id: Extension; variant: Variant; source: string }> = []
   for (const id of EXTENSIONS) {
     const copies = await currentProEngineCopies(id)
-    for (const variant of VARIANTS) rows.push([id, variant, sha256(copies[variant])])
-    rows.push([
-      id,
-      'completo',
-      sha256(await mapTwoDRegionalEngineBootstrap(id === 'game-2d' ? 'g2d' : 'gk')),
-    ])
+    for (const variant of VARIANTS) {
+      rows.push([id, variant, sha256(copies[variant])])
+      sources.push({ id, variant, source: copies[variant] })
+    }
+    const regional = await mapTwoDRegionalEngineBootstrap(id === 'game-2d' ? 'g2d' : 'gk')
+    rows.push([id, 'completo', sha256(regional)])
+    sources.push({ id, variant: 'completo', source: regional })
+  }
+  // The previous browser build serialized this published factory after minification.
+  // Retain its exact copies; never classify a library by its path alone or rewrite a project.
+  if (sha256(publishedBrowser.factorySource) !== publishedBrowser.factorySha256)
+    throw new Error('A factory publicada foi alterada.')
+  for (const copy of publishedBrowser.copies) {
+    const id = EXTENSIONS.find((value) => value === copy.extensionId)
+    const variant = VARIANTS.find((value) => value === copy.variant)
+    if (!id || !variant || !/^[a-f0-9]{64}$/.test(copy.browserSha256))
+      throw new Error('Cópia publicada inválida.')
+    const current = sources.find(
+      (value) =>
+        value.id === id &&
+        value.variant === variant &&
+        sha256(value.source) === copy.canonicalSha256,
+    )
+    if (!current && !inventory[id][variant].includes(copy.canonicalSha256))
+      throw new Error('A origem da cópia publicada não está no inventário.')
+    if (current) {
+      if (
+        !current.source.includes(portableFactorySource) ||
+        current.source.indexOf(portableFactorySource) !==
+          current.source.lastIndexOf(portableFactorySource) ||
+        sha256(current.source.replace(portableFactorySource, publishedBrowser.factorySource)) !==
+          copy.browserSha256
+      )
+        throw new Error('A cópia publicada não corresponde à factory e ao motor oficiais.')
+    }
+    rows.push([id, variant, copy.browserSha256])
   }
   return rows
 }
@@ -268,8 +338,9 @@ async function history(since: string, refs: string[]) {
     const queue = entries.filter((path) => tree.has(path))
     while (queue.length) {
       const path = queue.shift()!
-      if (seen.has(path) || !/\.tsx?$/.test(path)) continue
+      if (seen.has(path) || !/\.(?:tsx?|json)$/.test(path)) continue
       seen.add(path)
+      if (path.endsWith('.json')) continue
       for (const spec of importsOf(tree.get(path)!)) {
         const target = resolve(path, spec)
         if (target) queue.push(target)
@@ -369,7 +440,7 @@ if (mode === '--eval-state') {
   await history(since, refs)
 } else {
   const inventory = readInventory()
-  const missing = (await currentHashes()).filter(
+  const missing = (await currentHashes(inventory)).filter(
     ([id, variant, hash]) => !inventory[id][variant].includes(hash),
   )
   if (mode === '--check') {
@@ -379,6 +450,8 @@ if (mode === '--eval-state') {
       )
       process.exit(1)
     }
+    if (readFileSync(output, 'utf8') !== inventorySource(inventory))
+      throw new Error('O inventário ou suas equivalências geradas estão desatualizados.')
   } else {
     for (const [id, variant, hash] of missing) add(inventory, id, variant, hash)
     writeInventory(inventory)

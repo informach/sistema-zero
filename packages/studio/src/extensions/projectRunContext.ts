@@ -1,3 +1,4 @@
+import projectRunContextFactorySource from './projectRunContextFactory.generated.json'
 import type {
   ProjectRunContext,
   ProjectRunIntervalHandle,
@@ -226,11 +227,12 @@ export function createProjectRunContext(options: {
  * de entregar o novo contexto.
  *
  * `createProjectRunContext` é a fonte única da implementação. Como ela é
- * autocontida, sua representação JavaScript pode ser executada dentro do iframe
- * sem manter uma segunda cópia do algoritmo em uma template string.
+ * autocontida, o gerador captura sua representação JavaScript antes do build da aplicação.
+ * O texto gerado é estável mesmo quando o navegador recebe um bundle minificado;
+ * o algoritmo continua tendo uma única fonte em createProjectRunContext.
  */
 export function buildProjectRunContextRuntime(): string {
-  const createRunSource = createProjectRunContext.toString()
+  const createRunSource = projectRunContextFactorySource
   return `(function () {
   const createProjectRunContext = ${createRunSource};
   let currentRun;
