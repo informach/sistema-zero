@@ -1,6 +1,9 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { fileURLToPath } from 'node:url'
+import { mkdtemp, rm, rmdir, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { buildProjectRunContextRuntime } from './projectRunContext'
 
 test('the portable execution runtime loads in native Node ESM used by browser tests', async () => {
@@ -34,18 +37,24 @@ test('the portable execution runtime keeps its identity in a minified browser bu
   const output = bundle.outputs[0]
   if (!output) throw new Error('The browser build did not emit its module.')
   const source = await output.text()
-  const module: unknown = await import(
-    `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
-  )
-  if (
-    !module ||
-    typeof module !== 'object' ||
-    !('buildProjectRunContextRuntime' in module) ||
-    typeof module.buildProjectRunContextRuntime !== 'function'
-  )
-    throw new Error('The browser build did not export its portable runtime.')
-  const portable: unknown = module.buildProjectRunContextRuntime()
-  if (typeof portable !== 'string') throw new Error('The portable runtime is not source text.')
-  const digest = (text: string) => createHash('sha256').update(text).digest('hex')
-  expect(digest(portable)).toBe(digest(buildProjectRunContextRuntime()))
+  const directory = await mkdtemp(join(tmpdir(), 'sz-project-run-context-'))
+  const file = join(directory, 'runtime.mjs')
+  try {
+    await writeFile(file, source)
+    const module: unknown = await import(pathToFileURL(file).href)
+    if (
+      !module ||
+      typeof module !== 'object' ||
+      !('buildProjectRunContextRuntime' in module) ||
+      typeof module.buildProjectRunContextRuntime !== 'function'
+    )
+      throw new Error('The browser build did not export its portable runtime.')
+    const portable: unknown = module.buildProjectRunContextRuntime()
+    if (typeof portable !== 'string') throw new Error('The portable runtime is not source text.')
+    const digest = (text: string) => createHash('sha256').update(text).digest('hex')
+    expect(digest(portable)).toBe(digest(buildProjectRunContextRuntime()))
+  } finally {
+    await rm(file, { force: true })
+    await rmdir(directory)
+  }
 })
