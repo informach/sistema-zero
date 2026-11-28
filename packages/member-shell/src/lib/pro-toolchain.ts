@@ -1,5 +1,5 @@
 import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/core/studio/pro-limits'
-import type { PrepareProDependencies } from '@sistemazero/studio'
+import type { PrepareProDependencies, StudioProRuntimeBuildInput } from '@sistemazero/studio'
 
 /** Transport only; authorization and canonical lock generation stay on the existing BFF. */
 export function createProToolchainPreparer(
@@ -18,12 +18,7 @@ export function createProToolchainPreparer(
       },
       body: JSON.stringify({
         ...context,
-        project: {
-          kind: 'pro',
-          tree: project.tree,
-          proMeta: project.proMeta,
-          assets: project.assets,
-        },
+        project: proRuntimeProjectInput(project),
       }),
     })
     const body = (await response.json().catch(() => null)) as {
@@ -40,5 +35,18 @@ export function createProToolchainPreparer(
       )
     signal.throwIfAborted()
     return body.packageLock
+  }
+}
+
+/** Build and preparation retain the extension identity required by regional 2D materials. */
+export function proRuntimeProjectInput(project: StudioProRuntimeBuildInput['project']) {
+  return {
+    id: project.id,
+    kind: 'pro' as const,
+    programmingLanguage: project.programmingLanguage,
+    tree: project.tree,
+    assets: project.assets,
+    proMeta: project.proMeta,
+    installedExtensions: project.installedExtensions,
   }
 }
