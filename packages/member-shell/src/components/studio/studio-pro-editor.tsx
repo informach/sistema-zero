@@ -1,5 +1,6 @@
 'use client'
 
+import { createFreeProRuntime } from '../../lib/free-pro-runtime'
 import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch } from '../../lib/session-fetch'
 import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
@@ -142,6 +143,13 @@ function StudioProEditorSession({
         ? createProToolchainPreparer('/api/studio/pro-runtime/dependencies', sessionFetch)
         : undefined,
     [freeRuntime],
+  )
+  const freeProRuntime = useMemo(
+    () =>
+      freeRuntime && viewerId && !runtimeEnvironment && !taskSession
+        ? createFreeProRuntime(sessionFetch)
+        : undefined,
+    [freeRuntime, viewerId, runtimeEnvironment, taskSession],
   )
   const [mod, setMod] = useState<StudioProModule | null>(null)
   const [state, setState] = useState<Loaded>({ kind: 'loading' })
@@ -350,7 +358,11 @@ function StudioProEditorSession({
           runtimeEnvironment={runtimeEnvironment ?? free.environment}
           editingAccess={pythonUnavailable ? 'observer' : undefined}
           prepareProDependencies={prepareDependencies}
-          proRuntime={state.project.programmingLanguage === 'python' ? undefined : proRuntime}
+          proRuntime={
+            state.project.programmingLanguage === 'python'
+              ? undefined
+              : (proRuntime ?? freeProRuntime)
+          }
           studentTestsServer={freeRuntime && javascriptPro ? studentTestsServer : undefined}
           pythonLevel={
             state.project.programmingLanguage === 'python' && freeRuntime ? 3 : undefined

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, expect, test } from 'bun:test'
+import { afterAll, beforeAll, expect, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { buildProRuntimeBridgeScript, STUDIO_PRO_ARTIFACT_LIMITS } from '@sistemazero/core/studio'
@@ -24,6 +24,8 @@ import {
   verifiedValidationPlatformFiles,
   verifyBuildBinaries,
 } from '../../studio-runtime/src/contracts'
+import { createFreeProRuntime } from '../src/lib/free-pro-runtime'
+import { createFreeProRuntimeBuild } from '../src/server/free-pro-toolchain'
 import { projectStudioRegionalBuild } from '../src/server/studio-regional-build'
 
 const storageDescriptors = ['indexedDB', 'IDBKeyRange'].map(
@@ -247,3 +249,57 @@ try {
     },
     150_000,
   )
+
+test('o Pro público envia a identidade do motor e preserva os PNGs no fallback hospedado real do BFF', async () => {
+  const { pro } = await fixture('isometric', true)
+  const packageNode = pro.tree['package.json']
+  if (packageNode?.kind !== 'file') throw Error('Manifesto ausente')
+  const manifest = JSON.parse(packageNode.content)
+  packageNode.content = JSON.stringify({
+    ...manifest,
+    dependencies: { ...manifest.dependencies, three: '0.184.0' },
+  })
+  const before = JSON.stringify(pro)
+  const oldUrl = process.env.STUDIO_PRO_RUNTIME_URL,
+    oldToken = process.env.STUDIO_PRO_RUNTIME_TOKEN
+  process.env.STUDIO_PRO_RUNTIME_URL = 'https://runtime.test'
+  process.env.STUDIO_PRO_RUNTIME_TOKEN = 'test-runtime-token'
+  let captured: Awaited<ReturnType<typeof readBuildRequest>> | undefined
+  const upstream = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        expect(String(url)).toBe('https://runtime.test/v1/build')
+        captured = await readBuildRequest(JSON.parse(String(init?.body)))
+        await verifyBuildBinaries(captured.binaries)
+        return Response.json({
+          ok: true,
+          artifact: {
+            id: 'a'.repeat(64),
+            sha256: 'b'.repeat(64),
+            url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+            expiresAt: Date.now() + 60000,
+          },
+        })
+      },
+      { preconnect: fetch.preconnect },
+    ),
+  )
+  try {
+    const handler = createFreeProRuntimeBuild(async () => ({ id: 'owner-regional' }))
+    const adapter = createFreeProRuntime(async (url, init) =>
+      handler(new Request(`https://adult.test${String(url)}`, init)),
+    )
+    const result = await adapter.build({ project: pro, signal: new AbortController().signal })
+    expect(result.artifact?.id).toBe('a'.repeat(64))
+    expect(captured?.files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
+    expect(Object.keys(captured?.binaries ?? {}).length).toBeGreaterThan(0)
+    expect(JSON.stringify(pro)).toBe(before)
+    expect(upstream).toHaveBeenCalledTimes(1)
+  } finally {
+    upstream.mockRestore()
+    if (oldUrl === undefined) delete process.env.STUDIO_PRO_RUNTIME_URL
+    else process.env.STUDIO_PRO_RUNTIME_URL = oldUrl
+    if (oldToken === undefined) delete process.env.STUDIO_PRO_RUNTIME_TOKEN
+    else process.env.STUDIO_PRO_RUNTIME_TOKEN = oldToken
+  }
+})
