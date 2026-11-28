@@ -16,7 +16,7 @@
       },
       {
         "id": "enemy-fire-ask-hurts",
-        "text": "E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+        "text": "E quando um tiro chega até a nave? O jeito mais fácil: escolha No meio e Nave no meio, clique em Avançar até o próximo tiro e depois em Avançar meio segundo até o tiro chegar à nave. Com a origem Na inimiga, só o tiro que nasceu na ponta esquerda, no meio ou na ponta direita passa por um lugar da nave. Olhe as Vidas."
       },
       {
         "id": "enemy-fire-ask-restart",
@@ -32,7 +32,7 @@
       },
       {
         "id": "enemy-fire-fixed-then-hurts",
-        "text": "Com a origem No meio, os dois tiros nasceram no meio da tela, mesmo com a inimiga em lugares diferentes. O lugar fixo não muda. E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+        "text": "Com a origem No meio, os dois tiros nasceram no meio da tela, mesmo com a inimiga em lugares diferentes. O lugar fixo não muda. E quando um tiro chega até a nave? O jeito mais fácil: escolha No meio e Nave no meio, clique em Avançar até o próximo tiro e depois em Avançar meio segundo até o tiro chegar à nave. Com a origem Na inimiga, só o tiro que nasceu na ponta esquerda, no meio ou na ponta direita passa por um lugar da nave. Olhe as Vidas."
       },
       {
         "id": "enemy-fire-fixed-then-restart",
@@ -48,7 +48,7 @@
       },
       {
         "id": "enemy-fire-enemy-then-hurts",
-        "text": "Com a origem Na inimiga, cada tiro nasceu embaixo da inimiga, no lugar onde a inimiga estava. A origem acompanha a inimiga. E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+        "text": "Com a origem Na inimiga, cada tiro nasceu embaixo da inimiga, no lugar onde a inimiga estava. A origem acompanha a inimiga. E quando um tiro chega até a nave? O jeito mais fácil: escolha No meio e Nave no meio, clique em Avançar até o próximo tiro e depois em Avançar meio segundo até o tiro chegar à nave. Com a origem Na inimiga, só o tiro que nasceu na ponta esquerda, no meio ou na ponta direita passa por um lugar da nave. Olhe as Vidas."
       },
       {
         "id": "enemy-fire-enemy-then-restart",
@@ -84,7 +84,7 @@
       },
       {
         "id": "enemy-fire-restart-then-hurts",
-        "text": "Recomeçar a partida tirou os tiros do ar, as vidas voltaram a 3, e a inimiga voltou ao começo. As suas descobertas continuam guardadas. E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+        "text": "Recomeçar a partida tirou os tiros do ar, as vidas voltaram a 3, e a inimiga voltou ao começo. As suas descobertas continuam guardadas. E quando um tiro chega até a nave? O jeito mais fácil: escolha No meio e Nave no meio, clique em Avançar até o próximo tiro e depois em Avançar meio segundo até o tiro chegar à nave. Com a origem Na inimiga, só o tiro que nasceu na ponta esquerda, no meio ou na ponta direita passa por um lugar da nave. Olhe as Vidas."
       },
       {
         "id": "enemy-fire-complete",

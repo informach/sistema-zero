@@ -20,7 +20,7 @@
       {
         "kind": "index",
         "title": "Aula 2. O chefão na patrulha",
-        "text": "O mesmo chefão na Patrulha Espacial: a vida no texto, o acerto conferido no quadro, o fim no zero e a guarda.",
+        "text": "O mesmo chefão na Patrulha Espacial: a vida no texto, o encontro do chefão com os lasers, o fim no zero e a guarda.",
         "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-uma-vez}}"
       },
       {
@@ -85,7 +85,7 @@
       {
         "kind": "step",
         "number": 2,
-        "text": "No fim de A cada quadro do jogo: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela)."
+        "text": "No fim de A cada quadro do jogo, logo abaixo da legenda dos controles: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela)."
       },
       {
         "kind": "drawings",
@@ -122,7 +122,7 @@
       {
         "kind": "step",
         "number": 2,
-        "text": "Dentro: Tirar o sprite tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao."
+        "text": "Dentro: Tirar o sprite tiroNoChefao do grupo tiros, Somar −1 em variável vidaDoChefao e Tocar efeito batida."
       },
       {
         "kind": "drawings",
@@ -159,7 +159,7 @@
       {
         "kind": "step",
         "number": 2,
-        "text": "No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho) e Somar 10 em variável pontos."
+        "text": "No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho), Somar 10 em variável pontos e Tocar efeito explosão."
       },
       {
         "kind": "drawings",
@@ -172,7 +172,7 @@
         "title": "Teste e observe",
         "tests": [
           "Com cinco acertos, o chefão explode e sai da tela.",
-          "O placar dispara: o prêmio ainda soma a cada quadro."
+          "O placar dispara e a partida termina com a vitória: o prêmio ainda soma a cada quadro."
         ]
       }
     ]
@@ -257,7 +257,7 @@
       {
         "kind": "step",
         "number": 1,
-        "text": "Em Ao iniciar, logo abaixo de Dar 3 de vida a nave: Criar variável vidaDoChefao com valor 5."
+        "text": "Em Ao iniciar, logo abaixo de Colocar o objeto chefao em x 0 y 1 z −24: Criar variável vidaDoChefao com valor 5."
       },
       {
         "kind": "step",
@@ -283,28 +283,28 @@
     "part": 3,
     "kicker": "Aula 2 · Parte 3",
     "title": "Cada laser tira 1",
-    "subtitle": "No quadro, para cada laser que encosta no chefão: o laser sai, a vida perde 1 e o texto é escrito de novo.",
+    "subtitle": "Usar o encontro do chefão com o grupo tiros: o laser sai, a vida perde 1 e o texto é escrito de novo.",
     "items": [
       {
         "kind": "box",
         "tone": "azul",
         "title": "A ideia desta etapa",
-        "text": "No quadro, para cada laser que encosta no chefão: o laser sai, a vida perde 1 e o texto é escrito de novo."
+        "text": "Usar o encontro do chefão com o grupo tiros: o laser sai, a vida perde 1 e o texto é escrito de novo."
       },
       {
         "kind": "step",
         "number": 1,
-        "text": "No quadro, logo abaixo do movimento dos asteroides: Para cada objeto tiro do grupo tiros."
+        "text": "Logo abaixo do encontro da nave com os asteroides: Quando chefao encostar em algum do grupo tiros, chamando o laser de tiroNoChefao (Jogo 3D → Encostar → Encostar)."
       },
       {
         "kind": "step",
         "number": 2,
-        "text": "Dentro: Se o objeto tiro está encostando em chefao."
+        "text": "Dentro: Tirar o objeto tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao."
       },
       {
         "kind": "step",
         "number": 3,
-        "text": "No então: Tirar o objeto tiro do grupo tiros, Somar −1 em variável vidaDoChefao e Escrever na tela, em cima, à esquerda, \"Chefão: \" + vidaDoChefao."
+        "text": "Logo abaixo: Escrever na tela, em cima, à esquerda, \"Chefão: \" + vidaDoChefao, e Tocar o som pronto acerto."
       },
       {
         "kind": "drawings",
@@ -336,7 +336,7 @@
       {
         "kind": "step",
         "number": 1,
-        "text": "No quadro, logo abaixo do acerto no chefão: Se vidaDoChefao ≤ 0."
+        "text": "No quadro, logo abaixo de Mover o grupo asteroides: Se vidaDoChefao ≤ 0."
       },
       {
         "kind": "step",
@@ -354,7 +354,7 @@
         "title": "Teste e observe",
         "tests": [
           "Com cinco acertos, o chefão sai.",
-          "O placar dispara: o prêmio ainda soma a cada quadro."
+          "O placar dispara e a patrulha termina com a vitória: o prêmio ainda soma a cada quadro."
         ]
       }
     ]

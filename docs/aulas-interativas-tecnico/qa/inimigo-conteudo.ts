@@ -25,7 +25,8 @@ const RELOGIO_2D = 'A cada 1.5 segundos'
 const CRIAR_2D = 'No grupo tirosInimigos criar um sprite'
 const BATIDA_2D = 'Para cada sprite do grupo asteroides que colidir com o sprite nave'
 const ACERTO_2D = 'Para cada sprite do grupo tirosInimigos'
-const LIMPEZA_2D = 'Tirar do grupo asteroides quem sair da tela'
+const LIMPEZA_2D = 'Tirar do grupo tirosInimigos quem sair da tela'
+const MOVER_TIROS_2D = 'Mover os sprites do grupo tirosInimigos'
 
 const BATIDA_3D = 'Quando nave encostar em algum do grupo asteroides'
 const ACERTO_3D = 'Quando nave encostar em algum do grupo tirosInimigos'
@@ -213,7 +214,7 @@ export function inimigoAulas(): PoderAula<InimigoEtapa>[] {
             [
               'instrucao',
               'No fazer: Tirar o sprite do grupo, com tiroQueAcertou e tirosInimigos. Logo abaixo, Machucar o sprite nave, e um Tocar efeito batida.',
-              `[abrir categoria Jogo 2D > Grupos > Participação e limpeza] [encaixar "Tirar o sprite" em "${ACERTO_2D}"] [abrir categoria Jogo 2D > Vida e placar > Vida] [encaixar "Machucar o sprite" abaixo de "Tirar o sprite tiroQueAcertou"] [abrir categoria Jogo 2D > Som > Efeitos prontos] [apontar bloco "${ACERTO_2D}"]`,
+              `[abrir categoria Jogo 2D > Grupos > Participação e limpeza] [encaixar "Tirar o sprite" em "${ACERTO_2D}"] [trocar "asteroide" por "tiroQueAcertou" em "Tirar o sprite dentro de ${ACERTO_2D}"] [trocar "asteroides" por "tirosInimigos" em "Tirar o sprite tiroQueAcertou"] [abrir categoria Jogo 2D > Vida e placar > Vida] [encaixar "Machucar o sprite" abaixo de "Tirar o sprite tiroQueAcertou"] [abrir categoria Jogo 2D > Som > Efeitos prontos] [encaixar "Tocar efeito" abaixo de "Machucar o sprite"] [trocar "moeda" por "batida" em "Tocar efeito dentro de ${ACERTO_2D}"]`,
             ],
             [
               'teste',
@@ -235,6 +236,7 @@ export function inimigoAulas(): PoderAula<InimigoEtapa>[] {
             'sz_g2d_on_sprite_group_overlap',
             'sz_g2d_remove_from_group',
             'sz_g2d_damage_sprite',
+            'sz_g2d_play_fx',
           ],
           conferencia:
             'o encontro de tirosInimigos com a nave tira o tiro do grupo e machuca a nave',
@@ -254,8 +256,8 @@ export function inimigoAulas(): PoderAula<InimigoEtapa>[] {
             ],
             [
               'instrucao',
-              'No quadro do jogo, logo abaixo da limpeza das pedras, encaixe Tirar do grupo quem sair da tela, de Jogo 2D, Grupos e Participação e limpeza, e escolha tirosInimigos.',
-              `[arrastar até "${LIMPEZA_2D}"] [abrir categoria Jogo 2D > Grupos > Participação e limpeza] [encaixar "Tirar do grupo asteroides quem sair da tela" abaixo de "${LIMPEZA_2D}"] [apontar bloco "${LIMPEZA_2D}"]`,
+              'No quadro do jogo, logo abaixo de Mover os sprites do grupo tirosInimigos, encaixe Tirar do grupo quem sair da tela, de Jogo 2D, Grupos e Participação e limpeza, e escolha tirosInimigos.',
+              `[arrastar até "${MOVER_TIROS_2D}"] [abrir categoria Jogo 2D > Grupos > Participação e limpeza] [encaixar "Tirar do grupo asteroides quem sair da tela" abaixo de "${MOVER_TIROS_2D}"] [trocar "asteroides" por "tirosInimigos" em "Tirar do grupo asteroides quem sair da tela abaixo de ${MOVER_TIROS_2D}"]`,
             ],
             [
               'descoberta',
@@ -268,7 +270,7 @@ export function inimigoAulas(): PoderAula<InimigoEtapa>[] {
             ],
           ],
           steps: [
-            'No quadro do jogo, logo abaixo de Tirar do grupo asteroides quem sair da tela: Tirar do grupo tirosInimigos quem sair da tela.',
+            'No quadro do jogo, logo abaixo de Mover os sprites do grupo tirosInimigos: Tirar do grupo tirosInimigos quem sair da tela.',
           ],
           tests: [
             'Os tiros que passam pela nave saem do grupo.',
@@ -464,7 +466,7 @@ export function inimigoAulas(): PoderAula<InimigoEtapa>[] {
             [
               'instrucao',
               'Logo abaixo de No grupo asteroides, tirar quem saiu, encaixe outro, de Jogo 3D e Grupos. Escolha tirosInimigos, conserve o z e use menos 36 e 6.',
-              `[arrastar até "${LIMPEZA_3D}"] [abrir categoria Jogo 3D > Grupos] [encaixar "No grupo inimigos, tirar quem saiu" abaixo de "${LIMPEZA_3D}"] [trocar "-20" por "-36" em "No grupo inimigos, tirar quem saiu"] [trocar "20" por "6" em "No grupo inimigos, tirar quem saiu"]`,
+              `[arrastar até "${LIMPEZA_3D}"] [abrir categoria Jogo 3D > Grupos] [encaixar "No grupo inimigos, tirar quem saiu" abaixo de "${LIMPEZA_3D}"] [trocar "inimigos" por "tirosInimigos" em "No grupo inimigos, tirar quem saiu"] [trocar "-20" por "-36" em "No grupo tirosInimigos, tirar quem saiu"] [trocar "20" por "6" em "No grupo tirosInimigos, tirar quem saiu"]`,
             ],
             [
               'teste',

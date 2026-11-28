@@ -435,7 +435,7 @@ export function escudoAulas(): PoderAula<EscudoEtapa>[] {
           ],
           tests: [
             'Depois de pegar o item, o Escudo desce de 5 a 0, um por segundo, e a nave pisca.',
-            'Com o Escudo em 0, a pedra volta a tirar vida. O número nunca fica negativo.',
+            'Com o Escudo em 0, a nave para de piscar e a pedra volta a tirar vida. O número nunca fica negativo.',
             'Pegar o item de novo volta o Escudo a 5.',
           ],
           blockLabels: [
@@ -758,7 +758,7 @@ export function escudoAulas(): PoderAula<EscudoEtapa>[] {
             [
               'instrucao',
               'Abra Jogo 3D, Objetos e Aparência. Encaixe Fazer piscar logo abaixo, escolha nave e troque o tempo por 0.5.',
-              '[abrir categoria Jogo 3D > Objetos > Aparência] [encaixar "Fazer" abaixo de "Escrever na tela abaixo de Somar -1 em variável tempoDoEscudo"] [apontar bloco "Fazer nave piscar"]',
+              '[abrir categoria Jogo 3D > Objetos > Aparência] [encaixar "Fazer heroi piscar por 1 s" abaixo de "Escrever na tela abaixo de Somar -1 em variável tempoDoEscudo"] [trocar "heroi" por "nave" em "Fazer heroi piscar por 1 s"] [trocar "1" por "0.5" em "Fazer nave piscar por 1 s"]',
             ],
             ['pergunta', 'E sem o Se, o que aconteceria com o número?'],
             ['conversa', 'Ele passaria do zero, como no jogo 2D. O Se faz o escudo parar no zero.'],
@@ -776,7 +776,7 @@ export function escudoAulas(): PoderAula<EscudoEtapa>[] {
           ],
           tests: [
             'Depois de pegar o item, o Escudo desce de 5 a 0, um por segundo, e a nave pisca.',
-            'Com o Escudo em 0, a pedra volta a tirar vida. O número nunca fica negativo.',
+            'Com o Escudo em 0, a nave para de piscar e a pedra volta a tirar vida. O número nunca fica negativo.',
           ],
           blockLabels: [
             'A cada 1 segundos',

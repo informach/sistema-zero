@@ -179,6 +179,11 @@ export async function gerarPoder<
     const sections: LearningManifest['sections'] = [],
       blocks: LearningManifest['blocks'] = []
     for (const t of aula.trechos) {
+      // Os tipos que o caderno destaca precisam existir no projeto final (um nome errado, como
+      // sz_val_boolean no lugar de sz_val_bool, passava calado e o destaque nunca acendia).
+      for (const type of 'blockTypes' in t ? ((t.blockTypes as string[] | undefined) ?? []) : [])
+        if (!palette.has(type))
+          throw Error(`${aula.slug}/${t.key}: bloco ${type} ausente do projeto final da aula`)
       const keys: string[] = [],
         required: string[] = []
       if (t.kind !== 'quiz') {

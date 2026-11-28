@@ -15,6 +15,7 @@ import type { PoderDimensaoConstrutor } from './construtor-poderes-base'
 import {
   encontrar,
   guarda2D,
+  marcasDoSe,
   montagemPoder,
   RECADO_DO_QUIZ,
   TIPOS_GUARDA_2D,
@@ -34,24 +35,28 @@ const SE_RELOGIO_2D = `Se o estado do jogo é jogando dentro de ${RELOGIO_2D}`
 const CRIAR_ITEM_2D = 'No grupo itensPlasma criar um sprite'
 const BATIDA_2D = 'Para cada sprite do grupo asteroides que colidir com o sprite nave'
 const PEGAR_2D = 'Para cada sprite do grupo itensPlasma'
-const ENTER_2D = 'Quando apertar a tecla Enter'
 const TECLA_E_2D = 'Quando apertar a tecla tecla E'
 const SE_E_2D = `Se o estado do jogo é jogando dentro de ${TECLA_E_2D}`
 const SE_LIBERADO_2D = `Se valor da variável plasmaLiberado dentro de ${TECLA_E_2D}`
+const SE_ARMA_E_2D = `Se valor da variável arma dentro de ${TECLA_E_2D}`
 const ESPACO_2D = 'Quando apertar a tecla barra de espaço'
 const SE_ESPACO_2D = `Se o estado do jogo é jogando dentro de ${ESPACO_2D}`
 const SE_ARMA_2D = `Se valor da variável arma dentro de ${ESPACO_2D}`
 const LASER_2D = 'No grupo tiros criar um sprite'
 const LEGENDA_2D = 'Escrever SETAS: mover   ESPAÇO: disparar'
+const ESCREVER_ARMA_2D = `Escrever abaixo de ${LEGENDA_2D}`
+const PLASMA_2D = 'No grupo tirosPlasma criar um sprite'
 
 const RELOGIO_3D = 'A cada 4 segundos'
 const SE_JOGANDO_RELOGIO_3D = `Se valor da variável estado dentro de ${RELOGIO_3D}`
 const BATIDA_3D = 'Quando nave encostar em algum do grupo asteroides'
 const PEGAR_3D = 'Quando nave encostar em algum do grupo itensPlasma'
 const SE_PEGAR_3D = `Se valor da variável estado dentro de ${PEGAR_3D}`
-const ENTER_3D = 'Quando apertar a tecla Enter'
 const TECLA_E_3D = 'Quando apertar a tecla E'
 const SE_LIBERADO_3D = `Se valor da variável plasmaLiberado dentro de ${TECLA_E_3D}`
+const SE_JOGANDO_E_3D = `Se valor da variável estado dentro de ${TECLA_E_3D}`
+const SE_ARMA_E_3D = `Se valor da variável arma dentro de ${TECLA_E_3D}`
+const NOTA_3D = 'Tocar nota 880 Hz por 60 ms'
 const ESPACO_3D = 'Quando apertar a tecla espaço'
 const SE_ESPACO_3D = `Se valor da variável estado dentro de ${ESPACO_3D}`
 const SE_ARMA_3D = `Se valor da variável arma dentro de ${ESPACO_3D}`
@@ -197,7 +202,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             'sz_g2d_on_sprite_group_overlap',
             'sz_g2d_remove_from_group',
             'sz_js_var_assign',
-            'sz_val_boolean',
+            'sz_val_bool',
           ],
           conferencia:
             'o relógio A cada 4 segundos cria o item no grupo itensPlasma só na partida, e o encontro com itensPlasma tira o item e muda plasmaLiberado para verdadeiro',
@@ -220,24 +225,29 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             encontrar('Quando acontecer'),
             [
               'instrucao',
-              'Logo abaixo de Quando apertar a tecla Enter, encaixe outro Quando apertar a tecla, de Jogo 2D, Controles e Teclado, ações e toque. Escolha a tecla E.',
-              `[arrastar até "${ENTER_2D}"] [abrir categoria Jogo 2D > Controles > Teclado, ações e toque] [encaixar "Quando apertar a tecla" abaixo de "${ENTER_2D}"] [trocar "→ seta direita" por "tecla E" em "Quando apertar a tecla → seta direita"]`,
+              'Logo abaixo de Quando apertar a tecla barra de espaço, encaixe outro Quando apertar a tecla, de Jogo 2D, Controles e Teclado, ações e toque. Escolha a tecla E.',
+              `[arrastar até "${ESPACO_2D}"] [abrir categoria Jogo 2D > Controles > Teclado, ações e toque] [encaixar "Quando apertar a tecla" abaixo de "${ESPACO_2D}"] [trocar "→ seta direita" por "tecla E" em "Quando apertar a tecla → seta direita"]`,
             ],
-            ...guarda2D(TECLA_E_2D),
+            ...guarda2D(TECLA_E_2D, 'tecla'),
             [
               'instrucao',
-              'No então desse Se, encaixe outro Se. Escolha plasmaLiberado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro.',
-              `[abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_E_2D}" no "então"] [apontar bloco "${SE_LIBERADO_2D}"]`,
-            ],
-            [
-              'instrucao',
-              'Dentro dele, mais um Se: arma igual ao texto laser. Abra o senão desse Se.',
-              `[abrir categoria Programação > Lógica & Se] [apontar bloco "${SE_LIBERADO_2D}"]`,
+              'No então desse Se, encaixe outro Se. Escolha plasmaLiberado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro, de Programação e Valores.',
+              `[abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_E_2D}" no "então"] ${marcasDoSe(TECLA_E_2D, 'plasmaLiberado', '=', { bloco: 'verdadeiro' })}`,
             ],
             [
               'instrucao',
-              'No então, Alterar variável arma para o texto plasma. No senão, Alterar variável arma para o texto laser. Logo abaixo, Tocar efeito, com o efeito selecionar.',
-              `[abrir categoria Programação > Variáveis] [apontar bloco "${SE_LIBERADO_2D}"]`,
+              'No então dele, mais um Se: arma igual ao texto laser. Depois, abra o senão desse Se.',
+              `[abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_LIBERADO_2D}" no "então"] ${marcasDoSe(TECLA_E_2D, 'arma', '=', { bloco: 'texto', texto: 'laser' })} [abrir "senão" em "${SE_ARMA_E_2D}"]`,
+            ],
+            [
+              'instrucao',
+              'No então, Alterar variável arma para o texto plasma. No senão, Alterar variável arma para o texto laser.',
+              `[abrir categoria Programação > Variáveis] [encaixar "Alterar variável contador para" em "${SE_ARMA_E_2D}" no "então"] [trocar "contador" por "arma" em "Alterar variável contador para"] [abrir categoria Programação > Valores] [soltar "texto" em cima do "1" em "Alterar variável arma para"] [trocar "Olá" por "plasma" em "Alterar variável arma para texto Olá"] [abrir categoria Programação > Variáveis] [encaixar "Alterar variável contador para" em "${SE_ARMA_E_2D}" no "senão"] [trocar "contador" por "arma" em "Alterar variável contador para"] [abrir categoria Programação > Valores] [soltar "texto" em cima do "1" em "Alterar variável arma para texto Olá"] [trocar "Olá" por "laser" em "Alterar variável arma para texto Olá"]`,
+            ],
+            [
+              'instrucao',
+              'Logo abaixo do Se da arma, ainda dentro do Se do plasma, encaixe Tocar efeito, de Jogo 2D, Som e Efeitos prontos, e escolha selecionar.',
+              `[abrir categoria Jogo 2D > Som > Efeitos prontos] [encaixar "Tocar efeito" abaixo de "${SE_ARMA_E_2D}"] [trocar "moeda" por "selecionar" em "Tocar efeito dentro de ${TECLA_E_2D}"]`,
             ],
             [
               'teste',
@@ -248,7 +258,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             ['conversa', 'Por enquanto, não dá para ver. A placa da arma é a próxima parte.'],
           ],
           steps: [
-            'Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando.',
+            'Em Quando acontecer, logo abaixo de Quando apertar a tecla barra de espaço: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando.',
             'No então: Se plasmaLiberado = verdadeiro.',
             'Dentro: Se arma = "laser", com o senão aberto: no então, Alterar variável arma para "plasma"; no senão, Alterar variável arma para "laser". Logo abaixo, Tocar efeito selecionar.',
           ],
@@ -295,7 +305,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             [
               'instrucao',
               'No texto, solte uma conta de juntar: o texto Arma, dois-pontos e um espaço, mais valor da variável arma. Coloque 700 no x e 82 no y.',
-              '[abrir categoria Programação > Valores] [apontar bloco "Escrever abaixo de Escrever SETAS: mover   ESPAÇO: disparar"]',
+              `[abrir categoria Programação > Valores] [apontar bloco "${ESCREVER_ARMA_2D}"]`,
             ],
             [
               'teste',
@@ -315,7 +325,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
           blockLabels: ['Escrever "Arma: " + arma'],
           blockTypes: ['sz_g2d_draw_label', 'sz_math_arithmetic', 'sz_val_variable'],
           conferencia: 'no fim do quadro, Escrever mostra Arma, dois-pontos, mais o valor de arma',
-          mostrar: LEGENDA_2D,
+          mostrar: ESCREVER_ARMA_2D,
           notaDeGravacao: ESPERA,
         }),
         montagemPoder<ArmaEtapa>({
@@ -337,7 +347,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             [
               'instrucao',
               'Na pergunta, escolha arma no x, o sinal de igual e, no lugar do zero, o texto plasma.',
-              `[trocar "x" por "arma" em "Se dentro de ${ESPACO_2D}"] [apontar bloco "${SE_ARMA_2D}"]`,
+              marcasDoSe(ESPACO_2D, 'arma', '=', { bloco: 'texto', texto: 'plasma' }),
             ],
             [
               'instrucao',
@@ -351,8 +361,8 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             ],
             [
               'instrucao',
-              'Logo abaixo do plasma, Tocar efeito, com o efeito laser.',
-              `[abrir categoria Jogo 2D > Som > Efeitos prontos] [apontar bloco "${SE_ARMA_2D}"]`,
+              'Logo abaixo do plasma, encaixe Tocar efeito, de Jogo 2D, Som e Efeitos prontos, e escolha o efeito tiro.',
+              `[abrir categoria Jogo 2D > Som > Efeitos prontos] [encaixar "Tocar efeito" abaixo de "${PLASMA_2D}"] [trocar "moeda" por "tiro" em "Tocar efeito abaixo de ${PLASMA_2D}"]`,
             ],
             [
               'descoberta',
@@ -368,7 +378,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             'No Espaço, dentro do então de Se jogando, encaixe um Se no começo (Programação → Lógica & Se). O laser e o som descem para baixo dele.',
             'Na pergunta: arma = "plasma".',
             'Abra o senão e leve o laser, com o som, para dentro dele.',
-            'Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito laser.',
+            'Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito tiro.',
           ],
           tests: [
             'Com o laser, o Espaço cria o laser fino.',
@@ -491,7 +501,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             'sz_g3d_on_touch_group',
             'sz_g3d_remove_from_group',
             'sz_js_var_assign',
-            'sz_val_boolean',
+            'sz_val_bool',
           ],
           conferencia:
             'o relógio A cada 4 segundos cria a cópia de moldePlasmaItem em x menos 4 só na partida, e o encontro com itensPlasma tira o item e muda plasmaLiberado para verdadeiro',
@@ -510,25 +520,35 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             encontrar('Quando acontecer'),
             [
               'instrucao',
-              'Logo abaixo de Quando apertar a tecla Enter, encaixe outro Quando apertar a tecla, de Jogo 3D e Controles. Escolha a tecla E.',
-              `[arrastar até "${ENTER_3D}"] [abrir categoria Jogo 3D > Controles] [encaixar "Quando apertar a tecla" abaixo de "${ENTER_3D}"] [trocar "W (frente)" por "E" em "Quando apertar a tecla W (frente)"]`,
+              `Logo abaixo do encontro ${BATIDA_3D}, encaixe Quando apertar a tecla, de Jogo 3D e Controles. Escolha a tecla E.`,
+              `[arrastar até "${BATIDA_3D}"] [abrir categoria Jogo 3D > Controles] [encaixar "Quando apertar a tecla" abaixo de "${BATIDA_3D}"] [trocar "W (frente)" por "E" em "Quando apertar a tecla W (frente)"]`,
             ],
             ...guardaPatrulha(TECLA_E_3D, 'a tecla E'),
             [
               'instrucao',
-              'No então, Se plasmaLiberado igual a verdadeiro. Dentro, Se arma igual ao texto laser, com o senão aberto: no então, arma vira plasma; no senão, arma vira laser.',
-              `[abrir categoria Programação > Lógica & Se] [apontar bloco "${SE_LIBERADO_3D}"]`,
+              'No então da guarda, encaixe outro Se: plasmaLiberado igual ao valor verdadeiro, de Programação e Valores.',
+              `[abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_JOGANDO_E_3D}" no "então"] ${marcasDoSe(TECLA_E_3D, 'plasmaLiberado', '=', { bloco: 'verdadeiro' })}`,
+            ],
+            [
+              'instrucao',
+              'No então dele, mais um Se: arma igual ao texto laser. Depois, abra o senão desse Se.',
+              `[abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_LIBERADO_3D}" no "então"] ${marcasDoSe(TECLA_E_3D, 'arma', '=', { bloco: 'texto', texto: 'laser' })} [abrir "senão" em "${SE_ARMA_E_3D}"]`,
+            ],
+            [
+              'instrucao',
+              'No então, Alterar variável arma para o texto plasma. No senão, Alterar variável arma para o texto laser.',
+              `[abrir categoria Programação > Variáveis] [encaixar "Alterar variável contador para" em "${SE_ARMA_E_3D}" no "então"] [trocar "contador" por "arma" em "Alterar variável contador para"] [abrir categoria Programação > Valores] [soltar "texto" em cima do "1" em "Alterar variável arma para"] [trocar "Olá" por "plasma" em "Alterar variável arma para texto Olá"] [abrir categoria Programação > Variáveis] [encaixar "Alterar variável contador para" em "${SE_ARMA_E_3D}" no "senão"] [trocar "contador" por "arma" em "Alterar variável contador para"] [abrir categoria Programação > Valores] [soltar "texto" em cima do "1" em "Alterar variável arma para texto Olá"] [trocar "Olá" por "laser" em "Alterar variável arma para texto Olá"]`,
             ],
             [
               'teste',
               'Clique em Rodar de novo, aperte Enter, pegue o item na esquerda e aperte E. A troca acontece, mas o texto ainda não mostra a arma.',
-              '[rodar de novo] [tecla Enter] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla KeyE]',
+              '[rodar de novo] [tecla Enter] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla e]',
             ],
             ['pergunta', 'Como saber qual é a arma agora, na patrulha?'],
             ['conversa', 'Por enquanto, não dá para ver. O texto da arma é a próxima parte.'],
           ],
           steps: [
-            'Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 3D → Controles).',
+            'Em Quando acontecer, logo abaixo do encontro da nave com os asteroides: Quando apertar a tecla E (Jogo 3D → Controles).',
             ...passosGuardaPatrulha('a tecla E'),
             'No então: Se plasmaLiberado = verdadeiro; dentro, Se arma = "laser", com o senão aberto: no então, Alterar variável arma para "plasma"; no senão, Alterar variável arma para "laser".',
           ],
@@ -572,13 +592,13 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             encontrar('Quando acontecer'),
             [
               'instrucao',
-              'Na tecla E, logo depois do Se arma igual a laser, ainda dentro do Se plasmaLiberado, escreva o mesmo texto de novo.',
-              `[abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [apontar bloco "${SE_LIBERADO_3D}"]`,
+              'Na tecla E, logo abaixo do Se arma igual a laser, ainda dentro do Se plasmaLiberado, escreva o mesmo texto de novo: Escrever na tela, em cima, à esquerda, Arma, dois-pontos, mais o valor de arma.',
+              `[abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [encaixar "Escrever na tela" abaixo de "${SE_ARMA_E_3D}"] [apontar bloco "Escrever na tela abaixo de ${SE_ARMA_E_3D}"]`,
             ],
             [
               'teste',
               'Clique em Rodar de novo. O texto mostra Arma laser. Aperte Enter, pegue o item na esquerda e aperte E: o texto muda para plasma.',
-              '[rodar de novo] [apontar prévia 70 24] [tecla Enter] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla KeyE]',
+              '[rodar de novo] [apontar prévia 70 24] [tecla Enter] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla e]',
             ],
           ],
           steps: [
@@ -606,7 +626,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             [
               'instrucao',
               'Encontre Quando apertar a tecla espaço e encaixe um Se no começo do então do Se jogando. Na pergunta, escolha arma no x, o sinal de igual e, no lugar do zero, o texto plasma.',
-              `[arrastar até "${ESPACO_3D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_ESPACO_3D}" no "então"] [trocar "x" por "arma" em "Se dentro de ${ESPACO_3D}"] [apontar bloco "${SE_ARMA_3D}"]`,
+              `[arrastar até "${ESPACO_3D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_ESPACO_3D}" no "então"] ${marcasDoSe(ESPACO_3D, 'arma', '=', { bloco: 'texto', texto: 'plasma' })}`,
             ],
             [
               'instrucao',
@@ -615,13 +635,18 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             ],
             [
               'instrucao',
-              'Duplique a cópia para o então e troque moldeTiro por moldePlasma e tiros por tirosPlasma. Na nota, 330 e 120.',
+              'Duplique a cópia do laser e leve para o então. Na cópia, troque moldeTiro por moldePlasma e tiros por tirosPlasma.',
               `[apontar bloco "${LASER_3D} dentro de ${SE_ARMA_3D}"]`,
+            ],
+            [
+              'instrucao',
+              'Duplique também a nota e leve para baixo da cópia do plasma. Na nota nova, troque 880 por 330 e 60 por 120.',
+              `[apontar bloco "${NOTA_3D} dentro de ${SE_ARMA_3D}"]`,
             ],
             [
               'teste',
               'Clique em Rodar de novo e aperte Enter. Dispare: sai o laser. Pegue o item, aperte E e dispare: sai o plasma.',
-              '[rodar de novo] [tecla Enter] [tecla Space] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla KeyE] [tecla Space]',
+              '[rodar de novo] [tecla Enter] [tecla Space] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla e] [tecla Space]',
             ],
           ],
           steps: [

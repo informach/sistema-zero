@@ -146,7 +146,7 @@ export function escudoChecks(
     checks.push({
       id: 'contagem-com-guarda',
       label: 'A cada segundo, se o escudo ainda tem tempo, ele perde 1 e a nave pisca.',
-      hint: 'Dentro do A cada 1 segundo: Se tempoDoEscudo > 0, então mudar tempoDoEscudo em -1 e fazer a nave piscar. Sem o Se, o tempo fica negativo.',
+      hint: 'Dentro do A cada 1 segundo: Se tempoDoEscudo > 0, então Somar -1 em tempoDoEscudo e fazer a nave piscar. Sem o Se, o tempo fica negativo.',
       rule: relogio(d, 1, [
         {
           blockType: 'sz_js_if_else',

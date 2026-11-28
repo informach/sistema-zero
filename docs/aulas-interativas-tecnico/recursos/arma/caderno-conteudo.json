@@ -130,7 +130,7 @@
       {
         "kind": "step",
         "number": 1,
-        "text": "Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando."
+        "text": "Em Quando acontecer, logo abaixo de Quando apertar a tecla barra de espaço: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando."
       },
       {
         "kind": "step",
@@ -222,7 +222,7 @@
       {
         "kind": "step",
         "number": 4,
-        "text": "Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito laser."
+        "text": "Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito tiro."
       },
       {
         "kind": "drawings",
@@ -350,7 +350,7 @@
       {
         "kind": "step",
         "number": 1,
-        "text": "Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 3D → Controles)."
+        "text": "Em Quando acontecer, logo abaixo do encontro da nave com os asteroides: Quando apertar a tecla E (Jogo 3D → Controles)."
       },
       {
         "kind": "step",

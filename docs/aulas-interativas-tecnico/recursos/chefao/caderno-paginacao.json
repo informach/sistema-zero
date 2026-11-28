@@ -1,9 +1,27 @@
 {
-  "aula-1-vida": [4],
-  "aula-1-acerto": [3],
-  "aula-1-fim": [3, 4],
-  "aula-1-uma-vez": [5, 7],
-  "aula-2-acerto": [4],
-  "aula-2-fim": [3],
-  "aula-2-uma-vez": [4, 5]
+  "aula-1-vida": [
+    4
+  ],
+  "aula-1-acerto": [
+    3
+  ],
+  "aula-1-fim": [
+    3,
+    4
+  ],
+  "aula-1-uma-vez": [
+    5,
+    7
+  ],
+  "aula-2-acerto": [
+    5
+  ],
+  "aula-2-fim": [
+    3,
+    4
+  ],
+  "aula-2-uma-vez": [
+    4,
+    6
+  ]
 }

@@ -199,7 +199,7 @@
       {
         "kind": "step",
         "number": 1,
-        "text": "No quadro do jogo, logo abaixo de Tirar do grupo asteroides quem sair da tela: Tirar do grupo tirosInimigos quem sair da tela."
+        "text": "No quadro do jogo, logo abaixo de Mover os sprites do grupo tirosInimigos: Tirar do grupo tirosInimigos quem sair da tela."
       },
       {
         "kind": "drawings",

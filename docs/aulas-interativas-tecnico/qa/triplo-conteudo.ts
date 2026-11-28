@@ -230,7 +230,7 @@ export function triploAulas(): PoderAula<TriploEtapa>[] {
             [
               'instrucao',
               'Clique no x da pergunta e escolha tempoTriplo. Conserve maior que zero.',
-              `[trocar "x" por "tempoTriplo" em "Se dentro de ${ESPACO_2D}"]`,
+              `[trocar "x" por "tempoTriplo" em "Se valor da variável x > 0 dentro de ${ESPACO_2D}"]`,
             ],
             [
               'instrucao',
@@ -273,7 +273,12 @@ export function triploAulas(): PoderAula<TriploEtapa>[] {
             'Com o Triplo maior que 0, o Espaço cria três lasers, por enquanto no mesmo caminho.',
           ],
           blockLabels: ['Se tempoTriplo > 0', 'então: três lasers', 'senão: o laser de sempre'],
-          blockTypes: ['sz_js_if_else', 'sz_val_compare', 'sz_g2d_spawn_image_in_group'],
+          blockTypes: [
+            'sz_js_if_else',
+            'sz_val_compare',
+            'sz_g2d_spawn_image_in_group',
+            'sz_g2d_play_fx',
+          ],
           conferencia:
             'no Espaço, dentro do Se jogando, está o Se tempoTriplo maior que 0: no então, três lasers; no senão, o laser de antes',
           mostrar: SE_TRIPLO_2D,
@@ -550,6 +555,11 @@ export function triploAulas(): PoderAula<TriploEtapa>[] {
               `[apontar bloco "Criar uma cópia de moldeTiro dentro de ${SE_TRIPLO_3D}"]`,
             ],
             [
+              'instrucao',
+              'Logo abaixo das três cópias, encaixe Tocar nota, de Jogo 3D e Som. Troque o 440 por 1320 e o 200 por 80: é o som do tiro triplo.',
+              `[abrir categoria Jogo 3D > Som] [apontar bloco "${SE_TRIPLO_3D}"] [trocar "440" por "1320" em "Tocar nota 440 Hz por 200 ms dentro de ${SE_TRIPLO_3D}"] [trocar "200" por "80" em "Tocar nota 1320 Hz por 200 ms dentro de ${SE_TRIPLO_3D}"]`,
+            ],
+            [
               'teste',
               'Clique em Rodar de novo, aperte Enter, leve a nave para a esquerda, pegue o item e dispare. Três lasers saem juntos e parecem um só.',
               '[rodar de novo] [tecla Enter] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla Space]',
@@ -563,7 +573,7 @@ export function triploAulas(): PoderAula<TriploEtapa>[] {
           steps: [
             'No Espaço, no começo do então da guarda, encaixe um Se e escolha tempoTriplo no lugar de x. Conserve > e 0.',
             'Abra o senão e leve a cópia de moldeTiro, com a nota, para dentro dele.',
-            'Duplique a cópia três vezes e leve as cópias para o então.',
+            'Duplique a cópia três vezes e leve as cópias para o então. Logo abaixo delas, Tocar nota 1320 Hz por 80 ms (Jogo 3D → Som).',
           ],
           tests: [
             'Sem o item, o Espaço cria um laser.',
@@ -574,7 +584,7 @@ export function triploAulas(): PoderAula<TriploEtapa>[] {
             'então: três cópias de moldeTiro',
             'senão: a cópia de sempre',
           ],
-          blockTypes: ['sz_js_if_else', 'sz_val_compare', 'sz_g3d_spawn_copy'],
+          blockTypes: ['sz_js_if_else', 'sz_val_compare', 'sz_g3d_spawn_copy', 'sz_g3d_play_note'],
           conferencia:
             'no Espaço, dentro da guarda, está o Se tempoTriplo maior que 0: no então, três cópias de moldeTiro; no senão, a cópia de antes',
           mostrar: SE_TRIPLO_3D,

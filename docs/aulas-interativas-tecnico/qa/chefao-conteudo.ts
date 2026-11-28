@@ -12,6 +12,7 @@ import type { ChefaoEtapa } from './chefao-projeto'
 import type { PoderDimensaoConstrutor } from './construtor-poderes-base'
 import {
   encontrar,
+  marcasDoSe,
   montagemPoder,
   RECADO_DO_QUIZ,
   telaDaExperienciaDoPoder,
@@ -21,9 +22,13 @@ import type { PoderAula } from './poder-gerador'
 
 const ACERTO_2D = 'Para cada sprite do grupo tiros que colidir com o sprite chefao'
 const BATIDA_2D = 'Para cada sprite do grupo asteroides que colidir com o sprite nave'
+const LEGENDA_2D = 'Escrever SETAS: mover   ESPAÇO: disparar'
+const BARRA_2D = `Barra de abaixo de ${LEGENDA_2D}`
 const SE_ZERO_2D = `Se valor da variável vidaDoChefao abaixo de ${ACERTO_2D}`
 const SE_GUARDA_2D = `Se valor da variável chefaoDerrotado dentro de ${SE_ZERO_2D}`
-const SE_ZERO_3D = 'Se valor da variável vidaDoChefao'
+const MOVER_PEDRAS_3D = 'Mover o grupo asteroides'
+const SE_ZERO_3D = `Se valor da variável vidaDoChefao abaixo de ${MOVER_PEDRAS_3D}`
+const CHEFAO_3D = 'Colocar o objeto chefao em x 0 y 1 z -24'
 const SE_GUARDA_3D = `Se valor da variável chefaoDerrotado dentro de ${SE_ZERO_3D}`
 const BATIDA_3D = 'Quando nave encostar em algum do grupo asteroides'
 const ACERTO_3D = 'Quando chefao encostar em algum do grupo tiros'
@@ -92,13 +97,13 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             encontrar('Enquanto estiver rodando'),
             [
               'instrucao',
-              'No fim de A cada quadro do jogo, logo abaixo da Barra dos acertos, encaixe outra Barra de, de Jogo 2D, Vida e placar e Indicadores e texto na tela.',
-              '[arrastar até "Barra de"] [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Barra de" abaixo de "Barra de"]',
+              'No fim de A cada quadro do jogo, logo abaixo da legenda SETAS mover, ESPAÇO disparar, encaixe Barra de, de Jogo 2D, Vida e placar e Indicadores e texto na tela.',
+              `[arrastar até "${LEGENDA_2D}"] [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Barra de" abaixo de "${LEGENDA_2D}"]`,
             ],
             [
               'instrucao',
               'No valor, solte valor da variável vidaDoChefao. No máximo, 5. Na posição, x 300 e y 158; na largura, 200; na altura, 10. Escolha uma cor vermelha.',
-              '[abrir categoria Programação > Valores] [apontar bloco "Barra de"]',
+              `[abrir categoria Programação > Valores] [apontar bloco "${BARRA_2D}"]`,
             ],
             [
               'teste',
@@ -108,7 +113,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
           ],
           steps: [
             'Em Ao iniciar, logo abaixo de Criar sprite chefao: Criar variável vidaDoChefao com valor 5 (Programação → Variáveis).',
-            'No fim de A cada quadro do jogo: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela).',
+            'No fim de A cada quadro do jogo, logo abaixo da legenda dos controles: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela).',
           ],
           tests: ['A barra aparece cheia embaixo do chefão.'],
           blockLabels: ['Criar variável vidaDoChefao com valor 5', 'Barra de vidaDoChefao'],
@@ -138,7 +143,12 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             [
               'instrucao',
               'No fazer: Tirar o sprite tiroNoChefao do grupo tiros e, logo abaixo, Somar 1 em variável, com menos 1 e vidaDoChefao.',
-              `[abrir categoria Jogo 2D > Grupos > Participação e limpeza] [encaixar "Tirar o sprite" em "${ACERTO_2D}"] [abrir categoria Programação > Variáveis] [encaixar "Somar 1 em variável" abaixo de "Tirar o sprite tiroNoChefao"] [trocar "1" por "-1" em "Somar 1 em variável"] [trocar "contador" por "vidaDoChefao" em "Somar -1 em variável"]`,
+              `[abrir categoria Jogo 2D > Grupos > Participação e limpeza] [encaixar "Tirar o sprite" em "${ACERTO_2D}"] [trocar "asteroide" por "tiroNoChefao" em "Tirar o sprite dentro de ${ACERTO_2D}"] [trocar "asteroides" por "tiros" em "Tirar o sprite tiroNoChefao"] [abrir categoria Programação > Variáveis] [encaixar "Somar 1 em variável" abaixo de "Tirar o sprite tiroNoChefao"] [trocar "1" por "-1" em "Somar 1 em variável"] [trocar "contador" por "vidaDoChefao" em "Somar -1 em variável"]`,
+            ],
+            [
+              'instrucao',
+              'Por último, encaixe Tocar efeito, de Jogo 2D, Som e Efeitos prontos, e escolha batida.',
+              `[abrir categoria Jogo 2D > Som > Efeitos prontos] [encaixar "Tocar efeito" abaixo de "Somar -1 em variável vidaDoChefao"] [trocar "moeda" por "batida" em "Tocar efeito dentro de ${ACERTO_2D}"]`,
             ],
             [
               'descoberta',
@@ -157,7 +167,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
           ],
           steps: [
             'No quadro do jogo, logo abaixo do encontro das pedras com a nave: Para cada sprite do grupo tiros que colidir com o sprite chefao, chamando de tiroNoChefao.',
-            'Dentro: Tirar o sprite tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao.',
+            'Dentro: Tirar o sprite tiroNoChefao do grupo tiros, Somar −1 em variável vidaDoChefao e Tocar efeito batida.',
           ],
           tests: ['Cada laser que acerta tira um pedaço da barra; um laser só não acaba com ela.'],
           blockLabels: [
@@ -168,6 +178,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             'sz_g2d_on_sprite_group_overlap',
             'sz_g2d_remove_from_group',
             'sz_js_var_increment',
+            'sz_g2d_play_fx',
           ],
           conferencia:
             'o encontro dos tiros com o chefão tira o laser do grupo e soma menos 1 em vidaDoChefao',
@@ -198,23 +209,28 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
               `[abrir categoria Jogo 2D > Desenho e efeitos > Partículas] [encaixar "Soltar explosão no sprite" em "${SE_ZERO_2D}" no "então"] [abrir categoria Jogo 2D > Movimento > Posição e tamanho] [apontar bloco "${SE_ZERO_2D}"]`,
             ],
             [
+              'instrucao',
+              'Por último, Tocar efeito, de Jogo 2D, Som e Efeitos prontos, com o efeito explosão.',
+              `[abrir categoria Jogo 2D > Som > Efeitos prontos] [encaixar "Tocar efeito" abaixo de "Somar 10 em variável pontos"] [trocar "moeda" por "explosão" em "Tocar efeito dentro de ${SE_ZERO_2D}"]`,
+            ],
+            [
               'teste',
-              'Clique no jogo, aperte Enter e acerte o chefão cinco vezes. Ele explode e some... e o placar dispara!',
+              'Clique no jogo, aperte Enter e acerte o chefão cinco vezes. Ele explode e some, e o placar dispara: passa da meta e a partida termina na hora!',
               '[tocar prévia 400 300] [tecla Enter] [tecla Space] [tecla Space] [tecla Space] [tecla Space] [tecla Space] [apontar prévia 80 32]',
             ],
             ['pergunta', 'Por que o placar disparou?'],
             [
               'conversa',
-              'Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada quadro. Na próxima parte, ele vai valer uma vez só.',
+              'Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada quadro, até passar da meta. Na próxima parte, ele vai valer uma vez só.',
             ],
           ],
           steps: [
             'No quadro do jogo, logo abaixo do encontro dos tiros com o chefão: Se vidaDoChefao ≤ 0.',
-            'No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho) e Somar 10 em variável pontos.',
+            'No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho), Somar 10 em variável pontos e Tocar efeito explosão.',
           ],
           tests: [
             'Com cinco acertos, o chefão explode e sai da tela.',
-            'O placar dispara: o prêmio ainda soma a cada quadro.',
+            'O placar dispara e a partida termina com a vitória: o prêmio ainda soma a cada quadro.',
           ],
           blockLabels: [
             'Se vidaDoChefao ≤ 0',
@@ -226,6 +242,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             'sz_g2d_explode',
             'sz_g2d_set_position',
             'sz_js_var_increment',
+            'sz_g2d_play_fx',
           ],
           conferencia:
             'no quadro, o Se vidaDoChefao menor ou igual a 0 explode o chefão, leva o chefão para longe e soma 10 em pontos',
@@ -247,17 +264,22 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             [
               'instrucao',
               'Em Ao iniciar, logo abaixo de Criar variável vidaDoChefao, crie a variável chefaoDerrotado com o valor falso, de Programação e Valores.',
-              '[arrastar até "Criar variável vidaDoChefao"] [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "Criar variável vidaDoChefao"] [trocar "contador" por "chefaoDerrotado" em "Criar variável contador"] [abrir categoria Programação > Valores] [apontar bloco "Criar variável chefaoDerrotado"]',
+              '[arrastar até "Criar variável vidaDoChefao"] [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "Criar variável vidaDoChefao"] [trocar "contador" por "chefaoDerrotado" em "Criar variável contador"] [abrir categoria Programação > Valores] [soltar "verdadeiro" em cima do "0" em "Criar variável chefaoDerrotado"] [abrir campo "verdadeiro" em "Criar variável chefaoDerrotado"] [escolher "falso" em "Criar variável chefaoDerrotado"]',
             ],
             [
               'instrucao',
               'Dentro do Se vidaDoChefao ≤ 0, encaixe outro Se no começo do então. Os blocos do prêmio descem para baixo dele; leve os quatro para dentro do Se novo.',
-              `[arrastar até "${SE_ZERO_2D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_ZERO_2D}" no "então"] [apontar bloco "${SE_ZERO_2D}"]`,
+              `[arrastar até "${SE_ZERO_2D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_ZERO_2D}" no "então"]`,
             ],
             [
               'instrucao',
-              'No Se novo, escolha chefaoDerrotado no x, o sinal de igual e, no lugar do zero, o valor falso. Logo no começo do então, encaixe Alterar variável chefaoDerrotado para verdadeiro.',
-              `[apontar bloco "${SE_GUARDA_2D}"]`,
+              'No Se novo, escolha chefaoDerrotado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro, de Programação e Valores. Depois troque verdadeiro por falso.',
+              marcasDoSe(SE_ZERO_2D, 'chefaoDerrotado', '=', { bloco: 'falso' }),
+            ],
+            [
+              'instrucao',
+              'Arraste Soltar explosão no sprite, com os blocos de baixo, para o então do Se novo. Logo no começo desse então, encaixe Alterar variável chefaoDerrotado para verdadeiro.',
+              `[mover "Soltar explosão no sprite" para "${SE_GUARDA_2D}" no "então"] [abrir categoria Programação > Variáveis] [encaixar "Alterar variável contador para" em "${SE_GUARDA_2D}" no "então"] [trocar "contador" por "chefaoDerrotado" em "Alterar variável contador para"] [abrir categoria Programação > Valores] [soltar "verdadeiro" em cima do "1" em "Alterar variável chefaoDerrotado para"]`,
             ],
             [
               'teste',
@@ -276,7 +298,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             'Se chefaoDerrotado = falso',
             'Alterar variável chefaoDerrotado para verdadeiro',
           ],
-          blockTypes: ['sz_js_var_create', 'sz_js_if_else', 'sz_js_var_assign', 'sz_val_boolean'],
+          blockTypes: ['sz_js_var_create', 'sz_js_if_else', 'sz_js_var_assign', 'sz_val_bool'],
           conferencia:
             'em Ao iniciar está chefaoDerrotado com falso, e dentro do Se do zero o prêmio fica no Se chefaoDerrotado igual a falso, que começa mudando chefaoDerrotado para verdadeiro',
           mostrar: SE_ZERO_2D,
@@ -328,8 +350,8 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             encontrar('Ao iniciar'),
             [
               'instrucao',
-              'Logo abaixo de Dar 3 de vida a nave, crie a variável vidaDoChefao com 5.',
-              '[arrastar até "Dar 3 de vida a nave"] [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "Dar 3 de vida a nave"] [trocar "contador" por "vidaDoChefao" em "Criar variável contador"] [trocar "0" por "5" em "Criar variável vidaDoChefao"]',
+              'Logo abaixo de Colocar o objeto chefao, o bloco que põe o chefão lá na frente, crie a variável vidaDoChefao com 5.',
+              `[arrastar até "${CHEFAO_3D}"] [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "${CHEFAO_3D}"] [trocar "contador" por "vidaDoChefao" em "Criar variável contador"] [trocar "0" por "5" em "Criar variável vidaDoChefao"]`,
             ],
             [
               'instrucao',
@@ -343,7 +365,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             ],
           ],
           steps: [
-            'Em Ao iniciar, logo abaixo de Dar 3 de vida a nave: Criar variável vidaDoChefao com valor 5.',
+            'Em Ao iniciar, logo abaixo de Colocar o objeto chefao em x 0 y 1 z −24: Criar variável vidaDoChefao com valor 5.',
             'Logo abaixo do placar dos acertos: Escrever na tela, em cima, à esquerda, "Chefão: " + vidaDoChefao.',
           ],
           tests: ['O texto Chefão: 5 aparece no alto à esquerda.'],
@@ -369,7 +391,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
               'conversa',
               'O laser encostando no chefão é um encontro, como a pedra batendo na nave. Só que agora quem encosta é o chefão.',
             ],
-            encontrar('Ao iniciar'),
+            encontrar('Quando acontecer'),
             [
               'instrucao',
               'Abra Jogo 3D, Encostar e Encostar. Pegue Quando heroi encostar em algum do grupo e encaixe logo abaixo do encontro da nave com os asteroides.',
@@ -382,8 +404,13 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             ],
             [
               'instrucao',
-              'Dentro: Tirar o objeto tiroNoChefao do grupo tiros, Somar menos 1 em vidaDoChefao e escrever o texto Chefão de novo.',
-              `[abrir categoria Jogo 3D > Grupos] [apontar bloco "${ACERTO_3D}"]`,
+              'Dentro: Tirar o objeto do grupo, com tiroNoChefao e tiros, e logo abaixo Somar 1 em variável, com menos 1 e vidaDoChefao.',
+              `[abrir categoria Jogo 3D > Grupos] [encaixar "Tirar o objeto inimigo do grupo" em "${ACERTO_3D}"] [trocar "inimigo" por "tiroNoChefao" em "Tirar o objeto inimigo do grupo"] [trocar "asteroides" por "tiros" em "Tirar o objeto tiroNoChefao do grupo"] [abrir categoria Programação > Variáveis] [encaixar "Somar 1 em variável" abaixo de "Tirar o objeto tiroNoChefao do grupo tiros"] [trocar "1" por "-1" em "Somar 1 em variável"] [trocar "contador" por "vidaDoChefao" em "Somar -1 em variável"]`,
+            ],
+            [
+              'instrucao',
+              'Logo abaixo, escreva o texto Chefão de novo: Escrever na tela, em cima, à esquerda, Chefão, dois-pontos e um espaço, mais o valor de vidaDoChefao. Por último, Tocar o som pronto, com o som acerto.',
+              `[abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [encaixar "Escrever na tela" abaixo de "Somar -1 em variável vidaDoChefao"] [apontar bloco "Escrever na tela dentro de ${ACERTO_3D}"]`,
             ],
             [
               'descoberta',
@@ -398,14 +425,20 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
           steps: [
             'Logo abaixo do encontro da nave com os asteroides: Quando chefao encostar em algum do grupo tiros, chamando o laser de tiroNoChefao (Jogo 3D → Encostar → Encostar).',
             'Dentro: Tirar o objeto tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao.',
-            'Logo abaixo: Escrever na tela, em cima, à esquerda, "Chefão: " + vidaDoChefao.',
+            'Logo abaixo: Escrever na tela, em cima, à esquerda, "Chefão: " + vidaDoChefao, e Tocar o som pronto acerto.',
           ],
           tests: ['Cada laser que acerta tira 1 do texto Chefão.'],
           blockLabels: [
             'Quando chefao encostar em algum do grupo tiros',
             'Somar -1 em variável vidaDoChefao',
           ],
-          blockTypes: ['sz_g3d_on_touch_group', 'sz_g3d_remove_from_group', 'sz_js_var_increment'],
+          blockTypes: [
+            'sz_g3d_on_touch_group',
+            'sz_g3d_remove_from_group',
+            'sz_js_var_increment',
+            'sz_g3d_hud_text',
+            'sz_g3d_play_effect',
+          ],
           conferencia:
             'o encontro do chefão com os tiros tira o laser do grupo e soma menos 1 em vidaDoChefao',
           mostrar: ACERTO_3D,
@@ -419,41 +452,48 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             'Programe o fim: no quadro, Se vidaDoChefao for menor ou igual a 0, o chefão vai para longe e o placar ganha 10.',
           falas: [
             ['conversa', 'No zero, como no jogo 2D: o chefão sai e dá dez pontos.'],
+            encontrar('Enquanto estiver rodando'),
             [
               'instrucao',
-              'No quadro, logo abaixo de Mover os objetos do grupo asteroides, um Se com vidaDoChefao menor ou igual a 0.',
-              '[arrastar até "Enquanto estiver rodando"] [abrir categoria Programação > Lógica & Se] [apontar prévia]',
+              'No quadro, logo abaixo de Mover o grupo asteroides, encaixe um Se, de Programação e Lógica e Se. Escolha vidaDoChefao no x e o sinal de menor ou igual. Conserve o zero.',
+              `[arrastar até "${MOVER_PEDRAS_3D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" abaixo de "${MOVER_PEDRAS_3D}"] [trocar "x" por "vidaDoChefao" em "Se abaixo de ${MOVER_PEDRAS_3D}"] [trocar ">" por "≤" em "${SE_ZERO_3D}"]`,
             ],
             [
               'instrucao',
               'No então: Colocar o objeto chefao em x 0, y 1 e z menos 200, Somar 10 em pontos e escrever o placar dos acertos de novo.',
-              `[abrir categoria Jogo 3D > Objetos > Posição, giro e tamanho] [apontar bloco "${SE_ZERO_3D}"]`,
+              `[abrir categoria Jogo 3D > Objetos > Posição, giro e tamanho] [encaixar "Colocar o objeto" em "${SE_ZERO_3D}" no "então"] [apontar bloco "${SE_ZERO_3D}"]`,
             ],
             [
               'teste',
-              'Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some... e o placar dispara!',
+              'Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some, e o placar dispara: passa da meta e a patrulha termina na hora!',
               '[rodar de novo] [tecla Enter] [tecla Space] [tecla Space] [tecla Space] [tecla Space] [tecla Space]',
             ],
             ['pergunta', 'É o mesmo problema do jogo 2D?'],
             [
               'conversa',
-              'É, sim: o quadro roda sem parar e a vida continua em zero. A guarda é a próxima parte.',
+              'É, sim: o quadro roda sem parar e a vida continua em zero, então o prêmio soma até passar da meta. A guarda é a próxima parte.',
             ],
           ],
           steps: [
-            'No quadro, logo abaixo do movimento dos asteroides: Se vidaDoChefao ≤ 0.',
+            'No quadro, logo abaixo de Mover o grupo asteroides: Se vidaDoChefao ≤ 0.',
             'No então: Colocar o objeto chefao em x 0, y 1, z −200, Somar 10 em pontos e escrever o placar dos acertos.',
           ],
           tests: [
             'Com cinco acertos, o chefão sai.',
-            'O placar dispara: o prêmio ainda soma a cada quadro.',
+            'O placar dispara e a patrulha termina com a vitória: o prêmio ainda soma a cada quadro.',
           ],
           blockLabels: [
             'Se vidaDoChefao ≤ 0',
             'Colocar o objeto chefao em x 0 y 1 z -200',
             'Somar 10 em variável pontos',
           ],
-          blockTypes: ['sz_js_if_else', 'sz_g3d_set_position', 'sz_js_var_increment'],
+          blockTypes: [
+            'sz_js_if_else',
+            'sz_val_compare',
+            'sz_g3d_set_position',
+            'sz_js_var_increment',
+            'sz_g3d_hud_text',
+          ],
           conferencia:
             'no quadro, o Se vidaDoChefao menor ou igual a 0 leva o chefão para longe e soma 10 em pontos',
           mostrar: SE_ZERO_3D,
@@ -470,12 +510,18 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             [
               'instrucao',
               'Em Ao iniciar, logo abaixo de vidaDoChefao, crie chefaoDerrotado com o valor falso.',
-              '[arrastar até "Criar variável vidaDoChefao"] [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "Criar variável vidaDoChefao"] [trocar "contador" por "chefaoDerrotado" em "Criar variável contador"]',
+              '[arrastar até "Criar variável vidaDoChefao"] [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "Criar variável vidaDoChefao"] [trocar "contador" por "chefaoDerrotado" em "Criar variável contador"] [abrir categoria Programação > Valores] [soltar "verdadeiro" em cima do "0" em "Criar variável chefaoDerrotado"] [abrir campo "verdadeiro" em "Criar variável chefaoDerrotado"] [escolher "falso" em "Criar variável chefaoDerrotado"]',
+            ],
+            encontrar('Enquanto estiver rodando'),
+            [
+              'instrucao',
+              'Dentro do Se do zero, encaixe outro Se no começo do então. Escolha chefaoDerrotado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro; depois troque verdadeiro por falso.',
+              `[arrastar até "${SE_ZERO_3D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_ZERO_3D}" no "então"] ${marcasDoSe(SE_ZERO_3D, 'chefaoDerrotado', '=', { bloco: 'falso' })}`,
             ],
             [
               'instrucao',
-              'Dentro do Se do zero, um Se chefaoDerrotado igual a falso com os blocos do prêmio dentro, e no começo dele Alterar chefaoDerrotado para verdadeiro.',
-              `[abrir categoria Programação > Lógica & Se] [apontar bloco "${SE_GUARDA_3D}"]`,
+              'Arraste Colocar o objeto chefao, com os blocos de baixo, para o então do Se novo. Logo no começo desse então, encaixe Alterar variável chefaoDerrotado para verdadeiro.',
+              `[mover "Colocar o objeto chefao" para "${SE_GUARDA_3D}" no "então"] [abrir categoria Programação > Variáveis] [encaixar "Alterar variável contador para" em "${SE_GUARDA_3D}" no "então"] [trocar "contador" por "chefaoDerrotado" em "Alterar variável contador para"] [abrir categoria Programação > Valores] [soltar "verdadeiro" em cima do "1" em "Alterar variável chefaoDerrotado para"]`,
             ],
             [
               'teste',
@@ -493,7 +539,7 @@ export function chefaoAulas(): PoderAula<ChefaoEtapa>[] {
             'Se chefaoDerrotado = falso',
             'Alterar variável chefaoDerrotado para verdadeiro',
           ],
-          blockTypes: ['sz_js_var_create', 'sz_js_if_else', 'sz_js_var_assign', 'sz_val_boolean'],
+          blockTypes: ['sz_js_var_create', 'sz_js_if_else', 'sz_js_var_assign', 'sz_val_bool'],
           conferencia:
             'o prêmio fica no Se chefaoDerrotado igual a falso, que começa mudando chefaoDerrotado para verdadeiro',
           mostrar: SE_ZERO_3D,

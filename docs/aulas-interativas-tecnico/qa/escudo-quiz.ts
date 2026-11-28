@@ -40,10 +40,10 @@ export const escudoQuiz2d: ManifestQuiz = {
         'O Escudo está em 2, e a nave pega outro item. Quanto o Escudo vai mostrar logo depois?',
       choices: [
         { id: 'a', label: '7, porque soma 5 aos 2 que já tinha.' },
-        { id: 'b', label: '5, porque pegar o item põe 5 em tempoDoEscudo.' },
-        { id: 'c', label: '2, porque o escudo ainda não tinha acabado.' },
+        { id: 'b', label: '2, porque o escudo ainda não tinha acabado.' },
+        { id: 'c', label: '5, porque pegar o item põe 5 em tempoDoEscudo.' },
       ],
-      correctChoiceIds: ['b'],
+      correctChoiceIds: ['c'],
       explanation:
         'O encontro com o item usa Alterar variável tempoDoEscudo para 5: o número antigo é trocado por 5, não somado. Com Somar 5, o escudo poderia crescer sem parar.',
     },
@@ -51,15 +51,15 @@ export const escudoQuiz2d: ManifestQuiz = {
       id: 'testes',
       prompt: 'Para ter certeza de que o escudo funciona, quais testes você deve fazer?',
       choices: [
-        { id: 'a', label: 'Só deixar uma pedra bater logo depois de pegar o item.' },
         {
-          id: 'b',
+          id: 'a',
           label:
             'Deixar uma pedra bater com o escudo ligado, esperar o Escudo chegar a 0 e deixar outra pedra bater.',
         },
+        { id: 'b', label: 'Só deixar uma pedra bater logo depois de pegar o item.' },
         { id: 'c', label: 'Pegar dois itens seguidos e olhar se o número subiu.' },
       ],
-      correctChoiceIds: ['b'],
+      correctChoiceIds: ['a'],
       explanation:
         'O escudo tem duas respostas: com tempo, a pedra só sai; sem tempo, a nave perde uma vida. Uma batida com o escudo ligado e outra com ele em 0 conferem as duas, e o número parando no 0 confere o prazo.',
     },

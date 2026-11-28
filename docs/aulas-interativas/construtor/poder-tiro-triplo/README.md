@@ -32,6 +32,12 @@ Os mesmos do [Escudo temporário](../poder-escudo-temporario/README.md), com o p
 A arte (os itens, com as quatro molduras) está em
 [docs/design/construtor-poderes-blender](../../../design/construtor-poderes-blender/README.md).
 
+## Gravação
+
+Duplicar um bloco (botão direito → Duplicar) não tem marca do robô de gravação: esses gestos
+(os três lasers do Espaço, nas duas aulas) vão em captura manual. Os tempos de espera do item são estimativas e se acertam
+no Verificar plano.
+
 ## Regerar
 
 ```sh

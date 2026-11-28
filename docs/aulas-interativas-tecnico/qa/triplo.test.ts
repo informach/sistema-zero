@@ -165,6 +165,11 @@ describe('Tiro triplo', () => {
           ),
         ),
       ).toContain('contagem-com-guarda')
+      if (d === '3d')
+        // o item que liga o tiro triplo sem escrever o número na tela
+        expect(
+          falhas(comMudanca(d, /(tempoTriplo = 5;)\n\s*SZGame3D\.hudText\([^;]*;/, '$1')),
+        ).toContain('item-liga-cinco')
     })
   }
 })

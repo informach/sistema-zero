@@ -31,6 +31,12 @@ const disparar: ExecutionStep = { action: 'press', key: 'Space', holdMs: 40 }
 const rajada = (): ExecutionStep[] =>
   Array.from({ length: 8 }, () => [disparar, esperar(560)]).flat()
 
+/** "Chefão: " + vidaDoChefao. */
+const textoDaVida: Pattern = {
+  blockType: 'sz_math_arithmetic',
+  inputBlocks: { B: { blockType: 'sz_val_variable', fields: { NAME: 'vidaDoChefao' } } },
+}
+
 const decremento: Pattern = {
   blockType: 'sz_js_var_increment',
   fields: { NAME: 'vidaDoChefao', DELTA: -1 },
@@ -81,6 +87,7 @@ export function chefaoChecks(
               type: 'usesBlock',
               blockType: 'sz_g3d_hud_text',
               fields: { CORNER: 'top-left' },
+              inputBlocks: { TEXT: textoDaVida },
               area: 'start',
             },
     })
@@ -91,7 +98,7 @@ export function chefaoChecks(
       comportamento(
         'um-laser-tira-um',
         'Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.',
-        'No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.',
+        'No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.',
         [comecar, esperar(300), disparar, esperar(1100), disparar, esperar(1100)],
         valor('vidaDoChefao', 'atMost', r.vida - 1),
         // sem tirar o laser, ele continua encostando e a vida despenca num tiro só
@@ -103,8 +110,8 @@ export function chefaoChecks(
       label: 'No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.',
       hint:
         d === '2d'
-          ? 'Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e mudar vidaDoChefao em -1.'
-          : 'Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo e mudar vidaDoChefao em -1.',
+          ? 'Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e Somar -1 em vidaDoChefao.'
+          : 'Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo, Somar -1 em vidaDoChefao e escrever o texto Chefão de novo.',
       rule:
         d === '2d'
           ? {
@@ -127,6 +134,11 @@ export function chefaoChecks(
                 BODY: [
                   { blockType: 'sz_g3d_remove_from_group', fields: { GROUP: 'tiros' } },
                   decremento,
+                  {
+                    blockType: 'sz_g3d_hud_text',
+                    fields: { CORNER: 'top-left' },
+                    inputBlocks: { TEXT: textoDaVida },
+                  },
                 ],
               },
             },
@@ -173,8 +185,26 @@ export function chefaoChecks(
       hint: 'Dentro do Se vidaDoChefao ≤ 0: Se chefaoDerrotado = falso, então Alterar chefaoDerrotado para verdadeiro e o prêmio.',
       rule: {
         type: 'usesBlock',
-        blockType: 'sz_js_var_assign',
-        fields: { NAME: 'chefaoDerrotado' },
+        blockType: 'sz_js_if_else',
+        inputBlocks: { COND: comparaVariavel('vidaDoChefao', ['<=', '<', '==', '==='], 0) },
+        inputBlocksAll: {
+          THEN: [
+            {
+              blockType: 'sz_js_if_else',
+              inputBlocks: {
+                COND: {
+                  blockType: 'sz_val_compare',
+                  inputBlocks: {
+                    LEFT: { blockType: 'sz_val_variable', fields: { NAME: 'chefaoDerrotado' } },
+                  },
+                },
+              },
+              inputBlocksAll: {
+                THEN: [{ blockType: 'sz_js_var_assign', fields: { NAME: 'chefaoDerrotado' } }],
+              },
+            },
+          ],
+        },
         area: 'loops',
       },
     })
