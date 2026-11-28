@@ -22,7 +22,7 @@ Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Z
 **A regra:** Criar a variável vidaDoChefao com 5 e a barra que mostra a vida embaixo do chefão.
 
 1. Em Ao iniciar, logo abaixo de Criar sprite chefao: Criar variável vidaDoChefao com valor 5 (Programação → Variáveis).
-2. No fim de A cada quadro do jogo: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela).
+2. No fim de A cada quadro do jogo, logo abaixo da legenda dos controles: Barra de valor da variável vidaDoChefao, máximo 5, x 300, y 158, largura 200, altura 10, vermelha (Jogo 2D → Vida e placar → Indicadores e texto na tela).
 
 **Teste:**
 
@@ -33,7 +33,7 @@ Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Z
 **A regra:** Usar o encontro do chefão com o grupo tiros: o laser sai e a vida perde 1.
 
 1. No quadro do jogo, logo abaixo do encontro das pedras com a nave: Para cada sprite do grupo tiros que colidir com o sprite chefao, chamando de tiroNoChefao.
-2. Dentro: Tirar o sprite tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao.
+2. Dentro: Tirar o sprite tiroNoChefao do grupo tiros, Somar −1 em variável vidaDoChefao e Tocar efeito batida.
 
 **Teste:**
 
@@ -44,12 +44,12 @@ Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Z
 **A regra:** Quando a vida chega a 0, levar o chefão para longe e somar 10 pontos de prêmio.
 
 1. No quadro do jogo, logo abaixo do encontro dos tiros com o chefão: Se vidaDoChefao ≤ 0.
-2. No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho) e Somar 10 em variável pontos.
+2. No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y −400 (Jogo 2D → Movimento → Posição e tamanho), Somar 10 em variável pontos e Tocar efeito explosão.
 
 **Teste:**
 
 - Com cinco acertos, o chefão explode e sai da tela.
-- O placar dispara: o prêmio ainda soma a cada quadro.
+- O placar dispara e a partida termina com a vitória: o prêmio ainda soma a cada quadro.
 
 ### O prêmio vale uma vez
 
@@ -69,7 +69,7 @@ Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Z
 
 **A regra:** Criar a variável vidaDoChefao com 5 e o texto que mostra a vida.
 
-1. Em Ao iniciar, logo abaixo de Dar 3 de vida a nave: Criar variável vidaDoChefao com valor 5.
+1. Em Ao iniciar, logo abaixo de Colocar o objeto chefao em x 0 y 1 z −24: Criar variável vidaDoChefao com valor 5.
 2. Logo abaixo do placar dos acertos: Escrever na tela, em cima, à esquerda, "Chefão: " + vidaDoChefao.
 
 **Teste:**
@@ -82,7 +82,7 @@ Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Z
 
 1. Logo abaixo do encontro da nave com os asteroides: Quando chefao encostar em algum do grupo tiros, chamando o laser de tiroNoChefao (Jogo 3D → Encostar → Encostar).
 2. Dentro: Tirar o objeto tiroNoChefao do grupo tiros e Somar −1 em variável vidaDoChefao.
-3. Logo abaixo: Escrever na tela, em cima, à esquerda, "Chefão: " + vidaDoChefao.
+3. Logo abaixo: Escrever na tela, em cima, à esquerda, "Chefão: " + vidaDoChefao, e Tocar o som pronto acerto.
 
 **Teste:**
 
@@ -92,13 +92,13 @@ Antes e depois de cada laser, observe a vida do chefão, a barra e o placar. O Z
 
 **A regra:** Quando a vida chega a 0, levar o chefão para longe e somar 10 pontos.
 
-1. No quadro, logo abaixo do movimento dos asteroides: Se vidaDoChefao ≤ 0.
+1. No quadro, logo abaixo de Mover o grupo asteroides: Se vidaDoChefao ≤ 0.
 2. No então: Colocar o objeto chefao em x 0, y 1, z −200, Somar 10 em pontos e escrever o placar dos acertos.
 
 **Teste:**
 
 - Com cinco acertos, o chefão sai.
-- O placar dispara: o prêmio ainda soma a cada quadro.
+- O placar dispara e a patrulha termina com a vitória: o prêmio ainda soma a cada quadro.
 
 ### O prêmio vale uma vez
 

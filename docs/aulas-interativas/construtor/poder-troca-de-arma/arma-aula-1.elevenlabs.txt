@@ -86,19 +86,21 @@
 
 [confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Logo abaixo de Quando apertar a tecla Enter, encaixe outro Quando apertar a tecla, de Jogo 2D, Controles e Teclado, ações e toque. Escolha a tecla E.
+[confident, clear, unhurried voice] Logo abaixo de Quando apertar a tecla barra de espaço, encaixe outro Quando apertar a tecla, de Jogo 2D, Controles e Teclado, ações e toque. Escolha a tecla E.
 
-[confident, clear, unhurried voice] Deixe o fazer desse relógio à vista. Abra Programação e depois Lógica e Se, e encaixe um Se dentro desse fazer.
+[confident, clear, unhurried voice] Deixe o fazer dessa tecla à vista. Abra Programação e depois Lógica e Se, e encaixe um Se dentro desse fazer.
 
 [confident, clear, unhurried voice] Leve a pergunta x maior que zero para a lixeira. Com o espaço da pergunta à vista, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, e encaixe o estado do jogo é.
 
-[confident, clear, unhurried voice] Escolha jogando no estado. Assim, nada nasce antes de a partida começar.
+[confident, clear, unhurried voice] Escolha jogando no estado. Assim, a tecla só vale durante a partida.
 
-[confident, clear, unhurried voice] No então desse Se, encaixe outro Se. Escolha plasmaLiberado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro.
+[confident, clear, unhurried voice] No então desse Se, encaixe outro Se. Escolha plasmaLiberado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro, de Programação e Valores.
 
-[confident, clear, unhurried voice] Dentro dele, mais um Se: arma igual ao texto laser. Abra o senão desse Se.
+[confident, clear, unhurried voice] No então dele, mais um Se: arma igual ao texto laser. Depois, abra o senão desse Se.
 
-[confident, clear, unhurried voice] No então, Alterar variável arma para o texto plasma. No senão, Alterar variável arma para o texto laser. Logo abaixo, Tocar efeito, com o efeito selecionar.
+[confident, clear, unhurried voice] No então, Alterar variável arma para o texto plasma. No senão, Alterar variável arma para o texto laser.
+
+[confident, clear, unhurried voice] Logo abaixo do Se da arma, ainda dentro do Se do plasma, encaixe Tocar efeito, de Jogo 2D, Som e Efeitos prontos, e escolha selecionar.
 
 [upbeat, encouraging voice] Clique no jogo e aperte Enter. Aperte E antes do item: nada muda. Pegue o item e aperte E: o som de trocar toca. A placa ainda não aparece.
 
@@ -152,7 +154,7 @@
 
 [confident, clear, unhurried voice] Duplique o laser e leve a cópia para o então. Na cópia, troque o grupo por tirosPlasma, a imagem por plasma-roxo, o menos 5 por menos 12, o menos 24 por menos 32, a largura por 24, a altura por 32 e o vy por menos 4.
 
-[confident, clear, unhurried voice] Logo abaixo do plasma, Tocar efeito, com o efeito laser.
+[confident, clear, unhurried voice] Logo abaixo do plasma, encaixe Tocar efeito, de Jogo 2D, Som e Efeitos prontos, e escolha o efeito tiro.
 
 [interested, animated voice] O plasma vai para outro grupo, tirosPlasma, que já vem pronto: ele anda mais devagar e também acerta as pedras.
 

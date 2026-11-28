@@ -35,7 +35,7 @@ Antes e depois de cada tecla, observe a placa da arma e o tiro que sai. O Zappy 
 
 **A regra:** Na tecla E, durante a partida: só com o plasma liberado, laser vira plasma e plasma vira laser.
 
-1. Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando.
+1. Em Quando acontecer, logo abaixo de Quando apertar a tecla barra de espaço: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando.
 2. No então: Se plasmaLiberado = verdadeiro.
 3. Dentro: Se arma = "laser", com o senão aberto: no então, Alterar variável arma para "plasma"; no senão, Alterar variável arma para "laser". Logo abaixo, Tocar efeito selecionar.
 
@@ -61,7 +61,7 @@ Antes e depois de cada tecla, observe a placa da arma e o tiro que sai. O Zappy 
 1. No Espaço, dentro do então de Se jogando, encaixe um Se no começo (Programação → Lógica & Se). O laser e o som descem para baixo dele.
 2. Na pergunta: arma = "plasma".
 3. Abra o senão e leve o laser, com o som, para dentro dele.
-4. Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito laser.
+4. Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito tiro.
 
 **Teste:**
 
@@ -92,7 +92,7 @@ Antes e depois de cada tecla, observe a placa da arma e o tiro que sai. O Zappy 
 
 **A regra:** Na tecla E, durante a partida e só com o plasma liberado, trocar a arma.
 
-1. Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 3D → Controles).
+1. Em Quando acontecer, logo abaixo do encontro da nave com os asteroides: Quando apertar a tecla E (Jogo 3D → Controles).
 2. Dentro de a tecla E, deixe visível o espaço fazer. Em Programação → Lógica & Se, pegue Se e encaixe nesse espaço.
 3. Na pergunta x > 0, escolha estado no lugar de x e = no lugar de >. Use o sinal = sem a palavra solto.
 4. Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá.

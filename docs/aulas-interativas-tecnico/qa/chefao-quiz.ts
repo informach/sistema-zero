@@ -82,18 +82,18 @@ export const chefaoQuiz3d: ManifestQuiz = {
       ],
       correctChoiceIds: ['a'],
       explanation:
-        'Na primeira vez, chefaoDerrotado ainda é falso: o prêmio soma 10 e a guarda vira verdadeiro. Nos quadros seguintes a guarda já é verdadeiro, e o prêmio não soma mais.',
+        'Na primeira vez, chefaoDerrotado ainda é falso: o prêmio soma 10 e chefaoDerrotado vira verdadeiro. Nos quadros seguintes chefaoDerrotado já é verdadeiro, e o prêmio não soma mais.',
     },
     {
       id: 'texto',
       prompt:
         'O chefão cai depois de 5 lasers, mas o texto Chefão mostra 5 o tempo todo. O que falta?',
       choices: [
-        { id: 'a', label: 'Escrever o texto Chefão de novo logo depois de tirar 1 da vida.' },
-        { id: 'b', label: 'Trocar a vida do chefão por 10.' },
-        { id: 'c', label: 'Tirar o laser do grupo tiros.' },
+        { id: 'a', label: 'Trocar a vida do chefão por 10.' },
+        { id: 'b', label: 'Tirar o laser do grupo tiros.' },
+        { id: 'c', label: 'Escrever o texto Chefão de novo logo depois de tirar 1 da vida.' },
       ],
-      correctChoiceIds: ['a'],
+      correctChoiceIds: ['c'],
       explanation:
         'No Jogo 3D, o texto da tela só muda quando é escrito de novo. A vida desce, mas o texto continua com o valor da última vez que foi escrito, lá em Ao iniciar.',
     },

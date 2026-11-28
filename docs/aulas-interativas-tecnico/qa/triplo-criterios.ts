@@ -157,6 +157,7 @@ export function triploChecks(
             fields: { NAME: 'tempoTriplo' },
             inputs: { VALUE: r.duracao },
           },
+          ...(d === '3d' ? [{ blockType: 'sz_g3d_hud_text', fields: { CORNER: 'top-left' } }] : []),
         ]),
       },
     )
@@ -264,7 +265,7 @@ export function triploChecks(
     checks.push({
       id: 'contagem-com-guarda',
       label: 'A cada segundo, se o tiro triplo ainda tem tempo, ele perde 1.',
-      hint: 'Dentro do A cada 1 segundo: Se tempoTriplo > 0, então mudar tempoTriplo em -1. Sem o Se, o tempo passa do zero.',
+      hint: 'Dentro do A cada 1 segundo: Se tempoTriplo > 0, então Somar -1 em tempoTriplo. Sem o Se, o tempo passa do zero.',
       rule: relogio(d, 1, [
         {
           blockType: 'sz_js_if_else',

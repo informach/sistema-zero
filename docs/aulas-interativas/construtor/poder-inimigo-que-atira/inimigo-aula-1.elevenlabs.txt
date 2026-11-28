@@ -118,7 +118,7 @@
 
 [engaging, energetic, conversational voice] Os tiros que passam pela nave continuam no grupo, lá embaixo, fora da tela, para sempre. Como os lasers e as pedras, eles precisam sair do grupo.
 
-[confident, clear, unhurried voice] No quadro do jogo, logo abaixo da limpeza das pedras, encaixe Tirar do grupo quem sair da tela, de Jogo 2D, Grupos e Participação e limpeza, e escolha tirosInimigos.
+[confident, clear, unhurried voice] No quadro do jogo, logo abaixo de Mover os sprites do grupo tirosInimigos, encaixe Tirar do grupo quem sair da tela, de Jogo 2D, Grupos e Participação e limpeza, e escolha tirosInimigos.
 
 [interested, animated voice] E quando a partida recomeça, os tiros somem todos: o reinício cria o jogo de novo, com o grupo vazio.
 

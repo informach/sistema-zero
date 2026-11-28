@@ -25,8 +25,8 @@
       "clipe": "video-fim",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "acertos de novo. Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some... e o placar dispara!",
-      "ancoraDepois": "É, sim: o quadro roda sem parar e a vida continua em zero. A guarda é a próxima parte. Se algo não funcionou no seu",
+      "ancoraAntes": "aperte Enter e acerte o chefão cinco vezes. Ele some, e o placar dispara: passa da meta e a patrulha termina na hora!",
+      "ancoraDepois": "É, sim: o quadro roda sem parar e a vida continua em zero, então o prêmio soma até passar da meta. A guarda é a próxima",
       "falaPrincipal": "É o mesmo problema do jogo 2D?",
       "falaPersonagem": "É o mesmo problema do jogo 2D?",
       "tags": ["[curious]"]

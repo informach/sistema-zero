@@ -32,6 +32,12 @@ desenho do disparo 2D no caderno sai em duas partes (o projeto intermediário `d
 então ainda vazio). A arte (os quatro itens de plasma e os quatro plasmas) está em
 [docs/design/construtor-poderes-blender](../../../design/construtor-poderes-blender/README.md).
 
+## Gravação
+
+Duplicar um bloco (botão direito → Duplicar) não tem marca do robô de gravação: esses gestos
+(o plasma do Espaço, nas duas aulas) vão em captura manual. Os tempos de espera do item são estimativas e se acertam
+no Verificar plano.
+
 ## Regerar
 
 ```sh

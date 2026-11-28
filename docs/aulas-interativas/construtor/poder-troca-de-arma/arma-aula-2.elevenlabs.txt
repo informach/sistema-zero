@@ -92,7 +92,7 @@
 
 [confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Logo abaixo de Quando apertar a tecla Enter, encaixe outro Quando apertar a tecla, de Jogo 3D e Controles. Escolha a tecla E.
+[confident, clear, unhurried voice] Logo abaixo do encontro Quando nave encostar em algum do grupo asteroides, encaixe Quando apertar a tecla, de Jogo 3D e Controles. Escolha a tecla E.
 
 [engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
 
@@ -118,7 +118,11 @@
 
 [engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
 
-[confident, clear, unhurried voice] No então, Se plasmaLiberado igual a verdadeiro. Dentro, Se arma igual ao texto laser, com o senão aberto: no então, arma vira plasma; no senão, arma vira laser.
+[confident, clear, unhurried voice] No então da guarda, encaixe outro Se: plasmaLiberado igual ao valor verdadeiro, de Programação e Valores.
+
+[confident, clear, unhurried voice] No então dele, mais um Se: arma igual ao texto laser. Depois, abra o senão desse Se.
+
+[confident, clear, unhurried voice] No então, Alterar variável arma para o texto plasma. No senão, Alterar variável arma para o texto laser.
 
 [upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter, pegue o item na esquerda e aperte E. A troca acontece, mas o texto ainda não mostra a arma.
 
@@ -144,7 +148,7 @@
 
 [confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Na tecla E, logo depois do Se arma igual a laser, ainda dentro do Se plasmaLiberado, escreva o mesmo texto de novo.
+[confident, clear, unhurried voice] Na tecla E, logo abaixo do Se arma igual a laser, ainda dentro do Se plasmaLiberado, escreva o mesmo texto de novo: Escrever na tela, em cima, à esquerda, Arma, dois-pontos, mais o valor de arma.
 
 [upbeat, encouraging voice] Clique em Rodar de novo. O texto mostra Arma laser. Aperte Enter, pegue o item na esquerda e aperte E: o texto muda para plasma.
 
@@ -166,7 +170,9 @@
 
 [confident, clear, unhurried voice] Abra o senão e leve a cópia do laser, com a nota, para dentro dele.
 
-[confident, clear, unhurried voice] Duplique a cópia para o então e troque moldeTiro por moldePlasma e tiros por tirosPlasma. Na nota, 330 e 120.
+[confident, clear, unhurried voice] Duplique a cópia do laser e leve para o então. Na cópia, troque moldeTiro por moldePlasma e tiros por tirosPlasma.
+
+[confident, clear, unhurried voice] Duplique também a nota e leve para baixo da cópia do plasma. Na nota nova, troque 880 por 330 e 60 por 120.
 
 [upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Dispare: sai o laser. Pegue o item, aperte E e dispare: sai o plasma.
 
