@@ -2,15 +2,20 @@ import { afterEach, expect, spyOn, test } from 'bun:test'
 import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/core/studio/pro-limits'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import { prepareEditableStudioProject } from '../../studio/src/state/editableProjectValidation'
+import { serveArtifact, sha256, storeArtifact } from '../../studio-runtime/src/artifacts'
+import { memoryArtifactBucket } from '../../studio-runtime/tests/artifact-bucket'
 import { createFreeProRuntime } from '../src/lib/free-pro-runtime'
 import { createFreeProRuntimeBuild } from '../src/server/free-pro-toolchain'
 
 const originalUrl = process.env.STUDIO_PRO_RUNTIME_URL
 const originalToken = process.env.STUDIO_PRO_RUNTIME_TOKEN
+const originalPublicUrl = process.env.APP_PUBLIC_URL
 const stubs: { mockRestore(): void }[] = []
 afterEach(() => {
   for (const stub of stubs) stub.mockRestore()
   stubs.length = 0
+  if (originalPublicUrl === undefined) delete process.env.APP_PUBLIC_URL
+  else process.env.APP_PUBLIC_URL = originalPublicUrl
   if (originalUrl === undefined) delete process.env.STUDIO_PRO_RUNTIME_URL
   else process.env.STUDIO_PRO_RUNTIME_URL = originalUrl
   if (originalToken === undefined) delete process.env.STUDIO_PRO_RUNTIME_TOKEN
@@ -45,6 +50,7 @@ const request = (value: unknown) =>
     body: JSON.stringify(value),
   })
 function runtime() {
+  process.env.APP_PUBLIC_URL = 'https://adult.test'
   process.env.STUDIO_PRO_RUNTIME_URL = 'https://runtime.test'
   process.env.STUDIO_PRO_RUNTIME_TOKEN = 'only-upstream-secret'
   const calls: { url: string; init?: RequestInit }[] = []
@@ -158,4 +164,55 @@ test('opening an existing public document preserves its files while hosted compi
   await expect(adapter.build({ project: source })).rejects.toThrow()
   expect(calls.length).toBe(0)
   expect(JSON.stringify(source)).toBe(before)
+})
+
+test('public build behind a proxy binds the artifact to configured app origin, ignoring caller origins', async () => {
+  const calls = runtime()
+  process.env.APP_PUBLIC_URL = 'https://adult.test/some/path'
+  const handler = createFreeProRuntimeBuild(async () => ({ id: 'owner-one' }))
+  const response = await handler(
+    new Request('https://[::]:3007/api/studio/pro-runtime/free-build', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://caller.invalid',
+        'X-Forwarded-Host': 'caller.invalid',
+      },
+      body: JSON.stringify({ project: project(), parentOrigin: 'https://caller.invalid' }),
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect(calls.length).toBe(1)
+  expect(JSON.parse(String(calls[0]!.init?.body)).parentOrigin).toBe('https://adult.test')
+  const { bucket } = memoryArtifactBucket()
+  const bytes = new TextEncoder().encode('<canvas></canvas>')
+  const artifact = await storeArtifact({
+    bucket,
+    origin: 'https://runtime.test',
+    parentOrigin: JSON.parse(String(calls[0]!.init?.body)).parentOrigin,
+    manifest: {
+      version: 1,
+      files: [{ path: 'index.html', bytes: bytes.length, sha256: await sha256(bytes) }],
+    },
+    read: async () => bytes,
+  })
+  const served = await serveArtifact(new Request(artifact.url), bucket)
+  const policy = served.headers.get('content-security-policy')
+  expect(served.status).toBe(200)
+  expect(policy).toContain('frame-ancestors https://adult.test;')
+  expect(policy).toContain('sandbox allow-scripts allow-pointer-lock;')
+  expect(policy).not.toContain('allow-same-origin')
+  expect(policy).not.toContain('[::]')
+})
+
+test('public build refuses missing or invalid configured origins before invoking the compiler', async () => {
+  const calls = runtime()
+  const handler = createFreeProRuntimeBuild(async () => ({ id: 'owner-one' }))
+  for (const value of [undefined, 'not-a-url', 'data:text/html,no-parent']) {
+    if (value === undefined) delete process.env.APP_PUBLIC_URL
+    else process.env.APP_PUBLIC_URL = value
+    const result = await handler(request({ project: project() }))
+    expect(result.status).toBe(503)
+  }
+  expect(calls.length).toBe(0)
 })
