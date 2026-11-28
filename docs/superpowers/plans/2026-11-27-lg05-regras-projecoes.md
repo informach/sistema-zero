@@ -1,12 +1,12 @@
 # LG05 — regras e projeções do Pinta
 
-**Imagem qualificada; fontes em validação final — 2026-11-28T10:12:42.330Z**
+**Leitores aprovados; staging e gravador em validação final — 2026-11-28T10:48:22.782Z**
 
 A factory portátil agora é gerada a partir da única implementação de origem antes da minificação. As cópias publicadas pelo navegador foram verificadas contra o motor oficial e permanecem reconhecidas sem reescrever os projetos da conta. O projeto reproduzido passou de 1.983 diagnósticos internos para zero; erros autorais e motores alterados continuam sendo diagnosticados ou recusados. A assinatura variável foi reproduzida antes da correção em teste de bundle minificado.
 
 Verificações: 45 testes focados/324 expectativas, 21 contratos Core/195 expectativas e quatro integrações BFF/23 expectativas aprovados. Tipos de Studio, Core e Member Shell aprovados; formato e gerados conferidos nas três fontes isoladas. O gerador agora verifica também a integridade completa das equivalências e emite o formato canônico. Perfil novo do executor: `7c1ad83a48825f00a779bb09cb790fd9fcb91abe40c9c60d52654ab2e2994e3a`. A imagem anterior continua ativa em staging até a nova qualificação.
 
-- Leitores PR 299: `8f5fcd810`; CI [46131966208](https://github.com/informach/sistema-zero/actions/runs/46131966208) em andamento. Escrita pública 7/teto 8 até terminar a primeira onda.
+- Leitores PR 299: `8f5fcd810`; CI [46131966208](https://github.com/informach/sistema-zero/actions/runs/46131966208) aprovada integralmente, 13/13 na tentativa 1; plano `46131966216` e Classic `46131966261` aprovados. Escrita pública 7/teto 8 até terminar a primeira onda.
 - Gravador único PR 301: `6bd8aa9a3`; CI [46131969251](https://github.com/informach/sistema-zero/actions/runs/46131969251) em andamento. Escrita 8/teto 9 e espaçamento novo entram depois dos leitores. A união das duas árvores foi conferida e equivale exatamente à candidata final.
 - Staging: `3ac2e7d3f`, preserva integralmente os cursos concorrentes de `de0efffd0`; corrigido o texto vazio que reprovava o teste de copy desses cursos, três testes/9 expectativas aprovados. Onda [46132860134](https://github.com/informach/sistema-zero/actions/runs/46132860134) e imagem oficial [46129084968](https://github.com/informach/sistema-zero/actions/runs/46129084968) em andamento.
 - Campanhas de `5400ea1d1`: 121 arquivos idênticos nas duas candidatas de produção. Na staging, 120 idênticos; o DTO restante só acrescenta as opções dos novos cursos, sem alterar as campanhas.
