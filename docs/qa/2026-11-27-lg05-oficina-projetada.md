@@ -1,12 +1,12 @@
 # LG05 — oficina projetada e destinos
 
-**Correção de admissão em qualificação — 2026-11-28T14:24:37.447Z**
+**Correção de admissão em qualificação — 2026-11-28T15:32:41.580Z**
 
 O aceite da fonte `434fde8e0` encontrou a recusa `$.tree`: o transporte novo anunciava cotas do compilador durante a abertura do documento, antes da projeção regional. O teste reproduziu a mesma recusa; a correção preserva os limites documentais existentes e mantém as cotas do BFF após a projeção. São três arquivos alterados, fora do fechamento da imagem: 14 testes/95 expectativas e tipos Member Shell aprovados.
 
-- Leitores PR 299: `8f020f99f`; CI [46154392870](https://github.com/informach/sistema-zero/actions/runs/46154392870), plano `46154392875` e Classic `46154392872` em validação.
-- Gravador único PR 301: `669571418`; CI [46154398004](https://github.com/informach/sistema-zero/actions/runs/46154398004), plano `46154397972` e Classic `46154397853` em validação.
-- Staging candidata `5d273b258`: onda explícita dos oito serviços [46154408250](https://github.com/informach/sistema-zero/actions/runs/46154408250). A rodada automática desta própria fonte foi encerrada antes de qualquer operação, para usar a seleção explícita; nenhuma onda concorrente foi cancelada.
+- Leitores PR 299: `8f020f99f`; CI [46154392870](https://github.com/informach/sistema-zero/actions/runs/46154392870), plano `46154392875` e Classic `46154392872` aprovados; CI com 12/13 checks aprovados, sem falhas.
+- Gravador único PR 301: `669571418`; CI [46154398004](https://github.com/informach/sistema-zero/actions/runs/46154398004), plano `46154397972` e Classic `46154397853` aprovados; CI concluída integralmente, 13/13 checks na tentativa 1.
+- Staging candidata `5d273b258`: onda explícita dos oito serviços [46154408250](https://github.com/informach/sistema-zero/actions/runs/46154408250). Aprovada integralmente, 13/13 checks na tentativa 1; implantação canônica dos oito serviços em execução. A rodada automática desta própria fonte foi encerrada antes de qualquer operação, para usar a seleção explícita; nenhuma onda concorrente foi cancelada.
 
 A fonte `434fde8e0` concluiu 13/13 checks, os oito serviços saudáveis, oito predecessores retirados e barreira Jornada publicada na versão 3. As três projeções reais preservaram PNGs e passaram tipos, build, execução e captura; aquecimento 3D passou. Esses recibos são da fonte anterior. A imagem `8a7bef4a…`/perfil `7c1ad83a…` permanece idêntica e qualificada; não requer novo Worker de staging. Falta qualificar as fontes novas, repetir o aceite real e concluir as duas ondas de produção. LG05 ainda não está em produção.
 

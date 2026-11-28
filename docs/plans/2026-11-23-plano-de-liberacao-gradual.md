@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-**Estado em 2026-11-28T14:24:37.447Z:** a staging `434fde8e0` concluiu os 13 checks e a onda dos oito serviços, com predecessores retirados, barreira publicada e três projeções reais aprovadas. O aceite encontrou uma recusa na abertura do Pro; a correção passou em 14 testes/95 expectativas e tipos. Novas fontes `8f020f99f` (leitores), `669571418` (gravador) e `5d273b258` (staging) em validação remota. Faltam o aceite final e as duas ondas de produção. Campanhas preservadas.
+**Estado em 2026-11-28T15:32:41.580Z:** a staging `434fde8e0` concluiu os 13 checks e a onda dos oito serviços, com predecessores retirados, barreira publicada e três projeções reais aprovadas. O aceite encontrou uma recusa na abertura do Pro; a correção passou em 14 testes/95 expectativas e tipos. Novas fontes `8f020f99f` (leitores), `669571418` (gravador) e `5d273b258` (staging) com gravador e staging aprovados 13/13; leitores em 12/13, sem falhas. A onda canônica dos oito serviços da staging está em execução. Faltam o aceite final e as duas ondas de produção. Campanhas preservadas.
 
 Registrado em 23/11/2026. Atualizado em 27/11 para preservar as campanhas já publicadas e executar LG05. LG01, LG02 e LG04 estão concluídas em produção. LG03 segue parcial: Ilha do Farol 3/3 e Jardim Secreto 2/2, nos dois públicos; Pinta e Moedas em rascunho 0/1, conferidos por leitura de produção em 28/11, 01:54 UTC.
 
