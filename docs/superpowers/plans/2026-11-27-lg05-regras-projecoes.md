@@ -1,5 +1,43 @@
 # LG05 — regras e projeções do Pinta
 
+**Estado vigente — 2026-11-28T03:06:39.021Z**
+
+- Produção permanece na fonte das campanhas `5400ea1d1`; LG05 ainda não foi promovida. As candidatas preservam os 121 arquivos comerciais.
+- Leitores/oficina: [PR 299](https://github.com/informach/sistema-zero/pull/299), fonte `ad778a644`, CI `46100622145`, plano `46100622171` e Classic `46100622208`.
+- Gravador único e correção visual: [PR 301](https://github.com/informach/sistema-zero/pull/301), fonte `00bd660fd`, CI `46100627556`, plano `46100627625` e Classic `46100627536`. A ativação pública 8/9 aguarda leitores e executor em produção.
+- Staging final: `a59e4ab6d`, CI/onda `46100632498`; mantém Palco e materiais concorrentes. As três rodadas estão em execução, sem falhas observadas nesta leitura.
+- Continuidade corrigida: caminhos de mídia sem extensão no Pro e caminhos PNG relativos do Python usam as autoridades existentes; cada leitor mantém suas próprias restrições. O adaptador regional público conserva a compilação hospedada para projetos incompatíveis com a montagem local; o privado permanece local.
+- Verificação fresca: 82 testes focados/381 expectativas; grupos completos core, state, projects e modes do Studio, 1.321 aprovados/16.299 expectativas/zero falhas, dois condicionais 3D preexistentes; tipos Studio e gerados oficiais aprovados nas três fontes. Perfil final `5e7b0da87eab99c8b873bbe2ec8a5f9f07d0079164c31c1bc8700bb5060b1049`; imagem oficial `46100625702` em qualificação. A imagem eb9 anterior foi substituída antes de qualquer implantação.
+- Aceite real anterior na staging `cb94fd645`: nativo 8 byte a byte; migração para 9 no mesmo ID; três projeções com pintar/desfazer/refazer, confirmação na conta e reabertura sem dados locais; livros preservados. Layout: 12 px internos e entre painéis, 272 px no desktop, 390 px sem overflow, quatro botões de 44 px em toque. O defeito visual precedia LG05.
+- Executor staging ainda no perfil anterior 9d: Worker `1b4d0e6e-a0da-4c63-9dca-2b084860ca0f`, pools Pro 46/Three 23, cinco saudáveis por pool, 100%, zero antigas. Nenhum Worker eb9/5e7 publicado até este registro.
+
+Imagem final aprovada em 28/11, 03:10 UTC: workflow `46100625702`, tentativa 1, artefato `15246130340`, fonte `a59e4ab6d`. SHA-256 do arquivo `60ee85888ba0b5808ba524561f495f9d553668309c79cc4bf99ab18736f6cba2`; configuração `sha256:2bc2dc514a327776836f2b1b816ad8de79c5952ab62432f7962328468af0c20d`; perfil interno `5e7b0da87eab99c8b873bbe2ec8a5f9f07d0079164c31c1bc8700bb5060b1049`. Sete provas repetidas na imagem exata: zero falhas/26 expectativas. Transporte ao registro conferido: `sha256:ec5876b382d0041503ebdaa9dd78b82d5eded899af5951bd81d7714bb2523858`, configuração e camadas descomprimidas idênticas às aprovadas. Simulações dos dois Workers aprovadas; sem novo Worker publicado.
+
+Planos Railway e equivalência Classic das fontes finais aprovados: leitores `46100622171`/`46100622208`, gravador `46100627625`/`46100627536`. A CI ampla e a onda de staging ainda não terminaram. O aceite Pro em conta fria aguarda reentrada da responsável na sessão de staging expirada; nenhuma credencial ou permissão foi alterada.
+
+Antes de promover: qualificar a imagem final exata, atualizar o executor staging, concluir a onda e repetir Pro com edição/salvamento/reabertura fria e compilação hospedada observada. Depois: leitores e executor em produção, onda canônica de sete serviços e ativação do gravador único em segunda onda. Sem posts de QA, mudança de catálogo Python ou de compras/Jornada.
+
+<details>
+<summary>Histórico de qualificação e coordenação; estados anteriores</summary>
+
+**Candidatas corrigidas — 2026-11-28T01:53:09.305Z:** leitores PR 299 `112ac15a4e7979212c60653db2d2868197d810aa` (CI `46095206359`, plano `46095206511`, Classic `46095206374`); gravador/UI PR 301 `54d2ff562e5e99a0657d0adb8ad700ce234d189b` (CI `46095210885`, plano `46095210957`, Classic `46095210906`); staging `2136fd2053ab32fde9700f83dd8fcf663f156a05` (CI/onda `46095213843`). Todos os gates novos ainda em execução. A staging incorpora integralmente o Palco `bd9983c13` e os materiais `dcb19e5fb`; as duas candidatas de produção preservam seu escopo LG05. Perfil e imagem do executor continuam idênticos, conferidos pelo comando oficial. O projeto original em Blocos reabriu da conta em contexto sem dados locais após a conversão recusada.
+
+**Pendência encontrada no aceite real — 2026-11-28T01:47:34.266Z:** a onda staging `46087605887` terminou com sucesso, e os três mapas passaram por pintura/desfazer/refazer e reabertura em contexto com cookies somente, sem dados locais. Nativo 8 abriu byte a byte e foi migrado para 9 com mesmo ID, células e peças. Porém o jogo isométrico real, criado por `Jogar meu mapa`, roda em Blocos e é recusado ao guardar a conversão Pro: a admissão regional exigia `.png`, enquanto a conversão preserva o caminho público sem extensão que o contrato de mídia permite. Reprodução RED confirmou duas falhas; correção usa `validProMaterialPath`, preservando validação completa dos bytes PNG e recusando caminhos executáveis, ocultos ou fora da pasta. GREEN: 25 testes/120 expectativas. As candidatas de leitores e gravador e a staging serão requalificadas; produção ainda não promovida. A imagem do executor não foi alterada por esta correção.
+
+**Execução de staging — 2026-11-28T01:35Z:** executor novo conferido a 100%, Pro 46/Three 23 com cinco instâncias saudáveis por pool e zero instâncias antigas. Três jogos reais de `Jogar` passaram por tipos, build, playtest e captura no perfil `9d9c87fc…`; PNGs idênticos aos originais. Aquecimento 3D aprovado em 6,9 s. Members, Auth, gateway e Hub saudáveis em `cb94fd645`; interfaces ainda compilando. A revisão paralela do Palco `bd9983c13`, descendente de `cb94fd645` e restrita a `verbos.ts`, foi detectada em staging; não reverter seu commit e acompanhar a onda posterior que a preserva.
+
+**Estado vigente — 2026-11-28T00:25:01.767Z**
+
+- Produção permanece na fonte comercial `5400ea1d1`, preservada nas candidatas; os 121 arquivos foram comparados sem divergências.
+- Leitores/oficina: PR 299, fonte `52988d34c`, CI `46079975021` aprovado na tentativa 1, 13/13 jobs; configuração Railway e equivalência Classic também aprovadas. Produção LG05 ainda pendente.
+- Gravador único e correção visual: PR 301, fonte `0b51db079`, CI `46084123490` aprovado na tentativa 1, 13/13 validações. A candidata remove a seleção anterior e usa leitor/gravador 8 com teto nativo 9. O público em produção ainda está em 7/8.
+- Homologação conjunta: fonte `cb94fd645880f800f3ac618d9e094cc1a08b83f0`, CI `46087605887` aprovado 13/13; onda canônica dos oito serviços em execução. Inclui a correção visual e duas correções de tipo em testes da staging; estes passaram em 53 casos/442 expectativas, e tipos Studio foram aprovados localmente. A rodada anterior `46080979879` reprovou antes da implantação; nenhum deploy novo foi postado por ela.
+- Imagem Linux oficial `46077493200`, artefato `15234974061`, perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`; arquivo e camadas conferidos e sete testes reais repetidos, zero falhas. Registro `sha256:1be7f3ecfb61503144a88b5c5ebff252256a3508665b63fe4aef34e5789fa78f`. Workers simulados nos dois ambientes; staging enviada em 28/11, 01:20 UTC e conferida às 01:29 UTC: Worker `1b4d0e6e-a0da-4c63-9dca-2b084860ca0f` a 100%, pools Pro 46/Three 23, cinco instâncias saudáveis em cada, nenhuma instância antiga. Vínculos, variáveis, cron e subdomínio preservados; única alteração de metadado é a mensagem de implantação esperada. Produção ainda pendente.
+- Correção visual local: 12 px ao redor e entre grupos, coluna de 272 px, barra focal e selo compartilhados, rodapé completo em 390 px e alvos de toque de 44 px. Passaram 37 testes/226 expectativas, tipos Pinta, oito percursos desktop/toque e pintura → desfazer/refazer → recarregar na janela focal.
+
+Após CI e onda completa da staging: observar Worker/imagem a 100%, reabrir o controle nativo 8 e os documentos nativos 9 em contexto com cookies somente, conferir regras/projeções e executar os jogos reais no executor hospedado. Em produção, publicar primeiro todos os leitores compatíveis (PR 299) e depois o único gravador novo (PR 301). Sem post de QA no Mural real, sem promover Python e sem mudar compras/Jornada.
+
+
 
 **Staging reprovada antes da implantação — 28/11, 00:15 UTC:** a rodada `46080979879`, fonte `38a74e92a`, passou nas doze suítes restantes e reprovou no TypeScript de dois testes de outras mudanças da staging: objetivos JavaScript/Python na Patrulha e acesso a `fog` no material 3D. `deploy-staging` foi skipped; nenhum serviço nem Worker novo foi publicado por essa rodada. As duas verificações foram corrigidas sem mudar o código de produto: linguagem discriminada explicitamente e propriedade de material conferida em execução. Os 53 testes dos dois arquivos passaram, com 442 expectativas; a checagem de tipos Studio foi aprovada localmente. A próxima candidata reúne a correção visual e essas correções de teste, e precisa de CI completo próprio. A candidata de leitores `52988d34c` permanece aprovada 13/13.
 
@@ -12,9 +50,6 @@
 - Imagem Linux oficial: run `46077493200`, artefato `15234974061`, fonte `771fbf017`, perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`. Arquivo, configuração e camadas conferidos; sete testes repetidos no arquivo baixado, zero falhas. Registro `sha256:1be7f3ecfb61503144a88b5c5ebff252256a3508665b63fe4aef34e5789fa78f`. Entradas idênticas nas fontes finais. Workers simulados em ambos os ambientes; nova publicação pendente.
 
 A promoção de produção mantém duas etapas de implantação: todos os leitores compatíveis primeiro, depois a ativação do único gravador novo. As duas etapas não criam alternativas públicas. O aceite deve preservar o mapa nativo 8 já guardado, importar/editar/guardar e reabrir nativo 9 em contexto frio, e usar o jogo criado pelo botão Jogar no Estúdio. Publicação/atualização foi provada pelo BFF real com Hub/R2 controlados; não criar posts de QA no Mural real. Python e seus catálogos permanecem na LG08.
-
-<details>
-<summary>Histórico de qualificação e coordenação; estados anteriores</summary>
 
 **Homologação única preparada em 2026-11-27T23:10:10.162Z:** a staging reúne os leitores/oficina e a ativação final da PR 301, gravador causal 8 e teto nativo 9. A validação da fonte anterior `1c401e7b3` foi cancelada antes de qualquer job de implantação; nenhuma carga de catálogo/dados foi interrompida. Esta fonte precisa de CI completo, onda canônica e aceite de conta fria antes de publicar. Em produção, a ordem continua: PR 299 instala todos os leitores compatíveis; somente após sua onda completa promover a PR 301.
 
