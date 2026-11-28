@@ -23,6 +23,20 @@ const response = (body: unknown, status = 200) =>
     status,
     headers: { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
   })
+/** The reverse proxy's Request.url is internal; only deployment configuration owns the parent. */
+function configuredPublicOrigin(): string | null {
+  const value = process.env.APP_PUBLIC_URL?.trim()
+  if (!value) return null
+  try {
+    const url = new URL(value)
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password
+      ? url.origin
+      : null
+  } catch {
+    return null
+  }
+}
+
 /** No independent entitlement rule: each app supplies the exact guard of its existing Pro page. */
 export function createFreeProToolchainPreparation(
   authorize: () => Promise<{ id: string } | Response>,
@@ -62,7 +76,8 @@ function createFreeProOperation(
         return response({ error: { message: 'Escolha um projeto Pro válido.' } }, 400)
       const runtimeUrl = process.env.STUDIO_PRO_RUNTIME_URL?.trim().replace(/\/$/, '')
       const runtimeToken = process.env.STUDIO_PRO_RUNTIME_TOKEN?.trim()
-      if (!runtimeUrl || !runtimeToken)
+      const parentOrigin = operation === 'build' ? configuredPublicOrigin() : null
+      if (!runtimeUrl || !runtimeToken || (operation === 'build' && !parentOrigin))
         return response(
           { error: { message: 'O ambiente Pro ainda não está configurado. Avise a equipe.' } },
           503,
@@ -85,7 +100,7 @@ function createFreeProOperation(
           : await buildStudioProProject({
               ...context,
               templateId: proProjectTemplateId(project)!,
-              parentOrigin: new URL(request.url).origin,
+              parentOrigin: parentOrigin!,
             }),
       )
     } catch (error) {

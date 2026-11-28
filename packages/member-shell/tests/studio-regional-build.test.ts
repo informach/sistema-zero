@@ -262,7 +262,9 @@ test('o Pro público envia a identidade do motor e preserva os PNGs no fallback 
   })
   const before = JSON.stringify(pro)
   const oldUrl = process.env.STUDIO_PRO_RUNTIME_URL,
-    oldToken = process.env.STUDIO_PRO_RUNTIME_TOKEN
+    oldToken = process.env.STUDIO_PRO_RUNTIME_TOKEN,
+    oldPublicUrl = process.env.APP_PUBLIC_URL
+  process.env.APP_PUBLIC_URL = 'https://adult.test'
   process.env.STUDIO_PRO_RUNTIME_URL = 'https://runtime.test'
   process.env.STUDIO_PRO_RUNTIME_TOKEN = 'test-runtime-token'
   let captured: Awaited<ReturnType<typeof readBuildRequest>> | undefined
@@ -303,6 +305,8 @@ test('o Pro público envia a identidade do motor e preserva os PNGs no fallback 
     expect(upstream).toHaveBeenCalledTimes(1)
   } finally {
     upstream.mockRestore()
+    if (oldPublicUrl === undefined) delete process.env.APP_PUBLIC_URL
+    else process.env.APP_PUBLIC_URL = oldPublicUrl
     if (oldUrl === undefined) delete process.env.STUDIO_PRO_RUNTIME_URL
     else process.env.STUDIO_PRO_RUNTIME_URL = oldUrl
     if (oldToken === undefined) delete process.env.STUDIO_PRO_RUNTIME_TOKEN
