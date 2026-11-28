@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-abertura", "video-item", "video-tres", "video-direcoes", "video-volta"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "esse lado. Quando a nave pega, o Triplo, no alto à esquerda, vira 5. Agora o Espaço cria três lasers, abertos em leque.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: pegue o item e dispare. Quando terminar, clique em Próxima parte.",
+      "falaPrincipal": "No espaço em três dimensões, como os lasers vão para o lado?",
+      "falaPersonagem": "No espaço em três dimensões, como os lasers vão para o lado?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-tres-K1",
+      "clipe": "video-tres",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "de novo, aperte Enter, leve a nave para a esquerda, pegue o item e dispare. Três lasers saem juntos e parecem um só.",
+      "ancoraDepois": "Aqui, as cópias não têm velocidade própria: quem dá a velocidade é o grupo. A direção é a próxima parte. Se algo não",
+      "falaPrincipal": "No 2D, era o vx que mudava a direção. E aqui?",
+      "falaPersonagem": "No 2D, era o vx que mudava a direção. E aqui?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-direcoes-K1",
+      "clipe": "video-direcoes",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "trocar o grupo é trocar a direção. Clique em Rodar de novo, pegue o item e dispare. Agora os lasers abrem em leque.",
+      "ancoraDepois": "Ainda não acaba: o prazo é a próxima parte. Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou",
+      "falaPrincipal": "E quando é que o tiro triplo da patrulha acaba?",
+      "falaPersonagem": "E quando é que o tiro triplo da patrulha acaba?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-volta-K1",
+      "clipe": "video-volta",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "variável, com menos 1 e tempoTriplo. Logo abaixo, escreva o Triplo de novo, em cima, à esquerda, como na parte do item.",
+      "ancoraDepois": "Ele passaria do zero, como no jogo 2D. O Se faz o tiro triplo parar no zero. Clique em Rodar de novo, aperte Enter e",
+      "falaPrincipal": "E sem o Se, o que aconteceria com o número?",
+      "falaPersonagem": "E sem o Se, o que aconteceria com o número?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

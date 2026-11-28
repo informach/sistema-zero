@@ -1,0 +1,173 @@
+[upbeat, welcoming voice] Oi! Na Aula 1, você deu o tiro triplo à nave do jogo 2D. Agora ele chegou à Patrulha Espacial, em três dimensões!
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a patrulha.
+
+[interested, animated voice] Olha aqui pela esquerda: o item vem por esse lado. Quando a nave pega, o Triplo, no alto à esquerda, vira 5.
+
+[interested, animated voice] Agora o Espaço cria três lasers, abertos em leque.
+
+[curious] No espaço em três dimensões, como os lasers vão para o lado?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: pegue o item e dispare. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na patrulha, o tiro triplo já tem o molde do item, o grupo itensTriplo, o movimento dos itens e o texto do Triplo. Falta o relógio do item e o encontro que liga o tiro.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do relógio A cada 1.5 segundos, encaixe A cada segundos, de Jogo 3D, Tempo e sorteio e Tempo, e troque o 2 por 4.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o relógio A cada 4 segundos, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então, encaixe Criar uma cópia, de Jogo 3D e Grupos. Escolha moldeTriplo e o grupo itensTriplo.
+
+[confident, clear, unhurried voice] Na posição, coloque menos 4 no x, 1 no y e menos 20 no z. O menos 4 é a faixa da esquerda.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do encontro Quando nave encostar em algum do grupo asteroides, encaixe Quando heroi encostar em algum do grupo, de Jogo 3D, Encostar e Encostar. Escolha nave, itensTriplo e chame o item de itemPego.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o encontro da nave com os itens, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então: Tirar o objeto do grupo, com itemPego e itensTriplo, e logo abaixo Alterar variável tempoTriplo para 5.
+
+[confident, clear, unhurried voice] Logo abaixo, escreva o Triplo na tela: Escrever na tela, em cima, à esquerda, com Triplo, dois-pontos e um espaço, mais o valor de tempoTriplo.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Leve a nave para a borda da esquerda: o item vem, a nave pega, e o Triplo vira 5.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 4 segundos cria a cópia de moldeTriplo em x menos 4 só na partida, e o encontro com itensTriplo tira o item, põe 5 em tempoTriplo e escreve o Triplo.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Como no jogo 2D, o Espaço pergunta se o tiro triplo está ligado. Se está, três lasers; se não, o de sempre.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] No Quando apertar a tecla espaço, deixe à vista o então da guarda, com Criar uma cópia de moldeTiro.
+
+[confident, clear, unhurried voice] Encaixe um Se no começo desse então. A cópia e a nota descem para baixo dele. Escolha tempoTriplo no lugar do x.
+
+[confident, clear, unhurried voice] Abra o senão, no segundo sinal de mais, e arraste a cópia do laser para dentro dele. A nota vai junto.
+
+[confident, clear, unhurried voice] Duplique a cópia do senão três vezes e leve as três para o então. Elas vão todas para o grupo tiros, por enquanto.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter, leve a nave para a esquerda, pegue o item e dispare. Três lasers saem juntos e parecem um só.
+
+[curious] No 2D, era o vx que mudava a direção. E aqui?
+
+[engaging, energetic, conversational voice] Aqui, as cópias não têm velocidade própria: quem dá a velocidade é o grupo. A direção é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no Espaço, dentro da guarda, está o Se tempoTriplo maior que 0: no então, três cópias de moldeTiro; no senão, a cópia de antes.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na patrulha, já vêm prontos dois grupos novos: tirosEsquerda, que anda em diagonal para a esquerda, e tirosDireita, para a direita. Os dois acertam as pedras como o grupo tiros.
+
+[confident, clear, unhurried voice] No então do Se tempoTriplo, clique no grupo da primeira cópia e escolha tirosEsquerda.
+
+[confident, clear, unhurried voice] Deixe a segunda no grupo tiros. Na terceira, escolha tirosDireita.
+
+[interested, animated voice] A cópia pega a velocidade do grupo dela: trocar o grupo é trocar a direção.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, pegue o item e dispare. Agora os lasers abrem em leque.
+
+[curious] E quando é que o tiro triplo da patrulha acaba?
+
+[engaging, energetic, conversational voice] Ainda não acaba: o prazo é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no então do Se tempoTriplo, as três cópias vão para tirosEsquerda, tiros e tirosDireita.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Falta o prazo, como no jogo 2D. Na patrulha, o texto do Triplo também precisa ser escrito a cada segundo.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do relógio A cada 4 segundos, encaixe outro A cada segundos e troque o 2 por 1.
+
+[confident, clear, unhurried voice] Encaixe um Se no fazer e escolha tempoTriplo. No então, Somar 1 em variável, com menos 1 e tempoTriplo.
+
+[confident, clear, unhurried voice] Logo abaixo, escreva o Triplo de novo, em cima, à esquerda, como na parte do item.
+
+[curious] E sem o Se, o que aconteceria com o número?
+
+[engaging, energetic, conversational voice] Ele passaria do zero, como no jogo 2D. O Se faz o tiro triplo parar no zero.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e pegue o item. O Triplo desce de cinco a zero, e o Espaço volta ao laser de sempre.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 1 segundo tem o Se tempoTriplo maior que 0, e no então estão Somar menos 1 em tempoTriplo e o texto do Triplo.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a patrulha também tem tiro triplo: o item liga, os lasers abrem em leque e o tempo acaba!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem duas perguntas para você pensar no tiro triplo. Quando aparecer Projeto enviado!, clique em Próxima parte.

@@ -1,0 +1,541 @@
+[
+  {
+    "id": "encontre",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Cada montagem do Poder, bloco por bloco, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "Os vídeos montam cada parte com você. Este caderno guarda os mesmos passos: o caminho na paleta, o bloco, onde encaixar e como testar. Volte aqui sempre que esquecer um passo."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. O escudo que acaba",
+        "text": "Na Nave Contra Asteroides: o item que cai pelo meio, o escudo que liga, a pedra que só sai com o escudo ligado e o tempo que acaba.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-acaba}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. O escudo na patrulha",
+        "text": "O mesmo escudo na Patrulha Espacial: o item que vem pelo meio, o encontro que liga, a batida que pergunta e o prazo.",
+        "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-acaba}}"
+      },
+      {
+        "kind": "note",
+        "text": "O jogo da trilha já vem pronto, com as peças novas do Poder. Você programa a regra nova e testa cada parte."
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3",
+    "title": "A experiência: o escudo que acaba",
+    "subtitle": "O escudo é um número que conta para trás. Pegar o item põe 5 nesse número, e a cada segundo ele perde 1. Na batida, o jogo pergunta: o escudo ainda tem tempo? Se tem, a pedra só sai; se não tem, a nave perde uma vida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O que investigar",
+        "text": "Sem pegar o item, avance até uma pedra bater e olhe as vidas.<br>Pegue o item do escudo e avance até uma pedra bater com o Escudo maior que 0.<br>Pegue o item, deixe o Escudo chegar a 0 e avance até a próxima pedra.<br>Com o Escudo entre 1 e 4, pegue o item de novo e olhe o número."
+      },
+      {
+        "kind": "note",
+        "text": "Antes e depois de cada teste, observe o número do Escudo, as vidas e o segundo em que cada pedra bate. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Um escudo para a nave",
+    "subtitle": "Jogue a versão pronta antes de programar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. Deixe a nave no meio e pegue o item que cai: o Escudo vira 5 e a nave pisca. Deixe uma pedra bater com o escudo ligado e veja o que acontece quando ele chega a 0."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-item",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "O item que cai pelo meio",
+    "subtitle": "Criar o relógio que solta um item de escudo pelo meio da tela, só na partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que solta um item de escudo pelo meio da tela, só na partida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, deixe visível o espaço logo abaixo de A cada 1.5 segundos, fora do fazer dele."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 2D → Tempo → Quadros e intervalos, pegue A cada segundos, encaixe nesse espaço e troque o 2 por 4."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Em Programação → Lógica &amp; Se, encaixe um Se no fazer do relógio. Jogue a pergunta x &gt; 0 na lixeira e, em Jogo 2D → Jogo e telas → Telas e partida, encaixe o estado do jogo é, com jogando."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então do Se, encaixe No grupo criar um sprite com imagem (Jogo 2D → Grupos → Criar e percorrer). Escolha itensEscudo, x 378, y −44, largura e altura 44, a imagem item-escudo-redondo, vx 0 e vy 2."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:inicio",
+        "after": "2d:item"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Enter começa a partida: a cada 4 segundos, um item cai pelo meio da tela.",
+          "Antes do Enter, nenhum item cai."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-liga",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "Pegar o item liga o escudo",
+    "subtitle": "Usar o encontro da nave com o grupo itensEscudo para tirar o item e pôr 5 em tempoDoEscudo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Usar o encontro da nave com o grupo itensEscudo para tirar o item e pôr 5 em tempoDoEscudo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, dentro do então de Se jogando, deixe visível o espaço logo abaixo do encontro das pedras com a nave."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 2D → Colisões → Encostar e bloquear, pegue Para cada sprite do grupo que colidir com o sprite e encaixe nesse espaço. Escolha itensEscudo e nave, e chame o sprite de itemPego."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Dentro desse encontro: Tirar o sprite itemPego do grupo itensEscudo (Jogo 2D → Grupos → Participação e limpeza)."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Logo abaixo: Alterar variável tempoDoEscudo para 5 (Programação → Variáveis) e Tocar efeito power-up (Jogo 2D → Som → Efeitos prontos)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:item",
+        "after": "2d:liga"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com a nave parada no meio, ela pega o item: o item some e o Escudo vira 5.",
+          "O número ainda não desce: o prazo vem na última parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-protege",
+    "lesson": "aula-1",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "Com escudo, a pedra só sai",
+    "subtitle": "Fazer a batida perguntar pelo escudo: com tempoDoEscudo maior que 0, a pedra só sai; sem escudo, a nave perde uma vida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Fazer a batida perguntar pelo escudo: com tempoDoEscudo maior que 0, a pedra só sai; sem escudo, a nave perde uma vida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No encontro das pedras com a nave, deixe visível o espaço logo abaixo de Soltar explosão no sprite atingiuNave."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Programação → Lógica &amp; Se, encaixe um Se nesse espaço. Machucar o sprite e Tocar efeito descem para baixo dele."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha tempoDoEscudo no lugar de x. Conserve &gt; e 0."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Clique no segundo + do Se para abrir o senão e leve Machucar o sprite nave (com o Tocar efeito batida) para dentro dele."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No então, encaixe Tocar efeito quicar (Jogo 2D → Som → Efeitos prontos)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:liga",
+        "after": "2d:protege"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com o Escudo maior que 0, a pedra que bate só some: as vidas continuam iguais.",
+          "Sem pegar o item, a pedra tira uma vida, como antes."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-acaba",
+    "lesson": "aula-1",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "O escudo acaba",
+    "subtitle": "Criar o relógio de 1 segundo que tira 1 de tempoDoEscudo enquanto ele é maior que 0 e faz a nave piscar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio de 1 segundo que tira 1 de tempoDoEscudo enquanto ele é maior que 0 e faz a nave piscar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, deixe visível o espaço logo abaixo de A cada 4 segundos, fora do fazer dele."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 2D → Tempo → Quadros e intervalos, pegue outro A cada segundos, encaixe nesse espaço e troque o 2 por 1."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No fazer do relógio, encaixe um Se (Programação → Lógica &amp; Se) e escolha tempoDoEscudo no lugar de x. Conserve &gt; e 0."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então: Somar −1 em variável tempoDoEscudo (Programação → Variáveis) e, logo abaixo, Fazer o sprite nave piscar por 30 quadros (Jogo 2D → Desenho e efeitos → Efeitos)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:protege",
+        "after": "2d:acaba"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Depois de pegar o item, o Escudo desce de 5 a 0, um por segundo, e a nave pisca.",
+          "Com o Escudo em 0, a pedra volta a tirar vida. O número nunca fica negativo.",
+          "Pegar o item de novo volta o Escudo a 5."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-abertura",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "O escudo chegou à patrulha",
+    "subtitle": "O mesmo Poder, agora em três dimensões.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. O item vem pelo meio: com a nave parada, ela pega o item, e o Escudo, no alto à esquerda, vira 5."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-item",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "O item vem pelo meio",
+    "subtitle": "Criar o relógio que cria uma cópia do item de escudo no meio, longe da nave, só na partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que cria uma cópia do item de escudo no meio, longe da nave, só na partida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, deixe visível o espaço logo abaixo de A cada 1.5 segundos."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Tempo e sorteio → Tempo, pegue A cada segundos, encaixe nesse espaço e troque o 2 por 4."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Dentro de o relógio A cada 4 segundos, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No então do Se, encaixe Criar uma cópia (Jogo 3D → Grupos), com o molde moldeEscudo, o grupo itensEscudo e a posição x 0, y 1, z −28."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:inicio",
+        "after": "3d:item"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Enter começa a partida: a cada 4 segundos, um item vem pelo meio.",
+          "Antes do Enter, nenhum item nasce."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-liga",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "Pegar o item liga o escudo",
+    "subtitle": "Usar o encontro da nave com o grupo itensEscudo para tirar o item, pôr 5 em tempoDoEscudo e escrever o Escudo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Usar o encontro da nave com o grupo itensEscudo para tirar o item, pôr 5 em tempoDoEscudo e escrever o Escudo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, deixe visível o espaço logo abaixo do encontro da nave com os asteroides."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Encostar → Encostar, encaixe Quando heroi encostar em algum do grupo. Escolha nave, itensEscudo e chame o item de itemPego."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Dentro de o encontro da nave com os itens, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No então: Tirar o objeto itemPego do grupo itensEscudo (Jogo 3D → Grupos) e Alterar variável tempoDoEscudo para 5 (Programação → Variáveis)."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Logo abaixo: Escrever na tela, em cima, à esquerda, com \"Escudo: \" + valor da variável tempoDoEscudo."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:item",
+        "after": "3d:liga"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com a nave parada no meio, ela pega o item: o item some e o Escudo vira 5.",
+          "O número ainda não desce: o prazo vem na última parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-protege",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "Com escudo, a pedra só sai",
+    "subtitle": "Fazer a batida perguntar pelo escudo: com tempoDoEscudo maior que 0, a pedra só sai; sem escudo, a nave perde uma vida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Fazer a batida perguntar pelo escudo: com tempoDoEscudo maior que 0, a pedra só sai; sem escudo, a nave perde uma vida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No encontro da nave com os asteroides, deixe visível o espaço logo abaixo de Tirar o objeto asteroideQueBateu."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Programação → Lógica &amp; Se, encaixe um Se nesse espaço e escolha tempoDoEscudo no lugar de x. Conserve &gt; e 0."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Clique no segundo + para abrir o senão e leve Machucar nave tirando 1 de vida (com o som) para dentro dele."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então, encaixe Tocar o som pronto (Jogo 3D → Som)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:liga",
+        "after": "3d:protege"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com o Escudo maior que 0, a pedra que bate só some: as vidas continuam iguais.",
+          "Sem pegar o item, a pedra tira uma vida, como antes."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-acaba",
+    "lesson": "aula-2",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "O escudo acaba",
+    "subtitle": "Criar o relógio de 1 segundo que tira 1 de tempoDoEscudo enquanto ele é maior que 0, escreve o Escudo e faz a nave piscar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio de 1 segundo que tira 1 de tempoDoEscudo enquanto ele é maior que 0, escreve o Escudo e faz a nave piscar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, deixe visível o espaço logo abaixo de A cada 4 segundos."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Tempo e sorteio → Tempo, encaixe outro A cada segundos nesse espaço e troque o 2 por 1."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No fazer, encaixe um Se (Programação → Lógica &amp; Se) e escolha tempoDoEscudo no lugar de x. Conserve &gt; e 0."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então: Somar −1 em variável tempoDoEscudo, Escrever na tela em cima, à esquerda, com \"Escudo: \" + tempoDoEscudo, e Fazer nave piscar por 0,5 s (Jogo 3D → Objetos → Aparência)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:protege",
+        "after": "3d:acaba"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Depois de pegar o item, o Escudo desce de 5 a 0, um por segundo, e a nave pisca.",
+          "Com o Escudo em 0, a pedra volta a tirar vida. O número nunca fica negativo."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "poder-pronto",
+    "kicker": "Poder do Construtor",
+    "title": "Poder pronto",
+    "subtitle": "A mesma regra nova em duas dimensões e em três.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "O que você programou",
+        "text": "Um relógio que solta o item só na partida, o encontro que liga o escudo, a batida que pergunta se ainda há tempo e um relógio que faz o escudo acabar, sem passar do zero. As mesmas ideias nas duas dimensões."
+      },
+      {
+        "kind": "note",
+        "text": "O Poder conta quando as duas aulas estão concluídas. Para subir de posto, a jornada pede dois Poderes diferentes."
+      }
+    ]
+  }
+]

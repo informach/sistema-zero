@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia": [
+      {
+        "id": "timed-shield-start",
+        "text": "Pedras vão bater na nave nos segundos 2, 5, 8 e 11. A nave ainda não pegou o escudo. O que você acha que acontece com as vidas quando uma pedra bater? Clique em Avançar até a próxima pedra e olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-ask-hit",
+        "text": "E sem escudo nenhum? O que acontece com as vidas quando uma pedra bater? Sem pegar o item, clique em Avançar até a próxima pedra e olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-ask-hit-restart",
+        "text": "Nesta partida a nave já pegou o item. E sem escudo nenhum, o que acontece quando uma pedra bate? Clique em Voltar ao começo e, sem pegar o item, clique em Avançar até a próxima pedra. Olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-ask-protects",
+        "text": "E com o escudo ligado? Clique em Pegar o item do escudo e olhe o número do Escudo. Depois clique em Avançar até a próxima pedra. O que acontece com as Vidas quando a pedra bater?"
+      },
+      {
+        "id": "timed-shield-shield-on",
+        "text": "O Escudo está ligado e conta para trás, um segundo de cada vez. O que você acha que acontece se uma pedra bater agora? Clique em Avançar até a próxima pedra e olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-ask-ends",
+        "text": "E quando o Escudo chegar a 0? Clique em Pegar o item do escudo. Depois clique em Avançar 1 segundo até o Escudo chegar a 0. O que você acha que acontece com as Vidas na próxima pedra?"
+      },
+      {
+        "id": "timed-shield-ends-wait",
+        "text": "O Escudo ainda está ligado. Clique em Avançar 1 segundo até o Escudo chegar a 0. Depois disso, o que você acha que acontece com as Vidas na próxima pedra?"
+      },
+      {
+        "id": "timed-shield-zero",
+        "text": "O Escudo chegou a 0. O que você acha que acontece com as Vidas na próxima pedra? Clique em Avançar até a próxima pedra e olhe."
+      },
+      {
+        "id": "timed-shield-ask-renew",
+        "text": "E se a nave pegar o item de novo antes de o Escudo acabar? Clique em Pegar o item do escudo e em Avançar 1 segundo. Com o Escudo entre 1 e 4, clique em Pegar o item do escudo de novo e olhe o número."
+      },
+      {
+        "id": "timed-shield-renew-ready",
+        "text": "O Escudo está descendo e ainda não chegou a 0. O que você acha que acontece com o número se a nave pegar o item agora? Clique em Pegar o item do escudo e olhe o Escudo."
+      },
+      {
+        "id": "timed-shield-restart",
+        "text": "Para o próximo teste, a partida precisa recomeçar. Clique em Voltar ao começo. As suas descobertas continuam guardadas."
+      },
+      {
+        "id": "timed-shield-hit-then-protects",
+        "text": "Sem escudo, a pedra bateu e a nave perdeu uma vida. E com o escudo ligado? Clique em Pegar o item do escudo e depois em Avançar até a próxima pedra. O que acontece com as Vidas?"
+      },
+      {
+        "id": "timed-shield-hit-then-ends",
+        "text": "Sem escudo, a pedra bateu e a nave perdeu uma vida. E quando o Escudo chegar a 0? Pegue o item, se precisar, e clique em Avançar 1 segundo até o Escudo chegar a 0. Depois clique em Avançar até a próxima pedra. O que acontece com as Vidas?"
+      },
+      {
+        "id": "timed-shield-hit-then-renews",
+        "text": "Sem escudo, a pedra bateu e a nave perdeu uma vida. E se a nave pegar o item de novo antes de o Escudo acabar? Com o Escudo entre 1 e 4, clique em Pegar o item do escudo e olhe o número. Com o Escudo em 0, pegue o item e clique em Avançar 1 segundo antes."
+      },
+      {
+        "id": "timed-shield-hit-then-restart",
+        "text": "Sem escudo, a pedra bateu e a nave perdeu uma vida. Para o próximo teste, clique em Voltar ao começo."
+      },
+      {
+        "id": "timed-shield-protects-then-hit",
+        "text": "Com o Escudo maior que 0, a pedra bateu e só saiu: as vidas ficaram iguais. E sem escudo nenhum? Clique em Voltar ao começo e, sem pegar o item, clique em Avançar até a próxima pedra. Olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-protects-then-ends",
+        "text": "Com o Escudo maior que 0, a pedra bateu e só saiu: as vidas ficaram iguais. E quando o Escudo chegar a 0? Pegue o item, se precisar, e clique em Avançar 1 segundo até o Escudo chegar a 0. Depois clique em Avançar até a próxima pedra. O que acontece com as Vidas?"
+      },
+      {
+        "id": "timed-shield-protects-then-renews",
+        "text": "Com o Escudo maior que 0, a pedra bateu e só saiu: as vidas ficaram iguais. E se a nave pegar o item de novo antes de o Escudo acabar? Com o Escudo entre 1 e 4, clique em Pegar o item do escudo e olhe o número. Com o Escudo em 0, pegue o item e clique em Avançar 1 segundo antes."
+      },
+      {
+        "id": "timed-shield-protects-then-restart",
+        "text": "Com o Escudo maior que 0, a pedra bateu e só saiu: as vidas ficaram iguais. Para o próximo teste, clique em Voltar ao começo."
+      },
+      {
+        "id": "timed-shield-ends-then-hit",
+        "text": "O Escudo contou para trás até 0, e aí a pedra voltou a tirar uma vida. E sem escudo nenhum? Clique em Voltar ao começo e, sem pegar o item, clique em Avançar até a próxima pedra. Olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-ends-then-renews",
+        "text": "O Escudo contou para trás até 0, e aí a pedra voltou a tirar uma vida. E se a nave pegar o item de novo antes de o Escudo acabar? Com o Escudo entre 1 e 4, clique em Pegar o item do escudo e olhe o número. Com o Escudo em 0, pegue o item e clique em Avançar 1 segundo antes."
+      },
+      {
+        "id": "timed-shield-ends-then-restart",
+        "text": "O Escudo contou para trás até 0, e aí a pedra voltou a tirar uma vida. Para o próximo teste, clique em Voltar ao começo."
+      },
+      {
+        "id": "timed-shield-renews-then-hit",
+        "text": "Pegar o item de novo voltou o Escudo a 5, e a contagem recomeçou dali. E sem escudo nenhum? Clique em Voltar ao começo e, sem pegar o item, clique em Avançar até a próxima pedra. Olhe as Vidas."
+      },
+      {
+        "id": "timed-shield-renews-then-protects",
+        "text": "Pegar o item de novo voltou o Escudo a 5, e a contagem recomeçou dali. E com o escudo ligado? Clique em Pegar o item do escudo e depois em Avançar até a próxima pedra. O que acontece com as Vidas?"
+      },
+      {
+        "id": "timed-shield-renews-then-ends",
+        "text": "Pegar o item de novo voltou o Escudo a 5, e a contagem recomeçou dali. E quando o Escudo chegar a 0? Pegue o item, se precisar, e clique em Avançar 1 segundo até o Escudo chegar a 0. Depois clique em Avançar até a próxima pedra. O que acontece com as Vidas?"
+      },
+      {
+        "id": "timed-shield-renews-then-restart",
+        "text": "Pegar o item de novo voltou o Escudo a 5, e a contagem recomeçou dali. Para o próximo teste, clique em Voltar ao começo."
+      },
+      {
+        "id": "timed-shield-complete",
+        "text": "Você testou tudo. Pegar o item liga o Escudo em 5, e o Escudo desce 1 a cada segundo. Com o Escudo maior que 0, a pedra só sai; quando o Escudo chega a 0, a batida volta a tirar vida. E pegar o item de novo volta o Escudo a 5. É um escudo com prazo. Pode continuar testando quando quiser."
+      }
+    ]
+  }
+}

@@ -296,8 +296,9 @@ describe('a figura do elenco: o desenho segue o nome', () => {
     // O CONTEÚDO é conferido pelo desenho (a varredura do member-shell); aqui, a contagem.
     // ⚠️ Mudou de propósito (lote 5 do Raio-X): a `entity-state` desenha TORRES, e não o elenco (G6);
     // `frames`, `onion-skin` e `sheet-vs-sprite` desenham a nave do ateliê (G4); a `diagonal` e a
-    // `tilemap` ganharam o personagem (G5).
-    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(39)
+    // `tilemap` ganharam o personagem (G5). O escudo temporário, o tiro triplo e o inimigo que atira
+    // (28/11/2026) desenham a nave e as pedras.
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(42)
   })
 
   test('um espaço no fim do nome não entra na frase', () => {

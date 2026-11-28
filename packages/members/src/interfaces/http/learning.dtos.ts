@@ -20,6 +20,8 @@ import {
   CABIN_PIECES,
   CABIN_RULES,
   CHEST_RULES,
+  ENEMY_FIRE_ORIGINS,
+  ENEMY_FIRE_SHIP_XS,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_PACES,
   LIGHTHOUSE_WALK_SPEEDS,
@@ -37,6 +39,7 @@ import {
   SEQUENCE_SYMBOLS,
   SETUP_LIMITS,
   SHEET_CROP_WIDTHS,
+  SPREAD_SHOT_DEVIATIONS,
   SYMMETRY_PIECES,
 } from '@sistemazero/core/learning/scene'
 import { getSchemaValidator, t } from 'elysia'
@@ -98,6 +101,30 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('goal-op'), op: t.Union(SCORE_GOAL_OPS.map((op) => t.Literal(op))) }),
   t.Object({ type: t.Literal('goal-restart') }),
   t.Object({ type: t.Literal('goal-edit') }),
+  // O escudo temporário (Poder "Escudo temporário" do Construtor, 28/11/2026).
+  t.Object({ type: t.Literal('pick-shield') }),
+  t.Object({ type: t.Literal('tick-second') }),
+  t.Object({ type: t.Literal('next-rock') }),
+  // O tiro triplo (Poder "Tiro triplo" do Construtor, 28/11/2026).
+  t.Object({ type: t.Literal('spread-triple'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('spread-deviation'),
+    deviation: t.Union(SPREAD_SHOT_DEVIATIONS.map((d) => t.Literal(d))),
+  }),
+  t.Object({ type: t.Literal('spread-fire') }),
+  t.Object({ type: t.Literal('spread-arrive') }),
+  // O inimigo que atira (Poder "Inimigo que atira" do Construtor, 28/11/2026).
+  t.Object({
+    type: t.Literal('enemy-origin'),
+    origin: t.Union(ENEMY_FIRE_ORIGINS.map((o) => t.Literal(o))),
+  }),
+  t.Object({
+    type: t.Literal('enemy-ship'),
+    x: t.Union(ENEMY_FIRE_SHIP_XS.map((x) => t.Literal(x))),
+  }),
+  t.Object({ type: t.Literal('enemy-tick') }),
+  t.Object({ type: t.Literal('enemy-next-shot') }),
+  t.Object({ type: t.Literal('enemy-restart') }),
   t.Object({ type: t.Literal('remember-collection'), enabled: t.Boolean() }),
   t.Object({ type: t.Literal('collect-key') }),
   t.Object({ type: t.Literal('leave-key') }),

@@ -8,6 +8,11 @@ import {
   CHEST_RULES,
   type ChestRule,
   COIN_COUNTER,
+  ENEMY_FIRE,
+  ENEMY_FIRE_ORIGINS,
+  ENEMY_FIRE_SHIP_XS,
+  type EnemyFireOrigin,
+  type EnemyFireShipX,
   isRecord,
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_PACES,
@@ -26,7 +31,11 @@ import {
   type SequenceMode,
   type SequenceSymbol,
   SHEET_CROP_WIDTHS,
+  SPREAD_SHOT,
+  SPREAD_SHOT_DEVIATIONS,
+  type SpreadShotDeviation,
   TIMED_BRIDGE,
+  TIMED_SHIELD,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
 import type { SceneCenarioId } from './cenario'
@@ -1357,6 +1366,308 @@ function isSceneScoreGoal(value: unknown): value is SceneScoreGoal {
   )
 }
 
+/**
+ * O escudo temporário (`timed-shield`, Poder "Escudo temporário" do Construtor, 28/11/2026): o tempo
+ * é DISCRETO, em segundos inteiros (0 a `TIMED_SHIELD.lastSecond`). A cada segundo o Escudo desce 1
+ * (se é maior que 0) e, DEPOIS, a pedra daquele segundo (`TIMED_SHIELD.rocks`) bate: com o Escudo
+ * maior que 0 ela só sai; com 0, tira uma vida. Pegar o item volta o Escudo a 5.
+ *
+ * As batidas são derivadas do segundo (as pedras dos segundos já passados bateram: a partida para
+ * com 0 vidas, então nenhuma pedra fica para trás); `damaged` guarda as que tiraram vida, e as vidas
+ * são sempre `lives − damaged.length`.
+ */
+export interface SceneTimedShield {
+  second: number
+  lives: number
+  shield: number
+  /** O Escudo ANTES da última pegada desta partida; `null` se a nave ainda não pegou o item nela. */
+  shieldBefore: number | null
+  /** Os segundos em que a pedra tirou vida. */
+  damaged: number[]
+  /** O último gesto desta partida: o que a tela e o Zappy comentam (`null` na partida que abriu). */
+  last: 'pick' | 'tick' | null
+}
+const TIMED_SHIELD_PADRAO: SceneTimedShield = {
+  second: 0,
+  lives: TIMED_SHIELD.lives,
+  shield: 0,
+  shieldBefore: null,
+  damaged: [],
+  last: null,
+}
+/** A pedra deste segundo (se houver uma): ela bate quando o tempo chega nele. */
+export function timedShieldRock(second: number): boolean {
+  return (TIMED_SHIELD.rocks as readonly number[]).includes(second)
+}
+/** As pedras que já bateram até este segundo, na ordem. */
+export function timedShieldStruck(second: number): number[] {
+  return TIMED_SHIELD.rocks.filter((rock) => rock <= second)
+}
+/** A próxima pedra depois deste segundo, ou `null` quando não vem mais nenhuma. */
+export function timedShieldNextRock(second: number): number | null {
+  return TIMED_SHIELD.rocks.find((rock) => rock > second) ?? null
+}
+/** A partida acabou: sem vidas, ou no último segundo. Nada mais avança (nem o item é pego). */
+export function timedShieldOver(t: Pick<SceneTimedShield, 'second' | 'lives'>): boolean {
+  return t.lives === 0 || t.second >= TIMED_SHIELD.lastSecond
+}
+function isSceneTimedShield(value: unknown): value is SceneTimedShield {
+  if (!isRecord(value)) return false
+  const inteiro = (v: unknown, max: number): v is number =>
+    typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max
+  const { second, lives, shield, shieldBefore, damaged, last } = value
+  if (!inteiro(second, TIMED_SHIELD.lastSecond) || !inteiro(shield, TIMED_SHIELD.shield))
+    return false
+  if (shieldBefore !== null && !inteiro(shieldBefore, TIMED_SHIELD.shield)) return false
+  // Sem pegar o item, o Escudo nunca saiu do 0.
+  if (shieldBefore === null && shield !== 0) return false
+  if (last !== null && last !== 'pick' && last !== 'tick') return false
+  // A pegada é o último gesto só com o Escudo cheio; sem gesto, a partida está no começo.
+  if (last === 'pick' && (shield !== TIMED_SHIELD.shield || shieldBefore === null)) return false
+  if (last === null && (second !== 0 || shieldBefore !== null)) return false
+  const batidas = timedShieldStruck(second)
+  if (
+    !Array.isArray(damaged) ||
+    damaged.length > TIMED_SHIELD.lives ||
+    !damaged.every(
+      (s, i) =>
+        batidas.includes(s as number) && (i === 0 || (s as number) > (damaged[i - 1] as number)),
+    )
+  )
+    return false
+  return lives === TIMED_SHIELD.lives - damaged.length
+}
+
+/**
+ * O tiro triplo (`spread-shot`, Poder "Tiro triplo" do Construtor, 28/11/2026). O Tiro triplo e o
+ * desvio são as ESCOLHAS (valem para o próximo disparo; trocar com lasers no ar não mexe neles). O
+ * Disparar põe as três pedras de volta e cria a rajada: um laser com o tiro simples, três com o tiro
+ * triplo (vx −desvio, 0 e +desvio), todos na ponta da nave. "Ver os lasers chegarem" anda os quadros
+ * até cada laser acertar uma pedra (os dois saem) ou deixar a tela; `volley.ends` guarda onde cada
+ * um terminou, e é o que o palco desenha como o caminho de cada laser.
+ */
+export interface SceneSpreadShotLaser {
+  x: number
+  y: number
+  /** Quanto o laser anda para o lado a cada quadro (negativo é para a esquerda). */
+  vx: number
+}
+export interface SceneSpreadShotEnd {
+  x: number
+  y: number
+  /** A pedra que o laser acertou (0 esquerda, 1 meio, 2 direita), ou `null` se saiu da tela. */
+  rock: number | null
+}
+export interface SceneSpreadShotVolley {
+  triple: boolean
+  deviation: SpreadShotDeviation
+  /** O vx de cada laser da rajada, na ordem em que saíram. */
+  vx: number[]
+  /** Onde cada laser terminou, na mesma ordem; vazio enquanto os lasers estão no ar. */
+  ends: SceneSpreadShotEnd[]
+}
+export interface SceneSpreadShot {
+  triple: boolean
+  deviation: SpreadShotDeviation
+  /** As três pedras (esquerda, meio, direita): `true` enquanto está no lugar. */
+  rocks: boolean[]
+  /** Os lasers no ar, saídos do último Disparar. */
+  lasers: SceneSpreadShotLaser[]
+  /** A última rajada; `null` antes do primeiro Disparar (e depois de Voltar ao começo). */
+  volley: SceneSpreadShotVolley | null
+}
+const SPREAD_SHOT_PADRAO: SceneSpreadShot = {
+  triple: false,
+  deviation: 0,
+  rocks: [true, true, true],
+  lasers: [],
+  volley: null,
+}
+/** Os vx da rajada: um laser reto com o tiro simples; três com o triplo. */
+export function spreadShotVx(triple: boolean, deviation: SpreadShotDeviation): number[] {
+  // ⚠️ `0 - desvio`, e não `-desvio`: com desvio 0 o `-` dava −0, que o retrato JSON grava como 0.
+  return triple ? [0 - deviation, 0, deviation] : [0]
+}
+/** A rajada chegou: houve um disparo e nenhum laser dele está mais no ar. */
+export function spreadShotArrived(sp: Pick<SceneSpreadShot, 'lasers' | 'volley'>): boolean {
+  return sp.volley !== null && sp.lasers.length === 0
+}
+/** As pedras que a última rajada acertou (0, 1 e 2), na ordem dos lasers. */
+export function spreadShotHits(sp: Pick<SceneSpreadShot, 'volley'>): number[] {
+  return (sp.volley?.ends ?? []).flatMap((end) => (end.rock === null ? [] : [end.rock]))
+}
+function isSceneSpreadShot(value: unknown): value is SceneSpreadShot {
+  if (!isRecord(value)) return false
+  const { triple, deviation, rocks, lasers, volley } = value
+  const desvio = (v: unknown): v is SpreadShotDeviation =>
+    SPREAD_SHOT_DEVIATIONS.some((d) => d === v)
+  const inteiro = (v: unknown, min: number, max: number): v is number =>
+    typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max
+  if (typeof triple !== 'boolean' || !desvio(deviation)) return false
+  if (!Array.isArray(rocks) || rocks.length !== SPREAD_SHOT.rocks.length) return false
+  if (!rocks.every((r) => typeof r === 'boolean')) return false
+  if (!Array.isArray(lasers)) return false
+  const ladoMax = Math.max(...SPREAD_SHOT_DEVIATIONS)
+  for (const l of lasers)
+    if (
+      !isRecord(l) ||
+      !inteiro(l.x, 0, SPREAD_SHOT.width) ||
+      !inteiro(l.y, 0, SPREAD_SHOT.height) ||
+      !inteiro(l.vx, -ladoMax, ladoMax)
+    )
+      return false
+  if (volley === null) return lasers.length === 0 && rocks.every(Boolean)
+  if (!isRecord(volley) || typeof volley.triple !== 'boolean' || !desvio(volley.deviation))
+    return false
+  const vx = spreadShotVx(volley.triple, volley.deviation)
+  if (!Array.isArray(volley.vx) || volley.vx.join() !== vx.join()) return false
+  if (!Array.isArray(volley.ends)) return false
+  // No ar: os lasers da rajada, as pedras todas no lugar e nenhum fim ainda.
+  if (lasers.length > 0)
+    return (
+      lasers.length === vx.length &&
+      lasers.every((l, i) => l.vx === vx[i]) &&
+      volley.ends.length === 0 &&
+      rocks.every(Boolean)
+    )
+  // Chegou: um fim por laser, cada pedra acertada uma vez só, e fora do lugar.
+  if (volley.ends.length !== vx.length) return false
+  const acertadas: number[] = []
+  for (const end of volley.ends) {
+    if (!isRecord(end) || !inteiro(end.x, -1000, 1000) || !inteiro(end.y, -1000, 1000)) return false
+    if (end.rock === null) continue
+    if (!inteiro(end.rock, 0, SPREAD_SHOT.rocks.length - 1) || acertadas.includes(end.rock))
+      return false
+    acertadas.push(end.rock)
+  }
+  return rocks.every((r, i) => r === !acertadas.includes(i))
+}
+
+/**
+ * O inimigo que atira (`enemy-fire`, Poder "Inimigo que atira" do Construtor, 28/11/2026). O tempo é
+ * DISCRETO, em tiques de meio segundo (`ENEMY_FIRE.tickSeconds`). A cada tique, nesta ordem: a
+ * inimiga dá um passo no caminho (`enemyFireX`), os tiros no ar descem `ENEMY_FIRE.fall` (o que passa
+ * do fim da tela sai; o que chega à fileira da nave no x dela encosta, sai e tira uma vida) e, no
+ * tique de tiro (`enemyFireFires`), a inimiga atira. A origem é a ESCOLHA: vale para o próximo tiro,
+ * e o tiro que já saiu continua descendo onde nasceu.
+ *
+ * `middleFrom` e `enemyFrom` guardam, nesta partida, os lugares DIFERENTES onde a inimiga estava nos
+ * tiros de cada origem: é a memória das duas primeiras metas (dois tiros, a inimiga em dois lugares).
+ */
+export interface SceneEnemyFireShot {
+  x: number
+  y: number
+  /** A origem com que o tiro saiu. */
+  origin: EnemyFireOrigin
+  /** Onde a inimiga estava quando o tiro saiu. */
+  from: number
+}
+export interface SceneEnemyFire {
+  tick: number
+  origin: EnemyFireOrigin
+  shipX: EnemyFireShipX
+  lives: number
+  /** Os tiros no ar, do mais antigo ao mais novo. */
+  shots: SceneEnemyFireShot[]
+  /** Os lugares diferentes da inimiga nos tiros com a origem no meio, nesta partida. */
+  middleFrom: number[]
+  /** Os lugares diferentes da inimiga nos tiros com a origem na inimiga, nesta partida. */
+  enemyFrom: number[]
+  /**
+   * O que o último gesto mostrou, para a tela e o Zappy: um tiro que saiu, um tiro que encostou na
+   * nave, o recomeço que limpou a partida; `null` quando o gesto não mostrou nenhum desses.
+   */
+  last: 'fire' | 'hit' | 'restart' | null
+}
+const ENEMY_FIRE_PADRAO: SceneEnemyFire = {
+  tick: 0,
+  origin: 'middle',
+  shipX: 400,
+  lives: ENEMY_FIRE.lives,
+  shots: [],
+  middleFrom: [],
+  enemyFrom: [],
+  last: null,
+}
+/** A partida nova, com as escolhas da criança (a origem e o lugar da nave). */
+export function enemyFireStart(
+  origin: EnemyFireOrigin,
+  shipX: EnemyFireShipX,
+  last: SceneEnemyFire['last'] = null,
+): SceneEnemyFire {
+  return { ...ENEMY_FIRE_PADRAO, origin, shipX, shots: [], middleFrom: [], enemyFrom: [], last }
+}
+/** Onde a inimiga está no tique `tick`: um passo do caminho fixo por tique. */
+export function enemyFireX(tick: number): number {
+  const path: readonly number[] = ENEMY_FIRE.path
+  return path[tick % path.length] ?? ENEMY_FIRE.middle
+}
+/** A inimiga atira neste tique (a cada `ENEMY_FIRE.fireEvery`, nunca no tique 0). */
+export function enemyFireFires(tick: number): boolean {
+  return tick > 0 && tick % ENEMY_FIRE.fireEvery === 0
+}
+/** Quantos tiques faltam para o próximo tiro da inimiga. */
+export function enemyFireTicksToShot(tick: number): number {
+  return ENEMY_FIRE.fireEvery - (tick % ENEMY_FIRE.fireEvery)
+}
+/** A partida acabou: sem vidas, ou no último tique. Nada mais avança. */
+export function enemyFireOver(f: Pick<SceneEnemyFire, 'tick' | 'lives'>): boolean {
+  return f.lives === 0 || f.tick >= ENEMY_FIRE.lastTick
+}
+/** Onde fica um x do alto da tela, como a criança diz ("na ponta esquerda", "no meio"...). */
+export function enemyFirePlace(x: number): string {
+  if (x <= 200) return 'na ponta esquerda'
+  if (x < ENEMY_FIRE.middle) return 'à esquerda'
+  if (x === ENEMY_FIRE.middle) return 'no meio'
+  if (x < 600) return 'à direita'
+  return 'na ponta direita'
+}
+/** O tempo da partida, em segundos (o tique é meio segundo). */
+export function enemyFireSeconds(tick: number): number {
+  return tick * ENEMY_FIRE.tickSeconds
+}
+function isSceneEnemyFire(value: unknown): value is SceneEnemyFire {
+  if (!isRecord(value)) return false
+  const { tick, origin, shipX, lives, shots, middleFrom, enemyFrom, last } = value
+  const inteiro = (v: unknown, max: number): v is number =>
+    typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max
+  const origem = (v: unknown): v is EnemyFireOrigin => ENEMY_FIRE_ORIGINS.some((o) => o === v)
+  const lugar = (v: unknown): boolean => (ENEMY_FIRE.path as readonly unknown[]).includes(v)
+  if (!inteiro(tick, ENEMY_FIRE.lastTick) || !inteiro(lives, ENEMY_FIRE.lives)) return false
+  if (!origem(origin) || !ENEMY_FIRE_SHIP_XS.some((x) => x === shipX)) return false
+  // Um tiro vive cinco tiques e a inimiga atira a cada três: no máximo dois no ar.
+  if (!Array.isArray(shots) || shots.length > 2) return false
+  for (const shot of shots)
+    if (
+      !isRecord(shot) ||
+      !origem(shot.origin) ||
+      !lugar(shot.from) ||
+      shot.x !== (shot.origin === 'middle' ? ENEMY_FIRE.middle : shot.from) ||
+      !inteiro(shot.y, ENEMY_FIRE.shipY) ||
+      shot.y < ENEMY_FIRE.enemyY ||
+      (shot.y - ENEMY_FIRE.enemyY) % ENEMY_FIRE.fall !== 0
+    )
+      return false
+  // Os lugares guardados são do caminho e não se repetem.
+  const lugares = (v: unknown) =>
+    Array.isArray(v) &&
+    v.length <= new Set(ENEMY_FIRE.path).size &&
+    v.every(lugar) &&
+    new Set(v).size === v.length
+  if (!lugares(middleFrom) || !lugares(enemyFrom)) return false
+  // No tique 0 a partida está no começo: nenhum tiro saiu.
+  if (
+    tick === 0 &&
+    (shots.length > 0 || (middleFrom as unknown[]).length > 0 || (enemyFrom as unknown[]).length)
+  )
+    return false
+  if (last === null) return true
+  if (last === 'restart') return tick === 0 && lives === ENEMY_FIRE.lives
+  if (last === 'fire') return shots.at(-1)?.y === ENEMY_FIRE.enemyY && enemyFireFires(tick)
+  if (last === 'hit') return lives < ENEMY_FIRE.lives
+  return false
+}
+
 export interface SceneTwoClockRock {
   id: number
   bornAt: number
@@ -1607,6 +1918,9 @@ export interface SceneState {
   copies: SceneCopies
   skinGame: SceneSkinGame
   scoreGoal: SceneScoreGoal
+  timedShield: SceneTimedShield
+  spreadShot: SceneSpreadShot
+  enemyFire: SceneEnemyFire
   world: SceneWorld
   flight: SceneFlight
   sound: SceneSound
@@ -2006,6 +2320,9 @@ function gruposComPadrao() {
     ['copies', COPIES_PADRAO],
     ['skinGame', SKIN_GAME_PADRAO],
     ['scoreGoal', SCORE_GOAL_PADRAO],
+    ['timedShield', TIMED_SHIELD_PADRAO],
+    ['spreadShot', SPREAD_SHOT_PADRAO],
+    ['enemyFire', ENEMY_FIRE_PADRAO],
     ['place', PLACE_PADRAO],
     ['description', DESCRIPTION_PADRAO],
     ['stage', STAGE_PADRAO],
@@ -2179,6 +2496,9 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
         ? { goal: setup.preset.goal, points: setup.preset.start }
         : {}),
     },
+    timedShield: { ...TIMED_SHIELD_PADRAO, damaged: [] },
+    spreadShot: { ...SPREAD_SHOT_PADRAO, rocks: [...SPREAD_SHOT_PADRAO.rocks], lasers: [] },
+    enemyFire: enemyFireStart(ENEMY_FIRE_PADRAO.origin, ENEMY_FIRE_PADRAO.shipX),
     // ⚠️ Duas cenas começam DESMONTADAS de propósito: em `world` a criança cria o Dino, e em
     // `gravity` ela liga a gravidade. Nas outras, isso já vem pronto para não roubar o foco.
     world: { created: scene !== 'world', drawn: scene !== 'world', front: false },
@@ -2383,6 +2703,23 @@ export function cloneScene(state: SceneState): SceneState {
       shots: state.skinGame.shots.map((shot) => ({ ...shot })),
     },
     scoreGoal: { ...state.scoreGoal },
+    timedShield: { ...state.timedShield, damaged: [...state.timedShield.damaged] },
+    spreadShot: {
+      ...state.spreadShot,
+      rocks: [...state.spreadShot.rocks],
+      lasers: state.spreadShot.lasers.map((laser) => ({ ...laser })),
+      volley: state.spreadShot.volley && {
+        ...state.spreadShot.volley,
+        vx: [...state.spreadShot.volley.vx],
+        ends: state.spreadShot.volley.ends.map((end) => ({ ...end })),
+      },
+    },
+    enemyFire: {
+      ...state.enemyFire,
+      shots: state.enemyFire.shots.map((shot) => ({ ...shot })),
+      middleFrom: [...state.enemyFire.middleFrom],
+      enemyFrom: [...state.enemyFire.enemyFrom],
+    },
     world: { ...state.world },
     flight: { ...state.flight },
     sound: { ...state.sound, beats: state.sound.beats.map((b) => ({ ...b })) },
@@ -2742,6 +3079,9 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!isSceneCopies(value.copies)) return false
   if (!isSceneSkinGame(value.skinGame)) return false
   if (!isSceneScoreGoal(value.scoreGoal)) return false
+  if (!isSceneTimedShield(value.timedShield)) return false
+  if (!isSceneSpreadShot(value.spreadShot)) return false
+  if (!isSceneEnemyFire(value.enemyFire)) return false
   const { evidence, world, flight, sound, crowd, match, contact, speed, place, description } = value
   const { stage, render, animation, mirror, pixels, sheet, lifeline } = value
   const { drive, input, box, hunt, blueprint, view, hit, weapon, sight, walkPad, grid } = value

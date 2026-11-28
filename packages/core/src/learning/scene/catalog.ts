@@ -3021,6 +3021,138 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa.',
     ],
   },
+  /**
+   * ⭐ O escudo temporário (Poder "Escudo temporário" do Construtor, Nave contra Asteroides,
+   * 28/11/2026): pegar o item liga o Escudo em 5, ele desce 1 por segundo, e a pedra só tira vida
+   * com o Escudo em 0. Só a ideia, em exploração livre: as pedras batem nos segundos 2, 5, 8 e 11.
+   */
+  'timed-shield': {
+    id: 'timed-shield',
+    group: 'events',
+    title: 'O escudo que acaba',
+    instruction:
+      'Avance segundo a segundo e olhe o Escudo e as Vidas quando uma pedra bate. Compare sem pegar o item, com o Escudo ligado, depois de o Escudo chegar a 0 e pegando o item de novo.',
+    manipulates: 'O item do escudo, a passagem dos segundos e o recomeço da partida',
+    success:
+      'Pegar o item liga o Escudo em 5, e o Escudo desce 1 a cada segundo. Enquanto o Escudo é maior que 0, a pedra só sai; quando o Escudo chega a 0, a batida volta a tirar vida. Pegar de novo volta o Escudo a 5.',
+    extra: 'E se o escudo começasse em 2? Quais pedras ainda tirariam vida?',
+    goals: [
+      {
+        id: 'hit-costs',
+        label: 'Sem escudo, a batida tirou uma vida',
+        pedido: 'Sem pegar o item, avance até uma pedra bater e olhe as vidas.',
+      },
+      {
+        id: 'shield-protects',
+        label: 'Com o escudo ligado, a pedra só saiu',
+        pedido: 'Pegue o item do escudo e avance até uma pedra bater com o Escudo maior que 0.',
+      },
+      {
+        id: 'shield-ends',
+        label: 'O escudo chegou a 0 e a pedra voltou a tirar vida',
+        pedido: 'Pegue o item, deixe o Escudo chegar a 0 e avance até a próxima pedra.',
+      },
+      {
+        id: 'shield-renews',
+        label: 'Pegar de novo voltou o escudo a 5',
+        pedido: 'Com o Escudo entre 1 e 4, pegue o item de novo e olhe o número.',
+      },
+    ],
+    hints: [
+      'Olhe o Escudo e as Vidas a cada segundo. O que muda quando uma pedra bate?',
+      'Compare uma batida sem pegar o item com uma batida depois de pegar. Depois deixe o Escudo chegar a 0 antes da próxima pedra.',
+      'Clique em Avançar até a próxima pedra sem pegar o item. Depois clique em Pegar o item do escudo e em Avançar até a próxima pedra. Clique em Avançar 1 segundo até o Escudo chegar a 0 e avance até a próxima pedra. Por fim, pegue o item, avance 1 segundo e pegue de novo.',
+    ],
+  },
+  /**
+   * ⭐ O tiro triplo (Poder "Tiro triplo" do Construtor, Nave contra Asteroides, 28/11/2026): um
+   * disparo cria três lasers, e a velocidade para o lado (vx) de cada um escolhe o caminho dele. Só a
+   * ideia, em exploração livre: três pedras paradas no alto, a nave embaixo no meio.
+   */
+  'spread-shot': {
+    id: 'spread-shot',
+    group: 'motion',
+    title: 'O leque de tiros',
+    instruction:
+      'Escolha o Tiro triplo e o desvio, clique em Disparar e depois em Ver os lasers chegarem. Compare quantos lasers saem e onde cada laser chega.',
+    manipulates: 'O tiro triplo, o desvio dos lasers dos lados e o disparo',
+    success:
+      'Com o tiro triplo, um disparo cria três lasers de uma vez. A velocidade para o lado de cada laser escolhe a direção: com desvio 0 os três seguem o mesmo caminho e parecem um só; com desvio 2 os lasers se abrem em leque e cada um segue o seu caminho. Com desvio 1 os lasers dos lados passam entre as pedras.',
+    extra: 'E se o desvio fosse 3? Os lasers dos lados chegariam mais perto ou mais longe do meio?',
+    goals: [
+      {
+        id: 'single-one',
+        label: 'Com o tiro simples, sai um laser só',
+        pedido: 'Com o tiro triplo desligado, dispare e veja quantos lasers saem.',
+      },
+      {
+        id: 'triple-stacked',
+        label: 'Com desvio 0, os três lasers seguem juntos',
+        pedido: 'Ligue o tiro triplo com desvio 0 e dispare.',
+      },
+      {
+        id: 'triple-spread',
+        label: 'Com desvio 2, cada laser segue o seu caminho',
+        pedido: 'Com o tiro triplo e desvio 2, dispare e veja onde cada laser chega.',
+      },
+      {
+        id: 'deviation-matters',
+        label: 'Com desvio 1, os lasers dos lados passam entre as pedras',
+        pedido: 'Troque o desvio para 1 e dispare de novo: os lasers dos lados chegam às pedras?',
+      },
+    ],
+    hints: [
+      'Olhe quantos lasers saem da nave e onde cada laser chega. O que muda com o Tiro triplo ligado?',
+      'Com o Tiro triplo ligado, compare o Desvio 0 com o Desvio 2. Depois troque para o Desvio 1.',
+      'Clique em Disparar com o Tiro triplo desligado. Depois ligue o Tiro triplo e dispare com o Desvio 0, com o Desvio 2 e, por fim, com o Desvio 1. Depois de cada disparo, clique em Ver os lasers chegarem.',
+    ],
+  },
+  /**
+   * ⭐ O inimigo que atira (Poder "Inimigo que atira" do Construtor, Nave contra Asteroides,
+   * 28/11/2026): a inimiga patrulha o alto e atira a cada um segundo e meio. O tiro criado num lugar
+   * fixo sai sempre dali; o criado na inimiga sai de onde ela está. O tiro que encosta na nave sai e
+   * tira uma vida, e recomeçar a partida limpa os tiros. Só a ideia, em exploração livre.
+   */
+  'enemy-fire': {
+    id: 'enemy-fire',
+    group: 'events',
+    title: 'A inimiga que atira',
+    instruction:
+      'Escolha a origem do tiro e avance o tempo. Olhe de onde cada tiro sai, o que acontece quando um tiro encosta na nave e o que Recomeçar a partida faz com os tiros e as vidas.',
+    manipulates: 'A origem do tiro da inimiga, o lugar da nave, o tempo e o recomeço da partida',
+    success:
+      'O tiro criado num lugar fixo, como o meio da tela, sai sempre dali, não importa onde a inimiga esteja. O tiro criado na inimiga sai de onde a inimiga está naquele momento. Um relógio decide o ritmo: a inimiga atira a cada um segundo e meio. O tiro que encosta na nave sai e tira uma vida, e começar uma partida nova limpa os tiros.',
+    extra:
+      'E se a inimiga atirasse a cada meio segundo? Quantos tiros caberiam na tela ao mesmo tempo?',
+    goals: [
+      {
+        id: 'fixed-origin',
+        label: 'Com a origem no meio, todo tiro sai do mesmo lugar',
+        pedido:
+          'Com a origem No meio, avance até a inimiga atirar duas vezes e veja de onde os tiros saem.',
+      },
+      {
+        id: 'enemy-origin',
+        label: 'Na inimiga, o tiro sai de onde ela está',
+        pedido: 'Troque a origem para Na inimiga e avance até a inimiga atirar duas vezes.',
+      },
+      {
+        id: 'shot-hurts',
+        label: 'O tiro que encosta na nave sai e tira uma vida',
+        pedido: 'Deixe um tiro chegar até a nave e olhe as vidas.',
+      },
+      {
+        id: 'restart-clears',
+        label: 'Recomeçar a partida limpa os tiros',
+        pedido: 'Com tiros no ar, clique em Recomeçar a partida e olhe os tiros e as vidas.',
+      },
+    ],
+    hints: [
+      'Olhe onde a inimiga está a cada tiro e de onde o tiro sai. O que muda com a Origem do tiro?',
+      'Compare dois tiros com a origem No meio e dois tiros com a origem Na inimiga. Depois deixe um tiro chegar até a nave e recomece a partida com tiros no ar.',
+      'Com a origem No meio, clique em Avançar até o próximo tiro duas vezes. Depois escolha Na inimiga e clique em Avançar até o próximo tiro mais duas vezes. Deixe um tiro chegar até a nave e, com tiros no ar, clique em Recomeçar a partida.',
+    ],
+  },
 }
 
 const PREVIA_INICIAL: ScenePredictionPreview = { initial: true, conceal: [] }
@@ -3098,6 +3230,9 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'fill-stroke': PREVIA_INICIAL,
   shading: PREVIA_INICIAL,
   'score-goal': PREVIA_INICIAL,
+  'timed-shield': PREVIA_INICIAL,
+  'spread-shot': PREVIA_INICIAL,
+  'enemy-fire': PREVIA_INICIAL,
 }
 
 export const SCENE_MODELS: Record<SceneId, SceneModel> = Object.fromEntries(

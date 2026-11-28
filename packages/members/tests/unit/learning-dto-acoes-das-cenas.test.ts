@@ -90,6 +90,27 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     { type: 'goal-hit' },
     { type: 'goal-restart' },
     { type: 'goal-edit' },
+    // O escudo temporário (28/11/2026).
+    { type: 'pick-shield' },
+    { type: 'tick-second' },
+    { type: 'next-rock' },
+    // O tiro triplo (28/11/2026): o interruptor, os três desvios, o disparo e a chegada.
+    { type: 'spread-triple', on: true },
+    { type: 'spread-triple', on: false },
+    { type: 'spread-deviation', deviation: 0 },
+    { type: 'spread-deviation', deviation: 1 },
+    { type: 'spread-deviation', deviation: 2 },
+    { type: 'spread-fire' },
+    { type: 'spread-arrive' },
+    // O inimigo que atira (28/11/2026): as duas origens, os três lugares da nave, o tempo e o recomeço.
+    { type: 'enemy-origin', origin: 'middle' },
+    { type: 'enemy-origin', origin: 'enemy' },
+    { type: 'enemy-ship', x: 200 },
+    { type: 'enemy-ship', x: 400 },
+    { type: 'enemy-ship', x: 600 },
+    { type: 'enemy-tick' },
+    { type: 'enemy-next-shot' },
+    { type: 'enemy-restart' },
   ]
   for (const scene of SCENE_IDS) {
     for (const acao of acoesDosControles) somar(scene, acao)
@@ -133,6 +154,26 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
     { type: 'island-bounds', visible: 'true' },
   ])('recusa ação 3D fora do contrato: %j', (action) => {
     expect(validador.Check(blocoCom('island-3d', [action as unknown as SceneAction]))).toBe(false)
+  })
+
+  test.each([
+    { type: 'spread-deviation', deviation: 3 },
+    { type: 'spread-deviation', deviation: -1 },
+    { type: 'spread-deviation', deviation: '1' },
+    { type: 'spread-triple', on: 'sim' },
+    { type: 'spread-triple' },
+  ])('recusa ação do tiro triplo fora do contrato: %j', (action) => {
+    expect(validador.Check(blocoCom('spread-shot', [action as unknown as SceneAction]))).toBe(false)
+  })
+
+  test.each([
+    { type: 'enemy-origin', origin: 'ship' },
+    { type: 'enemy-origin' },
+    { type: 'enemy-ship', x: 300 },
+    { type: 'enemy-ship', x: '400' },
+    { type: 'enemy-ship' },
+  ])('recusa ação do inimigo que atira fora do contrato: %j', (action) => {
+    expect(validador.Check(blocoCom('enemy-fire', [action as unknown as SceneAction]))).toBe(false)
   })
 
   test.each([-1, 2, 0.5, '1', null])('recusa esconderijo fora do contrato: %j', async (id) => {

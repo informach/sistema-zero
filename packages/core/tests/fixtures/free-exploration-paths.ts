@@ -7,7 +7,10 @@ import { CAMINHOS_LIVRES_MEU_JEITO_E } from './caminhos-livres/meu-jeito-e'
 import { CAMINHOS_LIVRES_NAVE_A } from './caminhos-livres/nave-a'
 import { CAMINHOS_LIVRES_NAVE_B } from './caminhos-livres/nave-b'
 import { CAMINHOS_LIVRES_NAVE_C } from './caminhos-livres/nave-c'
+import { CAMINHOS_LIVRES_NAVE_ESCUDO } from './caminhos-livres/nave-escudo'
+import { CAMINHOS_LIVRES_NAVE_INIMIGO } from './caminhos-livres/nave-inimigo'
 import { CAMINHO_DO_PASSINHO } from './caminhos-livres/nave-passinho'
+import { CAMINHOS_LIVRES_NAVE_TRIPLO } from './caminhos-livres/nave-triplo'
 import { scenePaths } from './exploration-paths'
 
 /** Current free-exploration lessons require comparisons beyond the original guided journeys. */
@@ -17,6 +20,12 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
   ...CAMINHOS_LIVRES_NAVE_A,
   ...CAMINHOS_LIVRES_NAVE_B,
   ...CAMINHOS_LIVRES_NAVE_C,
+  // O Poder "Escudo temporário" do Construtor (28/11/2026).
+  ...CAMINHOS_LIVRES_NAVE_ESCUDO,
+  // O Poder "Tiro triplo" do Construtor (28/11/2026).
+  ...CAMINHOS_LIVRES_NAVE_TRIPLO,
+  // O Poder "Inimigo que atira" do Construtor (28/11/2026).
+  ...CAMINHOS_LIVRES_NAVE_INIMIGO,
   ...CAMINHOS_LIVRES_MEU_JEITO_D,
   ...CAMINHOS_LIVRES_MEU_JEITO_E,
   // O Corre Dino, frente B (02/11/2026): tela, leitor de tela, gravidade, impulso e som do pulo.

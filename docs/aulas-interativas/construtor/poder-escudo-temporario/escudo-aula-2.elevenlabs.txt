@@ -1,0 +1,187 @@
+[upbeat, welcoming voice] Oi! Na Aula 1, você deu um escudo com prazo para a nave do jogo 2D. Agora o escudo chegou à Patrulha Espacial, em três dimensões!
+
+[engaging, energetic, conversational voice] A regra continua a mesma: pegar o item liga o escudo por cinco segundos, a pedra que bate com o escudo ligado só sai, e o escudo perde um a cada segundo.
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a patrulha.
+
+[interested, animated voice] Olha aqui no meio: o item vem na direção da nave. Quando ela pega, o Escudo, no alto à esquerda, vira 5, e a nave pisca.
+
+[curious] Será que o escudo funciona igual no espaço em três dimensões?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: pegue o escudo e deixe uma pedra bater. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na patrulha, o escudo já está preparado: o molde do item, escondido, o grupo itensEscudo, o movimento dos itens na direção da nave e o texto do Escudo, em zero. Falta o relógio que cria os itens.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Siga até o relógio A cada 1.5 segundos, o dos asteroides, e deixe à vista o espaço logo abaixo dele.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Tempo e sorteio e depois Tempo. Pegue A cada segundos, encaixe nesse espaço e troque o 2 por 4.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o relógio A cada 4 segundos, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] Deixe o então desse Se à vista. Abra Jogo 3D e depois Grupos. Pegue Criar uma cópia e encaixe nesse então.
+
+[confident, clear, unhurried voice] No molde, escolha moldeEscudo. No grupo, escolha itensEscudo.
+
+[confident, clear, unhurried voice] Na posição, conserve o x em 0, coloque 1 no y e menos 28 no z. O zero é o meio, e o menos 28 é longe, lá na frente da nave.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Espere: a cada quatro segundos, um item vem pelo meio. Por enquanto, ele passa pela nave sem fazer nada.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 4 segundos tem a guarda estado igual a jogando e, no então, a cópia de moldeEscudo no grupo itensEscudo em x 0, y 1 e z menos 28.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Os itens já vêm, mas passam pela nave. Como no jogo 2D, pegar o item é um encontro que liga o escudo.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo do encontro Quando nave encostar em algum do grupo asteroides, fora do fazer dele.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, Encostar e Encostar de novo. Pegue Quando heroi encostar em algum do grupo e encaixe nesse espaço.
+
+[confident, clear, unhurried voice] No primeiro nome, escolha nave. No grupo, escolha itensEscudo. No campo chamando de, troque item por itemPego.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o encontro da nave com os itens, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] Abra Jogo 3D e depois Grupos. Pegue Tirar o objeto do grupo, encaixe no então e escolha itemPego e itensEscudo.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis. Encaixe Alterar variável para logo abaixo, troque contador por tempoDoEscudo e o 1 por 5.
+
+[engaging, energetic, conversational voice] No 3D, o placar é um texto. Quando o número muda, o texto precisa ser escrito de novo.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela logo abaixo e conserve em cima, à esquerda.
+
+[confident, clear, unhurried voice] No texto, solte uma conta de juntar: Escudo, com dois-pontos e um espaço, mais o valor da variável tempoDoEscudo.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Deixe a nave no meio: quando ela pega o item, o item some e o Escudo vira 5.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro da nave com itensEscudo tem a guarda da partida e, no então, tira o itemPego do grupo, põe 5 em tempoDoEscudo e escreve o Escudo em cima, à esquerda.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora a pergunta da batida, a mesma do jogo 2D: o escudo ainda tem tempo? Se tem, a pedra só sai. Se não tem, a nave perde uma vida.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] No encontro Quando nave encostar em algum do grupo asteroides, deixe à vista o espaço logo abaixo de Tirar o objeto asteroideQueBateu.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se. Encaixe um Se nesse espaço. Machucar e Tocar o som pronto descem para baixo do Se.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha tempoDoEscudo. Conserve o sinal de maior e o zero.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais, o de antes da palavra senão, e arraste Machucar nave tirando 1 de vida para dentro do senão. O som vai junto.
+
+[confident, clear, unhurried voice] No então, encaixe Tocar o som pronto, de Jogo 3D e Som. Conserve o som moeda: é o som do escudo segurando a pedra.
+
+[interested, animated voice] Repare: aqui o Se fica dentro da guarda da partida. A batida só conta durante a partida, e só tira vida sem escudo.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e pegue o item. Deixe uma pedra bater: ela some, e os corações continuam iguais.
+
+[curious] E quando é que o escudo da patrulha acaba?
+
+[engaging, energetic, conversational voice] Ainda não acaba: o prazo é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no encontro da nave com os asteroides, dentro da guarda e depois de tirar a pedra, está o Se tempoDoEscudo maior que 0, com o som no então e Machucar nave no senão, e nenhum Machucar fora do Se.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Falta o prazo, como no jogo 2D: a cada segundo, o escudo perde um, até o zero. Na patrulha, o texto do Escudo também precisa ser escrito de novo a cada segundo.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo do relógio A cada 4 segundos, o do item.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, Tempo e sorteio e Tempo. Encaixe outro A cada segundos nesse espaço e troque o 2 por 1.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, encaixe um Se no fazer desse relógio, clique no x e escolha tempoDoEscudo.
+
+[confident, clear, unhurried voice] No então, encaixe Somar 1 em variável, de Programação e Variáveis. Troque o 1 por menos 1 e escolha tempoDoEscudo.
+
+[confident, clear, unhurried voice] Logo abaixo, escreva o Escudo de novo: Escrever na tela, em cima, à esquerda, com Escudo mais o valor de tempoDoEscudo. É o mesmo texto da parte anterior.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, Objetos e Aparência. Encaixe Fazer piscar logo abaixo, escolha nave e troque o tempo por 0.5.
+
+[curious] E sem o Se, o que aconteceria com o número?
+
+[engaging, energetic, conversational voice] Ele passaria do zero, como no jogo 2D. O Se faz o escudo parar no zero.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e pegue o item. O Escudo desce de cinco a zero. Saia do meio e deixe uma pedra bater com o Escudo em zero: ela tira uma vida.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 1 segundo tem o Se tempoDoEscudo maior que 0, e no então estão Somar menos 1 em tempoDoEscudo, o texto do Escudo e Fazer nave piscar.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a patrulha também tem escudo com prazo: o item liga, a batida pergunta e o tempo acaba!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem duas perguntas para você pensar no escudo. Quando aparecer Projeto enviado!, clique em Próxima parte.

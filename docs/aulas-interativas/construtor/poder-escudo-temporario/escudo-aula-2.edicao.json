@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-abertura", "video-item", "video-liga", "video-protege", "video-acaba"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "aqui no meio: o item vem na direção da nave. Quando ela pega, o Escudo, no alto à esquerda, vira 5, e a nave pisca.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: pegue o escudo e deixe uma pedra bater. Quando terminar, clique",
+      "falaPrincipal": "Será que o escudo funciona igual no espaço em três dimensões?",
+      "falaPersonagem": "Será que o escudo funciona igual no espaço em três dimensões?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-protege-K1",
+      "clipe": "video-protege",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Clique em Rodar de novo, aperte Enter e pegue o item. Deixe uma pedra bater: ela some, e os corações continuam iguais.",
+      "ancoraDepois": "Ainda não acaba: o prazo é a próxima parte. Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou",
+      "falaPrincipal": "E quando é que o escudo da patrulha acaba?",
+      "falaPersonagem": "E quando é que o escudo da patrulha acaba?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-acaba-K1",
+      "clipe": "video-acaba",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "anterior. Abra Jogo 3D, Objetos e Aparência. Encaixe Fazer piscar logo abaixo, escolha nave e troque o tempo por 0.5.",
+      "ancoraDepois": "Ele passaria do zero, como no jogo 2D. O Se faz o escudo parar no zero. Clique em Rodar de novo, aperte Enter e pegue o",
+      "falaPrincipal": "E sem o Se, o que aconteceria com o número?",
+      "falaPersonagem": "E sem o Se, o que aconteceria com o número?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

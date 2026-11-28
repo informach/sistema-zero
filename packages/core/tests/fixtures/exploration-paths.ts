@@ -600,4 +600,42 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'goal-hit' },
     { type: 'goal-edit' },
   ],
+  // O escudo temporário (28/11/2026): a batida sem escudo, a pedra que só sai, o escudo que chega a 0
+  // antes da pedra do segundo 8 e a pegada de novo com o Escudo em 4.
+  'timed-shield': [
+    { type: 'next-rock' },
+    { type: 'pick-shield' },
+    { type: 'next-rock' },
+    { type: 'tick-second' },
+    { type: 'tick-second' },
+    { type: 'next-rock' },
+    { type: 'pick-shield' },
+    { type: 'tick-second' },
+    { type: 'pick-shield' },
+  ],
+  // O tiro triplo (28/11/2026): o tiro simples, o triplo com desvio 0, o leque com desvio 2 e o
+  // desvio 1 que passa entre as pedras, cada rajada vista até chegar.
+  'spread-shot': [
+    { type: 'spread-fire' },
+    { type: 'spread-arrive' },
+    { type: 'spread-triple', on: true },
+    { type: 'spread-fire' },
+    { type: 'spread-arrive' },
+    { type: 'spread-deviation', deviation: 2 },
+    { type: 'spread-fire' },
+    { type: 'spread-arrive' },
+    { type: 'spread-deviation', deviation: 1 },
+    { type: 'spread-fire' },
+    { type: 'spread-arrive' },
+  ],
+  // O inimigo que atira (28/11/2026): dois tiros com a origem no meio, dois na inimiga (os do meio
+  // encostam na nave no meio do caminho) e o recomeço com um tiro no ar.
+  'enemy-fire': [
+    { type: 'enemy-next-shot' },
+    { type: 'enemy-next-shot' },
+    { type: 'enemy-origin', origin: 'enemy' },
+    { type: 'enemy-next-shot' },
+    { type: 'enemy-next-shot' },
+    { type: 'enemy-restart' },
+  ],
 }

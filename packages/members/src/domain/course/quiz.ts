@@ -117,6 +117,14 @@ export interface MemberQuizContent {
       | 'simbolos-ordem'
       | 'simbolos-fora'
       | 'simbolos-recomeca'
+      | 'escudo-protege'
+      | 'escudo-acabou'
+      | 'escudo-renova'
+      | 'escudo-sem-guarda'
+      | 'triplo-juntos'
+      | 'triplo-leque'
+      | 'triplo-um'
+      | 'triplo-grupos'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

@@ -189,6 +189,14 @@ test.each([
   'simbolos-ordem',
   'simbolos-fora',
   'simbolos-recomeca',
+  'escudo-protege',
+  'escudo-acabou',
+  'escudo-renova',
+  'escudo-sem-guarda',
+  'triplo-juntos',
+  'triplo-leque',
+  'triplo-um',
+  'triplo-grupos',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

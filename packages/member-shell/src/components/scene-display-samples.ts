@@ -1431,6 +1431,45 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'O placar está em 27 e a placa da meta diz 26. A vitória vem com o placar maior ou igual à meta. A partida acabou.',
     ],
   },
+  'timed-shield': {
+    readouts: [
+      { label: 'segundo', value: '14', tone: 'plain' },
+      { label: 'vidas', value: '3', tone: 'a' },
+      { label: 'escudo', value: '5', tone: 'b' },
+    ],
+    situations: [
+      'Segundo 0. A nave tem 3 vidas e o Escudo está em 0. As pedras batem nos segundos 2, 5, 8 e 11.',
+      'Segundo 11: a pedra bateu com o Escudo em 0. A nave perdeu uma vida e ficou com 1 vida.',
+      'Segundo 14. A nave tem 3 vidas e o Escudo está em 0. As pedras batem nos segundos 2, 5, 8 e 11. A partida acabou.',
+    ],
+  },
+  'spread-shot': {
+    readouts: [
+      { label: 'lasers no ar', value: '3', tone: 'a' },
+      { label: 'pedras acertadas', value: '3', tone: 'b' },
+      { label: 'desvio', value: '2', tone: 'plain' },
+    ],
+    situations: [
+      'O tiro triplo está desligado. Três pedras esperam no alto da tela.',
+      'A nave disparou o tiro triplo: três lasers saíram de uma vez. As três pedras voltaram ao lugar.',
+      'Os três lasers chegaram ao alto da tela sem acertar nenhuma pedra.',
+      'O tiro triplo está ligado, com desvio 2. No último disparo, nenhuma pedra foi acertada.',
+    ],
+  },
+  'enemy-fire': {
+    readouts: [
+      { label: 'tiros no ar', value: '2', tone: 'a' },
+      { label: 'vidas', value: '3', tone: 'b' },
+      { label: 'origem', value: 'na inimiga', tone: 'plain' },
+    ],
+    situations: [
+      'A inimiga está à esquerda, e a nave está no meio. A origem do tiro está no meio. Nenhum tiro está no ar, e a nave tem 3 vidas.',
+      'A inimiga está na ponta esquerda, e a nave está à esquerda. A origem do tiro está na inimiga. 2 tiros estão no ar, e a nave tem 3 vidas. A partida acabou.',
+      'A inimiga estava na ponta direita e atirou. O tiro nasceu embaixo da inimiga.',
+      'Um tiro encostou na nave e saiu. A nave perdeu a última vida, e a partida acabou.',
+      'A partida recomeçou: os tiros no ar saíram, as vidas voltaram a 3 e a inimiga voltou ao começo.',
+    ],
+  },
 }
 
 export function sceneDisplaySamples(scene: SceneId, cast?: SceneCast) {

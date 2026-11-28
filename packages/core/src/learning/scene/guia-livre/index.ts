@@ -7,6 +7,7 @@ import { guia as coordinates } from './coordinates'
 import { guia as copyVsOriginal } from './copy-vs-original'
 import { GUIAS_DINO_A } from './dino'
 import { guia as drawLoop } from './draw-loop'
+import { guia as enemyFire } from './enemy-fire'
 import { guia as fillStroke } from './fill-stroke'
 import { guia as fixedVsRead } from './fixed-vs-read'
 import { guia as frames } from './frames'
@@ -32,8 +33,10 @@ import { guia as screenReader } from './screen-reader'
 import { guia as shading } from './shading'
 import { guia as sheetVsSprite } from './sheet-vs-sprite'
 import { guia as spawn } from './spawn'
+import { guia as spreadShot } from './spread-shot'
 import { guia as stageSize } from './stage-size'
 import { guia as symmetry } from './symmetry'
+import { guia as timedShield } from './timed-shield'
 import type { GuiaLivre } from './tipos'
 import { guia as twoClocks } from './two-clocks'
 import { guia as uniqueNames } from './unique-names'
@@ -93,6 +96,12 @@ export const GUIAS_LIVRES: Partial<Record<SceneId, GuiaLivre>> = {
   acceleration: acceleration,
   // A meta do jogo (Nave, Dia 5, frente D, 02/11/2026).
   'score-goal': scoreGoal,
+  // O Poder "Escudo temporário" do Construtor (Nave, 28/11/2026).
+  'timed-shield': timedShield,
+  // O Poder "Tiro triplo" do Construtor (Nave, 28/11/2026).
+  'spread-shot': spreadShot,
+  // O Poder "Inimigo que atira" do Construtor (Nave, 28/11/2026).
+  'enemy-fire': enemyFire,
 }
 
 // O Corre Dino, frente A (02/11/2026): as cenas que a Nave já usava em exploração livre ganham a

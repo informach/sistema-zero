@@ -103,6 +103,11 @@ async function jogo() {
   }
   const las = q.get('laser');
   for (const z of [-2.4, -5.2, -8.4]) { const l = encaixar(await carregar(las), 0.9); l.position.set(0, 1, z); sombras(l); scene.add(l); }
+  // Peças a mais (as capas dos Poderes): "nome:tamanho:x:y:z" separadas por ";".
+  for (const e of (q.get('extras') || '').split(';').filter(Boolean)) {
+    const [nome, tam, x, y, z] = e.split(':');
+    const o = encaixar(await carregar(nome), +tam); o.position.set(+x, +y, +z); sombras(o); scene.add(o);
+  }
   renderer.render(scene, cam);
 }
 

@@ -16,7 +16,10 @@ function extensaoEnsinada(courseSlug: string, lessonSlug: string): 'game-2d' | '
   if (courseSlug === 'jornada-faisca-base-3d' || courseSlug === 'jornada-construtor-base-3d')
     return 'game-3d'
   if (
-    (courseSlug === 'jornada-faisca-missao' || courseSlug.startsWith('jornada-faisca-poder-')) &&
+    (courseSlug === 'jornada-faisca-missao' ||
+      courseSlug.startsWith('jornada-faisca-poder-') ||
+      // os Poderes do Construtor: a aula-2 é sobre a Patrulha Espacial
+      courseSlug.startsWith('jornada-construtor-poder-')) &&
     lessonSlug === 'aula-2'
   )
     return 'game-3d'
@@ -50,6 +53,7 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
   expect(checked3d.sort()).toEqual([
     'aula-2.manifesto.json',
     'cabana-aula-2.manifesto.json',
+    'escudo-aula-2.manifesto.json',
     'ilha-aula-1.manifesto.json',
     'ilha-aula-2.manifesto.json',
     'ilha-aula-3.manifesto.json',
@@ -61,5 +65,6 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
     'patrulha-espacial-aula-5.manifesto.json',
     'ponte-aula-2.manifesto.json',
     'simbolos-aula-2.manifesto.json',
+    'triplo-aula-2.manifesto.json',
   ])
 })

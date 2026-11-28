@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-material",
+    "video-experiencia",
+    "video-item",
+    "video-tres",
+    "video-direcoes",
+    "video-volta"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o item, o número do Triplo, aqui no canto, vira 5. Agora, cada aperto de Espaço cria três lasers, um para cada lado.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: pegue o item, dispare e repare no número do Triplo. Quando",
+      "falaPrincipal": "Por que os três lasers não vão para o mesmo lugar?",
+      "falaPersonagem": "Por que os três lasers não vão para o mesmo lugar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "vai para o lado. No seu jogo, cada laser é um jato, e o vx é o bico. Com o tiro triplo, um aperto cria três lasers.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos lasers saem e onde cada um",
+      "falaPrincipal": "E se os três lasers saírem com o mesmo desvio?",
+      "falaPersonagem": "E se os três lasers saírem com o mesmo desvio?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-tres-K1",
+      "clipe": "video-tres",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "no jogo, aperte Enter, pegue o item e dispare. Três lasers saem juntos e seguem o mesmo caminho: parece um laser só.",
+      "ancoraDepois": "Porque os três têm o mesmo vx, zero, e seguem juntos. Como na experiência, com desvio zero. A direção de cada um é a",
+      "falaPrincipal": "Se são três, por que parece um só?",
+      "falaPersonagem": "Se são três, por que parece um só?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-direcoes-K1",
+      "clipe": "video-direcoes",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "aperte Enter, pegue o item e dispare. Agora os lasers abrem em leque: um para a esquerda, um reto e um para a direita.",
+      "ancoraDepois": "Por enquanto, sim: falta o prazo. Ele é a próxima parte. Se algo não funcionou no seu jogo, volte aos blocos e confira",
+      "falaPrincipal": "E esse tiro triplo dura para sempre?",
+      "falaPersonagem": "E esse tiro triplo dura para sempre?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-volta-K1",
+      "clipe": "video-volta",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "zero. No então, encaixe Somar 1 em variável, de Programação e Variáveis. Troque o 1 por menos 1 e escolha tempoTriplo.",
+      "ancoraDepois": "O número passaria do zero: menos um, menos dois. Com o Se, ele para no zero. Clique no jogo, aperte Enter e pegue o",
+      "falaPrincipal": "E sem o Se, o que aconteceria?",
+      "falaPersonagem": "E sem o Se, o que aconteceria?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

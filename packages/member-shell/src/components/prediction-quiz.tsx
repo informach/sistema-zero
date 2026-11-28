@@ -16,6 +16,7 @@ import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { CabanaQuizScene } from './quiz-cabana-scene'
+import { EscudoQuizScene } from './quiz-escudo-scene'
 import { GardenQuizScene } from './quiz-garden-scene'
 import { IslandQuizScene } from './quiz-island-scene'
 import { JardimQuizScene } from './quiz-jardim-scene'
@@ -23,6 +24,7 @@ import { LighthouseQuizScene } from './quiz-lighthouse-scene'
 import { MoedasQuizScene } from './quiz-moedas-scene'
 import { PonteQuizScene } from './quiz-ponte-scene'
 import { SimbolosQuizScene } from './quiz-simbolos-scene'
+import { TriploQuizScene } from './quiz-triplo-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */
 export function PredictionQuiz(props: {
@@ -336,6 +338,10 @@ function PredictionQuizSession({
             <CabanaQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('moedas-') ? (
             <MoedasQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('escudo-') ? (
+            <EscudoQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('triplo-') ? (
+            <TriploQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('jardim-') ? (
             <JardimQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('island-') ? (

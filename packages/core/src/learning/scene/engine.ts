@@ -1,5 +1,6 @@
 import {
   COIN_COUNTER,
+  ENEMY_FIRE,
   isSceneAction,
   isSceneSetupAction,
   LIGHTHOUSE_POSITION,
@@ -9,10 +10,12 @@ import {
   type SceneId,
   SEQUENCE_SYMBOLS,
   type SequenceSymbol,
+  SPREAD_SHOT,
   STAGE_TARGET,
   sceneFrameRate,
   sceneLongFrame,
   TIMED_BRIDGE,
+  TIMED_SHIELD,
 } from './actions'
 import {
   FOLHA_DA_NAVE,
@@ -81,6 +84,11 @@ import {
   cloneScene,
   DELTA_RACE,
   DRAW_LOOP_LANE,
+  enemyFireFires,
+  enemyFireOver,
+  enemyFirePlace,
+  enemyFireStart,
+  enemyFireX,
   HITBOX_DRAWINGS_TOUCH,
   HITBOX_VISIBLE_GAP,
   initialScene,
@@ -101,6 +109,8 @@ import {
   SCORE_GOAL,
   SCREEN_READER_EMPTY,
   type SceneClock,
+  type SceneEnemyFire,
+  type SceneSpreadShotEnd,
   type SceneStart,
   type SceneState,
   SOUND_BEATS_MAX,
@@ -110,6 +120,11 @@ import {
   sceneContact,
   sceneDrawingsGap,
   scoreGoalReached,
+  spreadShotHits,
+  spreadShotVx,
+  timedShieldNextRock,
+  timedShieldOver,
+  timedShieldRock,
   uniqueNamesWarning,
   VELOCITY_TRAIL_MAX,
 } from './state'
@@ -176,6 +191,158 @@ export function openScene(start: SceneStart): SceneState {
       atGravity: base.flight.atGravity,
     }
   return aberto
+}
+
+/**
+ * Um segundo do escudo temporário (`timed-shield`, 28/11/2026): PRIMEIRO o Escudo desce 1 (se é maior
+ * que 0), DEPOIS a pedra daquele segundo bate. Com o Escudo maior que 0 ela só sai; com 0, tira uma
+ * vida. Cada meta cai no segundo da batida, com o número do Escudo e as vidas à vista:
+ * - `hit-costs`: a batida com 0 numa partida em que a nave NUNCA pegou o item;
+ * - `shield-protects`: a batida com o Escudo maior que 0;
+ * - `shield-ends`: a batida com 0 DEPOIS de pegar o item (o Escudo contou até 0 nesta partida).
+ */
+function passarUmSegundoDoEscudo(s: SceneState): void {
+  const t = s.timedShield
+  t.second++
+  if (t.shield > 0) t.shield--
+  t.last = 'tick'
+  s.caption = ''
+  if (!timedShieldRock(t.second)) return
+  if (t.shield > 0) {
+    s.caption = `Segundo ${t.second}: a pedra bateu com o Escudo em ${t.shield} e só saiu. A nave continua com ${quantos(t.lives, 'vida', 'vidas')}.`
+    observe(s, 'shield-protects', 'Com o escudo ligado, a pedra só saiu')
+    return
+  }
+  t.lives = Math.max(0, t.lives - 1)
+  t.damaged.push(t.second)
+  s.caption =
+    t.lives === 0
+      ? `Segundo ${t.second}: a pedra bateu com o Escudo em 0. A nave perdeu a última vida, e a partida acabou.`
+      : `Segundo ${t.second}: a pedra bateu com o Escudo em 0. A nave perdeu uma vida e ficou com ${quantos(t.lives, 'vida', 'vidas')}.`
+  if (t.shieldBefore === null) observe(s, 'hit-costs', 'Sem escudo, a batida tirou uma vida')
+  else observe(s, 'shield-ends', 'O escudo chegou a 0 e a pedra voltou a tirar vida')
+}
+
+/**
+ * A rajada do tiro triplo chega (`spread-shot`, 28/11/2026): os quadros passam, cada laser sobe
+ * `SPREAD_SHOT.speed` e anda o seu vx para o lado, até acertar uma pedra (o laser e a pedra saem) ou
+ * deixar a tela. Determinístico: nada de relógio de parede, só a conta dos quadros. Cada meta cai
+ * aqui, com a rajada inteira à vista (o palco desenha o caminho de cada laser):
+ * - `single-one`: a rajada do tiro simples;
+ * - `triple-stacked`: a do tiro triplo com desvio 0 (os três no mesmo caminho);
+ * - `triple-spread`: a do tiro triplo com desvio 2 que acertou as DUAS pedras dos lados;
+ * - `deviation-matters`: a do tiro triplo com desvio 1, DEPOIS de ter visto a de desvio 2.
+ */
+function chegaremOsLasers(s: SceneState): void {
+  const sp = s.spreadShot
+  const volley = sp.volley
+  if (!volley || sp.lasers.length === 0) return
+  const metade = SPREAD_SHOT.rockSize / 2
+  const ends: (SceneSpreadShotEnd | undefined)[] = sp.lasers.map(() => undefined)
+  const voando = sp.lasers.map((laser, i) => ({ ...laser, i }))
+  // Um laser leva no máximo `height / speed` quadros para sair por cima.
+  const quadros = Math.ceil(SPREAD_SHOT.height / SPREAD_SHOT.speed) + 1
+  for (let q = 0; q < quadros && voando.length > 0; q++)
+    for (const laser of [...voando]) {
+      laser.y -= SPREAD_SHOT.speed
+      laser.x += laser.vx
+      const pedra = SPREAD_SHOT.rocks.findIndex(
+        (x, r) =>
+          sp.rocks[r] &&
+          Math.abs(laser.x - x) <= metade &&
+          Math.abs(laser.y - SPREAD_SHOT.rockY) <= metade,
+      )
+      const saiu = laser.y < 0 || laser.x < 0 || laser.x > SPREAD_SHOT.width
+      if (pedra < 0 && !saiu) continue
+      if (pedra >= 0) sp.rocks[pedra] = false
+      ends[laser.i] = { x: laser.x, y: laser.y, rock: pedra >= 0 ? pedra : null }
+      voando.splice(voando.indexOf(laser), 1)
+    }
+  sp.lasers = []
+  volley.ends = ends.map((end) => end ?? { x: 0, y: 0, rock: null })
+  const acertos = spreadShotHits(sp)
+  const n = acertos.length
+  s.caption = !volley.triple
+    ? n > 0
+      ? 'O laser chegou e acertou a pedra do meio.'
+      : 'O laser chegou ao alto da tela sem acertar nenhuma pedra.'
+    : n === 0
+      ? 'Os três lasers chegaram ao alto da tela sem acertar nenhuma pedra.'
+      : `Os três lasers chegaram: ${quantos(n, 'pedra acertada', 'pedras acertadas')}.`
+  if (!volley.triple) observe(s, 'single-one', 'Com o tiro simples, sai um laser só')
+  else if (volley.deviation === 0)
+    observe(s, 'triple-stacked', 'Com desvio 0, os três lasers seguem juntos')
+  else if (volley.deviation === 2 && acertos.includes(0) && acertos.includes(2))
+    observe(s, 'triple-spread', 'Com desvio 2, cada laser segue o seu caminho')
+  else if (volley.deviation === 1 && s.evidence.discoveries.includes('triple-spread'))
+    observe(s, 'deviation-matters', 'Com desvio 1, os lasers dos lados passam entre as pedras')
+}
+
+/**
+ * O tiro da inimiga que está na fileira da nave, no x dela, ENCOSTA (`enemy-fire`, 28/11/2026): sai e
+ * tira uma vida. Vale no tique em que o tiro chega à fileira e no gesto que leva a nave para baixo de
+ * um tiro que já está lá. A meta `shot-hurts` cai aqui, com as vidas e o tiro que sumiu à vista.
+ */
+function encostarNaNave(s: SceneState, legendas: string[]): boolean {
+  const f = s.enemyFire
+  if (f.lives === 0) return false
+  const encostam = f.shots.filter((shot) => shot.y === ENEMY_FIRE.shipY && shot.x === f.shipX)
+  if (encostam.length === 0) return false
+  f.shots = f.shots.filter((shot) => !encostam.includes(shot))
+  f.lives = Math.max(0, f.lives - encostam.length)
+  f.last = 'hit'
+  legendas.push(
+    f.lives === 0
+      ? 'Um tiro encostou na nave e saiu. A nave perdeu a última vida, e a partida acabou.'
+      : `Um tiro encostou na nave e saiu. A nave ficou com ${quantos(f.lives, 'vida', 'vidas')}.`,
+  )
+  observe(s, 'shot-hurts', 'O tiro que encosta na nave sai e tira uma vida')
+  return true
+}
+
+/**
+ * Meio segundo do inimigo que atira (`enemy-fire`, 28/11/2026), nesta ordem: a inimiga dá um passo
+ * no caminho; os tiros no ar descem (o que passa do fim da tela sai; o que chega à nave encosta); no
+ * tique de tiro, a inimiga atira da origem escolhida. Cada meta de origem cai no tiro que sai, com o
+ * tiro e a inimiga à vista:
+ * - `fixed-origin`: dois tiros com a origem no meio, a inimiga em dois lugares diferentes;
+ * - `enemy-origin`: dois tiros com a origem na inimiga, de dois lugares diferentes.
+ */
+function meioSegundoDaInimiga(s: SceneState, legendas: string[]): void {
+  const f = s.enemyFire
+  f.tick++
+  f.shots = f.shots
+    .map((shot) => ({ ...shot, y: shot.y + ENEMY_FIRE.fall }))
+    .filter((shot) => shot.y <= ENEMY_FIRE.height)
+  encostarNaNave(s, legendas)
+  if (!enemyFireFires(f.tick) || f.lives === 0) return
+  const de = enemyFireX(f.tick)
+  const x = f.origin === 'middle' ? ENEMY_FIRE.middle : de
+  f.shots.push({ x, y: ENEMY_FIRE.enemyY, origin: f.origin, from: de })
+  const lugares = f.origin === 'middle' ? f.middleFrom : f.enemyFrom
+  if (!lugares.includes(de)) lugares.push(de)
+  // ⚠️ O que a tela e o Zappy comentam é o ÚLTIMO teste que o gesto mostrou: um encosto no começo do
+  // "Avançar até o próximo tiro" fica na frente do tiro que só abriu a comparação (um lugar só).
+  if (f.last !== 'hit' || lugares.length >= 2) f.last = 'fire'
+  legendas.push(
+    f.origin === 'middle'
+      ? `A inimiga estava ${enemyFirePlace(de)} e atirou. O tiro nasceu no meio da tela.`
+      : `A inimiga estava ${enemyFirePlace(de)} e atirou. O tiro nasceu embaixo da inimiga.`,
+  )
+  if (f.origin === 'middle' && f.middleFrom.length >= 2)
+    observe(s, 'fixed-origin', 'Com a origem no meio, todo tiro sai do mesmo lugar')
+  if (f.origin === 'enemy' && f.enemyFrom.length >= 2)
+    observe(s, 'enemy-origin', 'Na inimiga, o tiro sai de onde ela está')
+}
+
+/** Um gesto de tempo da inimiga: `tiques` meios segundos, ou até o próximo tiro sair. */
+function passarOTempoDaInimiga(s: SceneState, ateOTiro: boolean): void {
+  const f: SceneEnemyFire = s.enemyFire
+  const legendas: string[] = []
+  f.last = null
+  do meioSegundoDaInimiga(s, legendas)
+  while (ateOTiro && !enemyFireOver(f) && !enemyFireFires(f.tick))
+  s.caption = legendas.join(' ')
 }
 
 /**
@@ -1023,6 +1190,121 @@ export function stepScene(
       if (s.scoreGoal.hits > 0 && !s.scoreGoal.won)
         observe(s, 'placa-fixa', 'No meio da partida, a placa da meta não mudou')
       break
+    case 'pick-shield': {
+      // ⭐ O escudo temporário (28/11/2026). Pegar o item volta o Escudo a 5, de qualquer valor; a
+      // meta da renovação só cai com o Escudo ENTRE 1 e 4 (a criança viu o número descer e voltar).
+      const t = s.timedShield
+      if (timedShieldOver(t)) return previous
+      const antes = t.shield
+      t.shieldBefore = antes
+      t.shield = TIMED_SHIELD.shield
+      t.last = 'pick'
+      s.caption =
+        antes === 0
+          ? `A nave pegou o item do escudo. O Escudo foi para ${TIMED_SHIELD.shield}.`
+          : antes === TIMED_SHIELD.shield
+            ? `A nave pegou o item de novo. O Escudo continua em ${TIMED_SHIELD.shield}.`
+            : `A nave pegou o item de novo. O Escudo estava em ${antes} e foi para ${TIMED_SHIELD.shield}.`
+      if (antes > 0 && antes < TIMED_SHIELD.shield)
+        observe(s, 'shield-renews', 'Pegar de novo voltou o escudo a 5')
+      break
+    }
+    case 'tick-second':
+      if (timedShieldOver(s.timedShield)) return previous
+      passarUmSegundoDoEscudo(s)
+      break
+    case 'next-rock': {
+      // Os segundos passam UM a UM, pela mesma regra do "Avançar 1 segundo", até a pedra bater.
+      const t = s.timedShield
+      const pedra = timedShieldNextRock(t.second)
+      if (timedShieldOver(t) || pedra === null) return previous
+      while (t.second < pedra) passarUmSegundoDoEscudo(s)
+      break
+    }
+    case 'spread-triple':
+      // ⭐ O tiro triplo (28/11/2026). As escolhas valem para o PRÓXIMO disparo: os lasers que já
+      // estão no ar guardam o vx com que saíram.
+      if (s.spreadShot.triple === action.on) return previous
+      s.spreadShot.triple = action.on
+      s.caption = action.on ? 'Tiro triplo ligado.' : 'Tiro triplo desligado.'
+      break
+    case 'spread-deviation':
+      if (s.spreadShot.deviation === action.deviation) return previous
+      s.spreadShot.deviation = action.deviation
+      s.caption = s.spreadShot.triple
+        ? `Desvio ${action.deviation}.`
+        : `Desvio ${action.deviation}. O desvio só vale com o Tiro triplo ligado.`
+      break
+    case 'spread-fire': {
+      // Uma rajada de cada vez: com lasers no ar, o Disparar espera eles chegarem.
+      const sp = s.spreadShot
+      if (sp.lasers.length > 0) return previous
+      const voltaram = !sp.rocks.every(Boolean)
+      const vx = spreadShotVx(sp.triple, sp.deviation)
+      sp.rocks = SPREAD_SHOT.rocks.map(() => true)
+      sp.lasers = vx.map((v) => ({ x: SPREAD_SHOT.ship.x, y: SPREAD_SHOT.ship.y, vx: v }))
+      sp.volley = { triple: sp.triple, deviation: sp.deviation, vx, ends: [] }
+      s.caption = `${sp.triple ? 'A nave disparou o tiro triplo: três lasers saíram de uma vez.' : 'A nave disparou um laser.'}${voltaram ? ' As três pedras voltaram ao lugar.' : ''}`
+      break
+    }
+    case 'spread-arrive':
+      if (s.spreadShot.lasers.length === 0) return previous
+      chegaremOsLasers(s)
+      break
+    case 'enemy-origin':
+      // ⭐ O inimigo que atira (28/11/2026). A origem vale para o PRÓXIMO tiro: o que já saiu continua
+      // descendo onde nasceu.
+      if (s.enemyFire.origin === action.origin) return previous
+      s.enemyFire.origin = action.origin
+      s.enemyFire.last = null
+      s.caption =
+        action.origin === 'middle'
+          ? 'Origem do tiro: no meio. Vale para o próximo tiro.'
+          : 'Origem do tiro: na inimiga. Vale para o próximo tiro.'
+      break
+    case 'enemy-ship': {
+      const f = s.enemyFire
+      if (f.shipX === action.x) return previous
+      f.shipX = action.x
+      f.last = null
+      const legendas = [
+        action.x === ENEMY_FIRE.middle
+          ? 'A nave foi para o meio.'
+          : action.x < ENEMY_FIRE.middle
+            ? 'A nave foi para a esquerda.'
+            : 'A nave foi para a direita.',
+      ]
+      // A nave que vai para baixo de um tiro que já chegou à fileira dela também encosta nele.
+      encostarNaNave(s, legendas)
+      s.caption = legendas.join(' ')
+      break
+    }
+    case 'enemy-tick':
+      if (enemyFireOver(s.enemyFire)) return previous
+      passarOTempoDaInimiga(s, false)
+      break
+    case 'enemy-next-shot':
+      if (enemyFireOver(s.enemyFire)) return previous
+      passarOTempoDaInimiga(s, true)
+      break
+    case 'enemy-restart': {
+      // Recomeçar a partida: os tiros no ar saem, as vidas voltam e a inimiga volta ao começo. A
+      // origem e o lugar da nave são as escolhas da criança e ficam; as descobertas também.
+      // ⚠️ `restart-clears` só com algo a limpar (um tiro no ar ou uma vida perdida): recomeçar a
+      // partida que acabou de abrir não mostra nada.
+      const f = s.enemyFire
+      if (f.tick === 0) return previous
+      const limpou = f.shots.length > 0 || f.lives < ENEMY_FIRE.lives
+      s.enemyFire = enemyFireStart(f.origin, f.shipX, limpou ? 'restart' : null)
+      s.caption =
+        f.shots.length > 0
+          ? `A partida recomeçou: os tiros no ar saíram, as vidas voltaram a ${ENEMY_FIRE.lives} e a inimiga voltou ao começo.`
+          : f.lives < ENEMY_FIRE.lives
+            ? `A partida recomeçou: as vidas voltaram a ${ENEMY_FIRE.lives} e a inimiga voltou ao começo.`
+            : 'A partida recomeçou: a inimiga voltou ao começo.'
+      if (limpou) observe(s, 'restart-clears', 'Recomeçar a partida limpa os tiros')
+      break
+    }
     case 'try-lighthouse-door':
       if (lighthouseKeyNotCase(start.setup)) {
         tentarAPortaDoNao(s)
@@ -2623,6 +2905,11 @@ export function stepScene(
         if (scene === 'invincibility')
           restarted.invincibility.protection = s.invincibility.protection
         if (scene === 'number-line') restarted.numberLine.operator = s.numberLine.operator
+        // O tiro triplo (28/11/2026): as pedras voltam e o céu esvazia; o Tiro triplo e o desvio ficam.
+        if (scene === 'spread-shot') {
+          restarted.spreadShot.triple = s.spreadShot.triple
+          restarted.spreadShot.deviation = s.spreadShot.deviation
+        }
         // ⚠️ Só na exploração livre (frente C do Corre Dino, 02/11/2026): o "Voltar ao começo" guarda a
         // pergunta como a criança deixou. A bancada antiga segue religando a condição de fábrica.
         if (scene === 'acceleration' && start.setup?.freeExploration)

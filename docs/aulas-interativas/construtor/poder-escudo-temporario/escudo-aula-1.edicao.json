@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-material",
+    "video-experiencia",
+    "video-item",
+    "video-liga",
+    "video-protege",
+    "video-acaba"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "aqui no canto, vira 5, e a nave pisca. Enquanto o escudo está ligado, a pedra que bate na nave só sai, e a vida fica.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: pegue o escudo, deixe uma pedra bater e repare no número do",
+      "falaPrincipal": "Será que o escudo dura para sempre?",
+      "falaPersonagem": "Será que o escudo dura para sempre?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "para cinco. E, a cada segundo, ele perde um. Na batida de uma pedra, o jogo faz uma pergunta: o escudo ainda tem tempo?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando a pedra tira vida e quando ela",
+      "falaPrincipal": "E se a nave pegar o item de novo, com o escudo ainda ligado?",
+      "falaPersonagem": "E se a nave pegar o item de novo, com o escudo ainda ligado?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-protege-K1",
+      "clipe": "video-protege",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "no jogo, aperte Enter e pegue o item. Deixe uma pedra bater: ela some com um quique, e os corações continuam iguais.",
+      "ancoraDepois": "Do jeito que está, não acaba nunca: falta o prazo. Ele é a próxima parte. Se algo não funcionou no seu jogo, volte aos",
+      "falaPrincipal": "Mas o número do Escudo continua em cinco. Será que esse escudo acaba?",
+      "falaPersonagem": "Mas o número do Escudo continua em cinco. Será que esse escudo acaba?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-acaba-K1",
+      "clipe": "video-acaba",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Se, e encaixe um Se no fazer desse relógio. Na pergunta, clique no x e escolha tempoDoEscudo. Conserve maior que zero.",
+      "ancoraDepois": "Sem a pergunta, o número passaria do zero: menos um, menos dois. O Se faz o escudo parar no zero. Deixe o então à",
+      "falaPrincipal": "Por que perguntar, se é só tirar um?",
+      "falaPersonagem": "Por que perguntar, se é só tirar um?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

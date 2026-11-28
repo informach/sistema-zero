@@ -157,6 +157,14 @@ export interface QuizQuestion {
     | 'simbolos-ordem'
     | 'simbolos-fora'
     | 'simbolos-recomeca'
+    | 'escudo-protege'
+    | 'escudo-acabou'
+    | 'escudo-renova'
+    | 'escudo-sem-guarda'
+    | 'triplo-juntos'
+    | 'triplo-leque'
+    | 'triplo-um'
+    | 'triplo-grupos'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]

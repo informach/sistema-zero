@@ -5,7 +5,14 @@ import {
   listarArquivosAulas,
 } from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { blockPrediction, type InteractiveBlock } from '../index'
-import { SCENE_IDS, SCENE_LIMITS, type SceneAction, type SceneId, sceneFrameRate } from './actions'
+import {
+  SCENE_IDS,
+  SCENE_LIMITS,
+  type SceneAction,
+  type SceneId,
+  sceneFrameRate,
+  TIMED_SHIELD,
+} from './actions'
 import { sceneDefaultGoalIds, sceneModel } from './catalog'
 import { facesAVista, maisPerto, openScene, stepScene } from './engine'
 import { type SceneActivity, sceneStart, sceneTargets } from './index'
@@ -15,6 +22,7 @@ import { SCENE_QUESTIONS } from './questions'
 import { drawLoopOnScreen, sceneSituation } from './readout'
 import {
   DELTA_RACE,
+  enemyFireOver,
   LIGHTHOUSE_NOT_GOALS,
   type SceneStart,
   type SceneState,
@@ -23,6 +31,11 @@ import {
   sceneCactiOnScreen,
   sceneContact,
   sceneDrawingsGap,
+  spreadShotArrived,
+  spreadShotHits,
+  timedShieldNextRock,
+  timedShieldOver,
+  timedShieldRock,
   uniqueNamesWarning,
 } from './state'
 
@@ -2540,6 +2553,166 @@ const CENAS: Record<SceneId, Cena> = {
     },
     // A resposta da previsão: com maior que, a vitória veio no 27 (o 26 passou sem ela).
     mostra: (s) => s.scoreGoal.op === '>' && s.scoreGoal.won && s.scoreGoal.points === 27,
+  },
+  // O escudo temporário (28/11/2026): os botões da tela livre, um segundo de cada vez. ⚠️ Fora da
+  // exploração livre não há "Voltar ao começo": quem precisa de partida nova usa o `reset`.
+  'timed-shield': {
+    pedidos: {
+      'hit-costs': {
+        texto: 'Sem pegar o item, avance até uma pedra bater e olhe as vidas.',
+        faz: (m) => {
+          const t = m.estado.timedShield
+          if (
+            t.shieldBefore !== null ||
+            timedShieldOver(t) ||
+            timedShieldNextRock(t.second) === null
+          )
+            m.faz({ type: 'reset' })
+          m.faz({ type: 'next-rock' })
+        },
+      },
+      'shield-protects': {
+        texto: 'Pegue o item do escudo e avance até uma pedra bater com o Escudo maior que 0.',
+        faz: (m) => {
+          const t = m.estado.timedShield
+          if (timedShieldOver(t) || timedShieldNextRock(t.second) === null) m.faz({ type: 'reset' })
+          m.faz({ type: 'pick-shield' })
+          m.faz({ type: 'next-rock' })
+        },
+      },
+      'shield-ends': {
+        texto: 'Pegue o item, deixe o Escudo chegar a 0 e avance até a próxima pedra.',
+        faz: (m) => {
+          if (timedShieldOver(m.estado.timedShield)) m.faz({ type: 'reset' })
+          if (m.estado.timedShield.shieldBefore === null) m.faz({ type: 'pick-shield' })
+          // A pedra que chega no segundo em que o Escudo zera já é a próxima pedra.
+          while (m.estado.timedShield.shield > 0 && !m.viu('shield-ends'))
+            m.faz({ type: 'tick-second' })
+          if (!m.viu('shield-ends')) m.faz({ type: 'next-rock' })
+        },
+      },
+      'shield-renews': {
+        texto: 'Com o Escudo entre 1 e 4, pegue o item de novo e olhe o número.',
+        faz: (m) => {
+          if (timedShieldOver(m.estado.timedShield)) m.faz({ type: 'reset' })
+          const { shield } = m.estado.timedShield
+          if (shield === 0 || shield === TIMED_SHIELD.shield) {
+            if (shield === 0) m.faz({ type: 'pick-shield' })
+            m.faz({ type: 'tick-second' })
+          }
+          m.faz({ type: 'pick-shield' })
+        },
+      },
+    },
+    // A resposta da previsão: a pedra bateu com o Escudo maior que 0, e as vidas ficaram.
+    mostra: (s) =>
+      s.timedShield.last === 'tick' &&
+      timedShieldRock(s.timedShield.second) &&
+      s.timedShield.shield > 0 &&
+      !s.timedShield.damaged.includes(s.timedShield.second),
+  },
+  // O tiro triplo (28/11/2026): escolher, disparar e ver os lasers chegarem ("Ver os lasers chegarem").
+  // A rajada no ar chega antes de qualquer gesto novo: o Disparar espera os lasers chegarem.
+  'spread-shot': {
+    pedidos: {
+      'single-one': {
+        texto: 'Com o tiro triplo desligado, dispare e veja quantos lasers saem.',
+        faz: (m) => {
+          if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
+          m.faz({ type: 'spread-triple', on: false })
+          m.faz({ type: 'spread-fire' })
+          m.faz({ type: 'spread-arrive' })
+        },
+      },
+      'triple-stacked': {
+        texto: 'Ligue o tiro triplo com desvio 0 e dispare.',
+        faz: (m) => {
+          if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
+          m.faz({ type: 'spread-triple', on: true })
+          m.faz({ type: 'spread-deviation', deviation: 0 })
+          m.faz({ type: 'spread-fire' })
+          m.faz({ type: 'spread-arrive' })
+        },
+      },
+      'triple-spread': {
+        texto: 'Com o tiro triplo e desvio 2, dispare e veja onde cada laser chega.',
+        faz: (m) => {
+          if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
+          m.faz({ type: 'spread-triple', on: true })
+          m.faz({ type: 'spread-deviation', deviation: 2 })
+          m.faz({ type: 'spread-fire' })
+          m.faz({ type: 'spread-arrive' })
+        },
+      },
+      // ⚠️ "Troque" e "de novo": a comparação pede o leque do desvio 2 visto antes.
+      'deviation-matters': {
+        texto: 'Troque o desvio para 1 e dispare de novo: os lasers dos lados chegam às pedras?',
+        abreDepois: 'triple-spread',
+        faz: (m) => {
+          if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
+          m.faz({ type: 'spread-triple', on: true })
+          m.faz({ type: 'spread-deviation', deviation: 1 })
+          m.faz({ type: 'spread-fire' })
+          m.faz({ type: 'spread-arrive' })
+        },
+      },
+    },
+    // A resposta da previsão: com desvio 0, os três lasers chegaram e só a pedra do meio saiu.
+    mostra: (s) =>
+      spreadShotArrived(s.spreadShot) &&
+      s.spreadShot.volley?.triple === true &&
+      s.spreadShot.volley.deviation === 0 &&
+      spreadShotHits(s.spreadShot).join() === '1',
+  },
+  // O inimigo que atira (28/11/2026): os botões da tela livre, num tique de meio segundo. A partida que
+  // acabou (sem vidas) só volta com "Recomeçar a partida".
+  'enemy-fire': {
+    pedidos: {
+      'fixed-origin': {
+        texto:
+          'Com a origem No meio, avance até a inimiga atirar duas vezes e veja de onde os tiros saem.',
+        faz: (m) => {
+          if (enemyFireOver(m.estado.enemyFire)) m.faz({ type: 'enemy-restart' })
+          m.faz({ type: 'enemy-origin', origin: 'middle' })
+          m.faz({ type: 'enemy-next-shot' })
+          m.faz({ type: 'enemy-next-shot' })
+        },
+      },
+      'enemy-origin': {
+        texto: 'Troque a origem para Na inimiga e avance até a inimiga atirar duas vezes.',
+        faz: (m) => {
+          if (enemyFireOver(m.estado.enemyFire)) m.faz({ type: 'enemy-restart' })
+          m.faz({ type: 'enemy-origin', origin: 'enemy' })
+          m.faz({ type: 'enemy-next-shot' })
+          m.faz({ type: 'enemy-next-shot' })
+        },
+      },
+      'shot-hurts': {
+        texto: 'Deixe um tiro chegar até a nave e olhe as vidas.',
+        faz: (m) => {
+          if (enemyFireOver(m.estado.enemyFire)) m.faz({ type: 'enemy-restart' })
+          for (let t = 0; t < 30 && !m.viu('shot-hurts'); t++) m.faz({ type: 'enemy-tick' })
+        },
+      },
+      'restart-clears': {
+        texto: 'Com tiros no ar, clique em Recomeçar a partida e olhe os tiros e as vidas.',
+        faz: (m) => {
+          const f = m.estado.enemyFire
+          if (f.shots.length === 0 && f.lives === 3) m.faz({ type: 'enemy-next-shot' })
+          m.faz({ type: 'enemy-restart' })
+        },
+      },
+    },
+    // A resposta da previsão: com a origem no meio, os tiros nasceram todos no meio da tela, com a
+    // inimiga em lugares diferentes.
+    mostra: (s) => {
+      const doMeio = s.enemyFire.shots.filter((shot) => shot.origin === 'middle')
+      return (
+        doMeio.length >= 2 &&
+        doMeio.every((shot) => shot.x === 400) &&
+        new Set(doMeio.map((shot) => shot.from)).size >= 2
+      )
+    },
   },
 }
 

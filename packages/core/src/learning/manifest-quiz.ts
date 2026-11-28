@@ -31,6 +31,14 @@ export interface ManifestQuiz {
       | 'simbolos-ordem'
       | 'simbolos-fora'
       | 'simbolos-recomeca'
+      | 'escudo-protege'
+      | 'escudo-acabou'
+      | 'escudo-renova'
+      | 'escudo-sem-guarda'
+      | 'triplo-juntos'
+      | 'triplo-leque'
+      | 'triplo-um'
+      | 'triplo-grupos'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -78,6 +86,14 @@ export function validatePredictionQuiz(
           'simbolos-ordem',
           'simbolos-fora',
           'simbolos-recomeca',
+          'escudo-protege',
+          'escudo-acabou',
+          'escudo-renova',
+          'escudo-sem-guarda',
+          'triplo-juntos',
+          'triplo-leque',
+          'triplo-um',
+          'triplo-grupos',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -134,6 +150,14 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'simbolos-ordem',
           'simbolos-fora',
           'simbolos-recomeca',
+          'escudo-protege',
+          'escudo-acabou',
+          'escudo-renova',
+          'escudo-sem-guarda',
+          'triplo-juntos',
+          'triplo-leque',
+          'triplo-um',
+          'triplo-grupos',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||
