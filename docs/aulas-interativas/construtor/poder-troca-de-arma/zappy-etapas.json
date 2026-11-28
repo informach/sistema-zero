@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia": [
+      {
+        "id": "weapon-swap-start",
+        "text": "A nave começa com o laser, e uma pedra espera no alto da tela. O plasma ainda está trancado. O que você acha que o E faz agora? Clique em Apertar E e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-ask-locked",
+        "text": "E sem o item? Clique em Apertar E, sem pegar o item de plasma, e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-ask-swap",
+        "text": "E depois de pegar o item? Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-ask-shots",
+        "text": "E o tiro de cada arma? Clique em Apertar Espaço com o laser e com o plasma, trocando a arma no Apertar E. Compare os dois tiros."
+      },
+      {
+        "id": "weapon-swap-ask-newmatch",
+        "text": "E numa partida nova? Com o plasma escolhido, clique em Nova partida e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-ask-relock",
+        "text": "E sem o item? Clique em Nova partida e depois em Apertar E, sem pegar o item de plasma. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-locked-then-swap",
+        "text": "Sem o item de plasma, o E não trocou nada: a Arma continuou laser. E depois de pegar o item? Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-locked-then-shots",
+        "text": "Sem o item de plasma, o E não trocou nada: a Arma continuou laser. E o tiro de cada arma? Clique em Apertar Espaço com o laser e com o plasma, trocando a arma no Apertar E. Compare os dois tiros."
+      },
+      {
+        "id": "weapon-swap-locked-then-newmatch",
+        "text": "Sem o item de plasma, o E não trocou nada: a Arma continuou laser. E numa partida nova? Com o plasma escolhido, clique em Nova partida e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-swap-then-locked",
+        "text": "Depois de pegar o item, o E trocou a Arma de laser para plasma. E sem o item? Clique em Apertar E, sem pegar o item de plasma, e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-swap-then-shots",
+        "text": "Depois de pegar o item, o E trocou a Arma de laser para plasma. E o tiro de cada arma? Clique em Apertar Espaço com o laser e com o plasma, trocando a arma no Apertar E. Compare os dois tiros."
+      },
+      {
+        "id": "weapon-swap-swap-then-newmatch",
+        "text": "Depois de pegar o item, o E trocou a Arma de laser para plasma. E numa partida nova? Com o plasma escolhido, clique em Nova partida e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-swap-then-relock",
+        "text": "Depois de pegar o item, o E trocou a Arma de laser para plasma. E sem o item? Clique em Nova partida e depois em Apertar E, sem pegar o item de plasma. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-shots-then-locked",
+        "text": "Cada Espaço disparou a arma de agora: o laser saiu fino e chegou rápido à pedra, e o plasma saiu grande e demorou mais para chegar. O tiro segue a arma escolhida. E sem o item? Clique em Apertar E, sem pegar o item de plasma, e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-shots-then-swap",
+        "text": "Cada Espaço disparou a arma de agora: o laser saiu fino e chegou rápido à pedra, e o plasma saiu grande e demorou mais para chegar. O tiro segue a arma escolhida. E depois de pegar o item? Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-shots-then-newmatch",
+        "text": "Cada Espaço disparou a arma de agora: o laser saiu fino e chegou rápido à pedra, e o plasma saiu grande e demorou mais para chegar. O tiro segue a arma escolhida. E numa partida nova? Com o plasma escolhido, clique em Nova partida e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-shots-then-relock",
+        "text": "Cada Espaço disparou a arma de agora: o laser saiu fino e chegou rápido à pedra, e o plasma saiu grande e demorou mais para chegar. O tiro segue a arma escolhida. E sem o item? Clique em Nova partida e depois em Apertar E, sem pegar o item de plasma. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-newmatch-then-locked",
+        "text": "Na Nova partida, a Arma voltou para laser, e o plasma ficou trancado de novo. E sem o item? Clique em Apertar E, sem pegar o item de plasma, e olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-newmatch-then-swap",
+        "text": "Na Nova partida, a Arma voltou para laser, e o plasma ficou trancado de novo. E depois de pegar o item? Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma."
+      },
+      {
+        "id": "weapon-swap-newmatch-then-shots",
+        "text": "Na Nova partida, a Arma voltou para laser, e o plasma ficou trancado de novo. E o tiro de cada arma? Clique em Apertar Espaço com o laser e com o plasma, trocando a arma no Apertar E. Compare os dois tiros."
+      },
+      {
+        "id": "weapon-swap-complete",
+        "text": "Você testou tudo. A arma de agora fica guardada, e o Espaço dispara o tiro dessa arma: o laser é fino e rápido, o plasma é grande e lento. O E só troca a arma depois de pegar o item de plasma, e uma Nova partida volta ao laser. Pode continuar testando quando quiser."
+      }
+    ]
+  }
+}

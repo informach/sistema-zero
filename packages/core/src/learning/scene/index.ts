@@ -212,6 +212,10 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
         'spread-shot',
         // O Poder "Inimigo que atira" do Construtor (Nave, 28/11/2026).
         'enemy-fire',
+        // O Poder "Chefão com resistência" do Construtor (Nave, 28/11/2026).
+        'boss-health',
+        // O Poder "Troca de arma" do Construtor (Nave, 28/11/2026).
+        'weapon-swap',
       ].includes(scene))
   )
     return false

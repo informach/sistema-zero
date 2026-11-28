@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-abertura", "video-vida", "video-acerto", "video-fim", "video-uma-vez"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "a patrulha. Olha lá na frente: o chefão espera no meio, e o texto Chefão, no alto à esquerda, mostra a vida dele.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: derrote o chefão. Quando terminar, clique em Próxima parte.",
+      "falaPrincipal": "No espaço em três dimensões, ele aguenta os mesmos lasers?",
+      "falaPersonagem": "No espaço em três dimensões, ele aguenta os mesmos lasers?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-fim-K1",
+      "clipe": "video-fim",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "acertos de novo. Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some... e o placar dispara!",
+      "ancoraDepois": "É, sim: o quadro roda sem parar e a vida continua em zero. A guarda é a próxima parte. Se algo não funcionou no seu",
+      "falaPrincipal": "É o mesmo problema do jogo 2D?",
+      "falaPersonagem": "É o mesmo problema do jogo 2D?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

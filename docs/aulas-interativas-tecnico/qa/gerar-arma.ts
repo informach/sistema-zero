@@ -53,11 +53,11 @@ await gerarPoder({
     title: 'A troca de arma',
     semPerguntaFinal: true,
     instructions:
-      'Aperte E antes e depois de pegar o item, dispare com as duas armas e comece uma partida nova. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+      'Clique em Apertar E antes e depois de Pegar o item de plasma e olhe a Arma. Clique em Apertar Espaço com cada arma e compare os tiros. Por fim, com o plasma escolhido, clique em Nova partida. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
     hints: [
-      'Olhe a placa da arma antes e depois de cada tecla.',
-      'Compare a tecla E antes e depois do item. Depois dispare com o laser e com o plasma.',
-      'Aperte E antes do item e veja a arma. Pegue o item, aperte E e dispare. Com o plasma escolhido, comece uma partida nova e olhe a arma.',
+      'Olhe a Arma antes e depois de cada tecla. O que muda depois de pegar o item de plasma?',
+      'Compare um tiro de laser com um tiro de plasma. Depois, com o plasma escolhido, comece uma partida nova.',
+      'Clique em Apertar E sem pegar o item. Depois clique em Pegar o item de plasma e em Apertar E. Clique em Apertar Espaço com o laser e com o plasma e, com o plasma escolhido, clique em Nova partida.',
     ],
     activity: {
       type: 'experimentation',
@@ -67,6 +67,25 @@ await gerarPoder({
       setup: {
         freeExploration: true,
         goals: ['locked', 'unlocked-swap', 'shot-follows', 'new-match-laser'],
+        goalCopy: {
+          locked: {
+            label: 'Sem o item, o E não troca a arma',
+            pedido: 'Sem pegar o item de plasma, clique em Apertar E e olhe a Arma.',
+          },
+          'unlocked-swap': {
+            label: 'Com o item, o E troca a arma',
+            pedido: 'Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma.',
+          },
+          'shot-follows': {
+            label: 'O tiro segue a arma escolhida',
+            pedido:
+              'Clique em Apertar Espaço com o laser e com o plasma. Compare os dois tiros: o tamanho e quantos quadros cada um leva até a pedra.',
+          },
+          'new-match-laser': {
+            label: 'A partida nova começa com o laser',
+            pedido: 'Com o plasma escolhido, clique em Nova partida e olhe a Arma.',
+          },
+        },
       },
     },
   },

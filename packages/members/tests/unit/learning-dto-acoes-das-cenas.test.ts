@@ -111,6 +111,17 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     { type: 'enemy-tick' },
     { type: 'enemy-next-shot' },
     { type: 'enemy-restart' },
+    // O chefão com resistência (28/11/2026): o disparo, as duas guardas, o quadro e o recomeço.
+    { type: 'boss-fire' },
+    { type: 'boss-guard', on: true },
+    { type: 'boss-guard', on: false },
+    { type: 'boss-frame' },
+    { type: 'boss-restart' },
+    // A troca de arma (28/11/2026): o item, as duas teclas e a nova partida.
+    { type: 'weapon-pickup' },
+    { type: 'weapon-key-e' },
+    { type: 'weapon-fire' },
+    { type: 'weapon-new-match' },
   ]
   for (const scene of SCENE_IDS) {
     for (const acao of acoesDosControles) somar(scene, acao)
@@ -174,6 +185,14 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
     { type: 'enemy-ship' },
   ])('recusa ação do inimigo que atira fora do contrato: %j', (action) => {
     expect(validador.Check(blocoCom('enemy-fire', [action as unknown as SceneAction]))).toBe(false)
+  })
+
+  test.each([
+    { type: 'boss-guard', on: 'sim' },
+    { type: 'boss-guard' },
+    { type: 'boss-guard', on: 1 },
+  ])('recusa ação do chefão com resistência fora do contrato: %j', (action) => {
+    expect(validador.Check(blocoCom('boss-health', [action as unknown as SceneAction]))).toBe(false)
   })
 
   test.each([-1, 2, 0.5, '1', null])('recusa esconderijo fora do contrato: %j', async (id) => {

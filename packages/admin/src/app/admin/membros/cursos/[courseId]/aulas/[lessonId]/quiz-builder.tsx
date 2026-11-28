@@ -268,6 +268,16 @@ export function QuizBuilder({
                     <option value="inimigo-limpeza">
                       Inimigo que atira: os tiros sem limpeza na patrulha
                     </option>
+                    <option value="chefao-um-tiro">Chefão: um laser acerta o chefão</option>
+                    <option value="chefao-sem-retirada">
+                      Chefão: o laser continua no grupo tiros
+                    </option>
+                    <option value="chefao-sem-guarda">Chefão: o prêmio sem a guarda</option>
+                    <option value="chefao-guarda">Chefão: a guarda do prêmio na patrulha</option>
+                    <option value="arma-trancada">Troca de arma: o E sem o item</option>
+                    <option value="arma-plasma">Troca de arma: o Espaço com o plasma</option>
+                    <option value="arma-reinicio">Troca de arma: a partida nova</option>
+                    <option value="arma-placar">Troca de arma: o texto Arma na patrulha</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

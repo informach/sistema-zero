@@ -86,6 +86,17 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Avançar meio segundo', value: { type: 'enemy-tick' } },
   { label: 'Avançar até o próximo tiro', value: { type: 'enemy-next-shot' } },
   { label: 'Recomeçar a partida', value: { type: 'enemy-restart' } },
+  // O chefão com resistência (28/11/2026): os nomes são os da tela da criança. O caso não aceita nenhum.
+  { label: 'Disparar no chefão', value: { type: 'boss-fire' } },
+  { label: 'Guarda do prêmio: Ligada', value: { type: 'boss-guard', on: true } },
+  { label: 'Guarda do prêmio: Desligada', value: { type: 'boss-guard', on: false } },
+  { label: 'Avançar um quadro', value: { type: 'boss-frame' } },
+  { label: 'Recomeçar a partida do chefão', value: { type: 'boss-restart' } },
+  // A troca de arma (28/11/2026): os nomes são os da tela da criança. O caso não aceita nenhum.
+  { label: 'Pegar o item de plasma', value: { type: 'weapon-pickup' } },
+  { label: 'Apertar E', value: { type: 'weapon-key-e' } },
+  { label: 'Apertar Espaço', value: { type: 'weapon-fire' } },
+  { label: 'Nova partida', value: { type: 'weapon-new-match' } },
   { label: 'Ligar Guardar a coleta', value: { type: 'remember-collection', enabled: true } },
   { label: 'Desligar Guardar a coleta', value: { type: 'remember-collection', enabled: false } },
   { label: 'Encostar na chave', value: { type: 'collect-key' } },

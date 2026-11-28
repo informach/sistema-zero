@@ -638,4 +638,25 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'enemy-next-shot' },
     { type: 'enemy-restart' },
   ],
+  // O chefão com resistência (28/11/2026): cinco lasers (o primeiro, o terceiro e o que zera), um
+  // quadro sem a guarda, a guarda ligada (a partida recomeça), mais cinco lasers e um quadro.
+  'boss-health': [
+    ...Array.from({ length: 5 }, (): SceneAction => ({ type: 'boss-fire' })),
+    { type: 'boss-frame' },
+    { type: 'boss-guard', on: true },
+    ...Array.from({ length: 5 }, (): SceneAction => ({ type: 'boss-fire' })),
+    { type: 'boss-frame' },
+  ],
+  // A troca de arma (28/11/2026): o E sem o item, o item e o E, um tiro de cada arma e a Nova
+  // partida com o plasma escolhido.
+  'weapon-swap': [
+    { type: 'weapon-key-e' },
+    { type: 'weapon-pickup' },
+    { type: 'weapon-key-e' },
+    { type: 'weapon-fire' },
+    { type: 'weapon-key-e' },
+    { type: 'weapon-fire' },
+    { type: 'weapon-key-e' },
+    { type: 'weapon-new-match' },
+  ],
 }

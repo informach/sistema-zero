@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia": [
+      {
+        "id": "boss-health-start",
+        "text": "O chefão espera no alto da tela, com 5 de vida, e a nave está embaixo. Quantos lasers você acha que o chefão aguenta? Clique em Disparar uma vez e olhe a vida, a barra e o chefão."
+      },
+      {
+        "id": "boss-health-ask-one",
+        "text": "Um laser derruba o chefão? Com a vida do chefão em 5, clique em Disparar uma vez. Olhe a vida, a barra e o chefão."
+      },
+      {
+        "id": "boss-health-ask-count",
+        "text": "E com mais lasers? Na mesma partida, clique em Disparar mais duas vezes. Olhe a vida a cada laser."
+      },
+      {
+        "id": "boss-health-ask-falls",
+        "text": "E quando a vida acabar? Clique em Disparar até a vida chegar a 0. Olhe o chefão e o placar."
+      },
+      {
+        "id": "boss-health-ask-once",
+        "text": "E depois que o chefão cai? Na Guarda do prêmio, escolha Ligada, derrote o chefão e clique em Avançar um quadro algumas vezes. Depois escolha Desligada e faça o mesmo. Olhe o placar a cada quadro."
+      },
+      {
+        "id": "boss-health-over",
+        "text": "Para o próximo teste, clique em Recomeçar a partida."
+      },
+      {
+        "id": "boss-health-one-then-count",
+        "text": "Com um laser, a vida do chefão foi de 5 para 4, e o chefão continuou lá. Um laser só não derrota o chefão. E com mais lasers? Na mesma partida, clique em Disparar mais duas vezes. Olhe a vida a cada laser."
+      },
+      {
+        "id": "boss-health-one-then-falls",
+        "text": "Com um laser, a vida do chefão foi de 5 para 4, e o chefão continuou lá. Um laser só não derrota o chefão. E quando a vida acabar? Clique em Disparar até a vida chegar a 0. Olhe o chefão e o placar."
+      },
+      {
+        "id": "boss-health-one-then-once",
+        "text": "Com um laser, a vida do chefão foi de 5 para 4, e o chefão continuou lá. Um laser só não derrota o chefão. E depois que o chefão cai? Na Guarda do prêmio, escolha Ligada, derrote o chefão e clique em Avançar um quadro algumas vezes. Depois escolha Desligada e faça o mesmo. Olhe o placar a cada quadro."
+      },
+      {
+        "id": "boss-health-count-then-falls",
+        "text": "A cada laser, a vida do chefão desceu 1, e a barra encolheu junto. O chefão aguenta vários lasers. E quando a vida acabar? Clique em Disparar até a vida chegar a 0. Olhe o chefão e o placar."
+      },
+      {
+        "id": "boss-health-count-then-once",
+        "text": "A cada laser, a vida do chefão desceu 1, e a barra encolheu junto. O chefão aguenta vários lasers. E depois que o chefão cai? Na Guarda do prêmio, escolha Ligada, derrote o chefão e clique em Avançar um quadro algumas vezes. Depois escolha Desligada e faça o mesmo. Olhe o placar a cada quadro."
+      },
+      {
+        "id": "boss-health-falls-then-once",
+        "text": "Quando a vida chegou a 0, o chefão caiu da tela, e o placar ganhou 10 pontos. E depois que o chefão cai? Na Guarda do prêmio, escolha Ligada, derrote o chefão e clique em Avançar um quadro algumas vezes. Depois escolha Desligada e faça o mesmo. Olhe o placar a cada quadro."
+      },
+      {
+        "id": "boss-health-complete",
+        "text": "Você testou tudo. O chefão tem uma vida própria: cada laser tira 1, e um laser só não basta. Quando a vida chega a 0, o chefão cai e o placar ganha 10. Sem a guarda, o prêmio soma de novo a cada quadro; com a Guarda do prêmio Ligada, o prêmio vale uma vez só. Pode continuar testando quando quiser."
+      }
+    ]
+  }
+}

@@ -51,8 +51,10 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
   }
   expect(checked).toBeGreaterThan(20)
   expect(checked3d.sort()).toEqual([
+    'arma-aula-2.manifesto.json',
     'aula-2.manifesto.json',
     'cabana-aula-2.manifesto.json',
+    'chefao-aula-2.manifesto.json',
     'escudo-aula-2.manifesto.json',
     'ilha-aula-1.manifesto.json',
     'ilha-aula-2.manifesto.json',

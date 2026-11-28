@@ -170,6 +170,16 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['fixed-origin', 'enemy-origin', 'shot-hurts', 'restart-clears'],
     ['fixed-origin', 'enemy-origin', 'shot-hurts', 'restart-clears'],
   ],
+  'boss-health': [
+    ['one-not-enough', 'count-down'],
+    ['falls-at-zero', 'falls-once'],
+    ['one-not-enough', 'count-down', 'falls-at-zero', 'falls-once'],
+  ],
+  'weapon-swap': [
+    ['locked', 'unlocked-swap'],
+    ['unlocked-swap', 'shot-follows', 'new-match-laser'],
+    ['locked', 'unlocked-swap', 'shot-follows', 'new-match-laser'],
+  ],
 }
 
 /** As metas que um degrau cita, na ordem em que foram escritas. */

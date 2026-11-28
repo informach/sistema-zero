@@ -276,7 +276,7 @@ const MANIFESTOS = listarArquivosAulas()
   .sort()
 describe('os manifestos atuais das aulas', () => {
   test('o inventário distingue os cursos, incluindo o novo Desafio e Cadê Todo Mundo?', () => {
-    expect(MANIFESTOS).toHaveLength(62)
+    expect(MANIFESTOS).toHaveLength(66)
     // O Jardim Secreto (Faísca) usa os nomes curtos da pasta própria.
     expect(MANIFESTOS.filter((name) => /^aula-\d+\.manifesto\.json$/.test(name))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('ilha-aula-'))).toHaveLength(3)
@@ -294,6 +294,8 @@ describe('os manifestos atuais das aulas', () => {
     expect(MANIFESTOS.filter((name) => name.startsWith('escudo-aula-'))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('triplo-aula-'))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('inimigo-aula-'))).toHaveLength(2)
+    expect(MANIFESTOS.filter((name) => name.startsWith('chefao-aula-'))).toHaveLength(2)
+    expect(MANIFESTOS.filter((name) => name.startsWith('arma-aula-'))).toHaveLength(2)
   })
   test('os cinco identificadores anteriores de Nave preservam a identidade; o certificado fica no Desafio', () => {
     for (const day of [1, 2, 3, 4, 5]) {

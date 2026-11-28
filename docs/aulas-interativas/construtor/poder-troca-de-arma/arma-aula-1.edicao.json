@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-material",
+    "video-experiencia",
+    "video-item",
+    "video-troca",
+    "video-placar",
+    "video-disparo"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "aqui do lado: ela mostra laser. De vez em quando, um item roxo cai pelo meio da tela. Pegue o item e aperte a tecla E.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: troque de arma e dispare. Quando terminar, clique em Próxima",
+      "falaPrincipal": "O que muda no tiro quando a arma muda?",
+      "falaPersonagem": "O que muda no tiro quando a arma muda?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "depende do que está na sua mão. No seu jogo, a arma é o que está na mão da nave, e o item é a rede que libera a troca.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar a troca de arma. O Zappy vai te",
+      "falaPrincipal": "E se você apertar E antes de pegar o item?",
+      "falaPersonagem": "E se você apertar E antes de pegar o item?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-troca-K1",
+      "clipe": "video-troca",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Enter. Aperte E antes do item: nada muda. Pegue o item e aperte E: o som de trocar toca. A placa ainda não aparece.",
+      "ancoraDepois": "Por enquanto, não dá para ver. A placa da arma é a próxima parte. Se algo não funcionou no seu jogo, volte aos blocos e",
+      "falaPrincipal": "Como saber qual é a arma agora?",
+      "falaPersonagem": "Como saber qual é a arma agora?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-placar-K1",
+      "clipe": "video-placar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e aperte Enter. A placa mostra Arma laser. Pegue o item, aperte E e veja a placa mudar. Dispare: ainda sai o laser.",
+      "ancoraDepois": "Porque o Espaço ainda não pergunta a arma. Na próxima parte, ele vai perguntar. Se algo não funcionou no seu jogo,",
+      "falaPrincipal": "A placa diz plasma, mas o tiro é o laser. Por quê?",
+      "falaPersonagem": "A placa diz plasma, mas o tiro é o laser. Por quê?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

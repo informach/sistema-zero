@@ -1,0 +1,183 @@
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou a troca de arma no jogo 2D. Agora ela chegou à Patrulha Espacial, em três dimensões!
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a patrulha.
+
+[interested, animated voice] Olha o texto Arma, no alto à esquerda: ele mostra laser. O item de plasma vem pela esquerda.
+
+[curious] No espaço em três dimensões, a placa da arma muda sozinha?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: pegue o item e troque de arma. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na patrulha, a troca de arma já tem o molde do item, o grupo itensPlasma, o movimento dos itens e as variáveis. Falta o relógio do item e o encontro que libera o plasma.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do relógio A cada 1.5 segundos, encaixe A cada segundos, de Jogo 3D, Tempo e sorteio e Tempo, e troque o 2 por 4.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o relógio A cada 4 segundos, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então, encaixe Criar uma cópia, de Jogo 3D e Grupos. Escolha moldePlasmaItem e o grupo itensPlasma.
+
+[confident, clear, unhurried voice] Na posição, coloque menos 4 no x, 1 no y e menos 20 no z. O menos 4 é a faixa da esquerda.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do encontro Quando nave encostar em algum do grupo asteroides, encaixe Quando heroi encostar em algum do grupo, de Jogo 3D, Encostar e Encostar. Escolha nave, itensPlasma e chame o item de itemPego.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o encontro da nave com os itens, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então: Tirar o objeto do grupo, com itemPego e itensPlasma, e logo abaixo Alterar variável plasmaLiberado para verdadeiro.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Leve a nave para a borda da esquerda: o item vem, a nave pega e toca o som.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 4 segundos cria a cópia de moldePlasmaItem em x menos 4 só na partida, e o encontro com itensPlasma tira o item e muda plasmaLiberado para verdadeiro.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A mesma troca do jogo 2D. No Jogo 3D, a tecla E também está na lista.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo de Quando apertar a tecla Enter, encaixe outro Quando apertar a tecla, de Jogo 3D e Controles. Escolha a tecla E.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de a tecla E, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então, Se plasmaLiberado igual a verdadeiro. Dentro, Se arma igual ao texto laser, com o senão aberto: no então, arma vira plasma; no senão, arma vira laser.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter, pegue o item na esquerda e aperte E. A troca acontece, mas o texto ainda não mostra a arma.
+
+[curious] Como saber qual é a arma agora, na patrulha?
+
+[engaging, energetic, conversational voice] Por enquanto, não dá para ver. O texto da arma é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: na tecla E, dentro da guarda da partida, o Se plasmaLiberado igual a verdadeiro troca arma entre laser e plasma.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] No Jogo 3D, o texto da tela só muda quando é escrito de novo. Por isso, ele vai em dois lugares.
+
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do placar dos acertos, Escrever na tela, em cima, à esquerda, com Arma, dois-pontos e um espaço, mais o valor de arma.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Na tecla E, logo depois do Se arma igual a laser, ainda dentro do Se plasmaLiberado, escreva o mesmo texto de novo.
+
+[upbeat, encouraging voice] Clique em Rodar de novo. O texto mostra Arma laser. Aperte Enter, pegue o item na esquerda e aperte E: o texto muda para plasma.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o texto Arma está em Ao iniciar e é escrito de novo logo depois da troca.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora o Espaço da patrulha também pergunta a arma.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Encontre Quando apertar a tecla espaço e encaixe um Se no começo do então do Se jogando. Na pergunta, escolha arma no x, o sinal de igual e, no lugar do zero, o texto plasma.
+
+[confident, clear, unhurried voice] Abra o senão e leve a cópia do laser, com a nota, para dentro dele.
+
+[confident, clear, unhurried voice] Duplique a cópia para o então e troque moldeTiro por moldePlasma e tiros por tirosPlasma. Na nota, 330 e 120.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Dispare: sai o laser. Pegue o item, aperte E e dispare: sai o plasma.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no Espaço, o Se arma igual a plasma cria a cópia de moldePlasma em tirosPlasma; no senão, o laser de antes.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a patrulha também tem duas armas: o texto mostra a arma e o Espaço pergunta antes de criar o tiro!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem duas perguntas para você pensar na troca de arma. Quando aparecer Projeto enviado!, clique em Próxima parte.

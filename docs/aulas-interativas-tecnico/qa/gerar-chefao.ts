@@ -53,11 +53,11 @@ await gerarPoder({
     title: 'A resistência do chefão',
     semPerguntaFinal: true,
     instructions:
-      'Dispare no chefão, olhe a vida e a barra, e ligue ou desligue a guarda do prêmio. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+      'Clique em Disparar e olhe a vida, a barra e o placar a cada laser. Depois que o chefão cair, clique em Avançar um quadro e compare o placar com a Guarda do prêmio Ligada e Desligada. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
     hints: [
-      'Olhe a vida do chefão antes e depois de cada laser.',
-      'Acerte até a vida chegar a 0 e olhe o placar logo depois.',
-      'Acerte uma vez e veja a vida ficar em 4. Continue até 0. Depois recomece com a guarda desligada e compare o placar.',
+      'Olhe a vida do chefão antes e depois de cada laser. O que acontece quando a vida chega a 0?',
+      'Derrote o chefão e olhe o placar quadro a quadro. Compare com a Guarda do prêmio Ligada e Desligada.',
+      'Clique em Disparar uma vez e depois mais duas vezes. Continue até a vida chegar a 0 e clique em Avançar um quadro. Depois troque a Guarda do prêmio, derrote o chefão de novo e clique em Avançar um quadro.',
     ],
     activity: {
       type: 'experimentation',
@@ -67,6 +67,27 @@ await gerarPoder({
       setup: {
         freeExploration: true,
         goals: ['one-not-enough', 'count-down', 'falls-at-zero', 'falls-once'],
+        goalCopy: {
+          'one-not-enough': {
+            label: 'Um laser só não derrota o chefão',
+            pedido:
+              'Com a vida do chefão em 5, clique em Disparar uma vez. Olhe a vida, a barra e o chefão.',
+          },
+          'count-down': {
+            label: 'Cada laser tira 1 da vida do chefão',
+            pedido:
+              'Na mesma partida, clique em Disparar mais duas vezes. Olhe a vida a cada laser.',
+          },
+          'falls-at-zero': {
+            label: 'No 0, o chefão cai e o placar ganha o prêmio',
+            pedido: 'Clique em Disparar até a vida chegar a 0. Olhe o chefão e o placar.',
+          },
+          'falls-once': {
+            label: 'Com a guarda, o prêmio vale uma vez só',
+            pedido:
+              'Derrote o chefão com a Guarda do prêmio Ligada e com a Guarda Desligada. Depois de cada vez, clique em Avançar um quadro e olhe o placar.',
+          },
+        },
       },
     },
   },

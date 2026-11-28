@@ -297,8 +297,9 @@ describe('a figura do elenco: o desenho segue o nome', () => {
     // ⚠️ Mudou de propósito (lote 5 do Raio-X): a `entity-state` desenha TORRES, e não o elenco (G6);
     // `frames`, `onion-skin` e `sheet-vs-sprite` desenham a nave do ateliê (G4); a `diagonal` e a
     // `tilemap` ganharam o personagem (G5). O escudo temporário, o tiro triplo e o inimigo que atira
-    // (28/11/2026) desenham a nave e as pedras.
-    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(42)
+    // (28/11/2026) desenham a nave e as pedras; o chefão com resistência e a troca de arma
+    // (28/11/2026), a nave e o chefão ou a pedra.
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(44)
   })
 
   test('um espaço no fim do nome não entra na frase', () => {

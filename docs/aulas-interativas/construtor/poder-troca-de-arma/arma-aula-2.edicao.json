@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-abertura", "video-item", "video-troca", "video-placar", "video-disparo"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "para começar a patrulha. Olha o texto Arma, no alto à esquerda: ele mostra laser. O item de plasma vem pela esquerda.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: pegue o item e troque de arma. Quando terminar, clique em Próxima",
+      "falaPrincipal": "No espaço em três dimensões, a placa da arma muda sozinha?",
+      "falaPersonagem": "No espaço em três dimensões, a placa da arma muda sozinha?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-troca-K1",
+      "clipe": "video-troca",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "de novo, aperte Enter, pegue o item na esquerda e aperte E. A troca acontece, mas o texto ainda não mostra a arma.",
+      "ancoraDepois": "Por enquanto, não dá para ver. O texto da arma é a próxima parte. Se algo não funcionou no seu jogo, volte aos blocos e",
+      "falaPrincipal": "Como saber qual é a arma agora, na patrulha?",
+      "falaPersonagem": "Como saber qual é a arma agora, na patrulha?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

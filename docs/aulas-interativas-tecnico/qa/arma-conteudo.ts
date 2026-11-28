@@ -53,7 +53,9 @@ const ENTER_3D = 'Quando apertar a tecla Enter'
 const TECLA_E_3D = 'Quando apertar a tecla E'
 const SE_LIBERADO_3D = `Se valor da variável plasmaLiberado dentro de ${TECLA_E_3D}`
 const ESPACO_3D = 'Quando apertar a tecla espaço'
+const SE_ESPACO_3D = `Se valor da variável estado dentro de ${ESPACO_3D}`
 const SE_ARMA_3D = `Se valor da variável arma dentro de ${ESPACO_3D}`
+const LASER_3D = 'Criar uma cópia de moldeTiro'
 
 export const armaExperiencia = {
   title: 'A experiência: a troca de arma',
@@ -522,6 +524,8 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
               'Clique em Rodar de novo, aperte Enter, pegue o item na esquerda e aperte E. A troca acontece, mas o texto ainda não mostra a arma.',
               '[rodar de novo] [tecla Enter] [segurar tecla ArrowLeft por 0,8 s] [aguardar 7 s] [tecla KeyE]',
             ],
+            ['pergunta', 'Como saber qual é a arma agora, na patrulha?'],
+            ['conversa', 'Por enquanto, não dá para ver. O texto da arma é a próxima parte.'],
           ],
           steps: [
             'Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 3D → Controles).',
@@ -601,13 +605,18 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             encontrar('Quando acontecer'),
             [
               'instrucao',
-              'Encontre Quando apertar a tecla espaço e encaixe um Se no começo do então do Se jogando. Na pergunta, arma igual ao texto plasma.',
-              `[arrastar até "${ESPACO_3D}"] [abrir categoria Programação > Lógica & Se] [apontar bloco "${SE_ARMA_3D}"]`,
+              'Encontre Quando apertar a tecla espaço e encaixe um Se no começo do então do Se jogando. Na pergunta, escolha arma no x, o sinal de igual e, no lugar do zero, o texto plasma.',
+              `[arrastar até "${ESPACO_3D}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${SE_ESPACO_3D}" no "então"] [trocar "x" por "arma" em "Se dentro de ${ESPACO_3D}"] [apontar bloco "${SE_ARMA_3D}"]`,
             ],
             [
               'instrucao',
-              'Abra o senão e leve a cópia do laser, com a nota, para dentro dele. Duplique a cópia para o então e troque moldeTiro por moldePlasma e tiros por tirosPlasma. Na nota, 330 e 120.',
-              `[apontar bloco "${SE_ARMA_3D}"]`,
+              'Abra o senão e leve a cópia do laser, com a nota, para dentro dele.',
+              `[abrir "senão" em "${SE_ARMA_3D}"] [mover "${LASER_3D}" para "${SE_ARMA_3D}" no "senão"]`,
+            ],
+            [
+              'instrucao',
+              'Duplique a cópia para o então e troque moldeTiro por moldePlasma e tiros por tirosPlasma. Na nota, 330 e 120.',
+              `[apontar bloco "${LASER_3D} dentro de ${SE_ARMA_3D}"]`,
             ],
             [
               'teste',

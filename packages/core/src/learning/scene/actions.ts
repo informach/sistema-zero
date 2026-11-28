@@ -108,6 +108,12 @@ export const SCENE_IDS = [
   // Poder "Inimigo que atira" (Construtor, Nave contra Asteroides, 28/11/2026): a nave inimiga com
   // tiros próprios. O tiro criado num lugar fixo sai sempre dali; o criado na inimiga a segue.
   'enemy-fire',
+  // Poder "Chefão com resistência" (Construtor, Nave contra Asteroides, 28/11/2026): o chefão com
+  // vida própria, que aguenta vários lasers, cai no zero e dá o prêmio (uma vez só, com a guarda).
+  'boss-health',
+  // Poder "Troca de arma" (Construtor, Nave contra Asteroides, 28/11/2026): a arma guardada muda o
+  // tiro, e a tecla E só troca a arma depois de pegar o item de plasma.
+  'weapon-swap',
 ] as const
 export type SceneId = (typeof SCENE_IDS)[number]
 
@@ -408,6 +414,22 @@ export type SceneAction =
   | { type: 'enemy-next-shot' }
   /** `enemy-fire`: Recomeçar a partida. Os tiros no ar saem, as vidas voltam a 3 e a inimiga volta ao começo. */
   | { type: 'enemy-restart' }
+  /** `boss-health`: Disparar. Um laser sobe, acerta o chefão, sai e tira 1 da vida. */
+  | { type: 'boss-fire' }
+  /** `boss-health`: liga ou desliga a Guarda do prêmio (`chefaoDerrotado`); a partida recomeça. */
+  | { type: 'boss-guard'; on: boolean }
+  /** `boss-health`: passa UM quadro do jogo (com o chefão caído, é aí que o prêmio pode somar de novo). */
+  | { type: 'boss-frame' }
+  /** `boss-health`: Recomeçar a partida. A vida volta a 5 e o placar a 0; a guarda fica. */
+  | { type: 'boss-restart' }
+  /** `weapon-swap`: a nave pega o item de plasma (`plasmaLiberado` passa a verdadeiro). */
+  | { type: 'weapon-pickup' }
+  /** `weapon-swap`: Apertar E. Troca laser ⇄ plasma, só com o plasma liberado. */
+  | { type: 'weapon-key-e' }
+  /** `weapon-swap`: Apertar Espaço. A nave dispara a arma de agora, e o tiro chega à pedra. */
+  | { type: 'weapon-fire' }
+  /** `weapon-swap`: Nova partida. A arma volta ao laser, o plasma volta a trancado e o tiro sai. */
+  | { type: 'weapon-new-match' }
 
 /**
  * As duas velocidades da `lighthouse-walk`: a do projeto do Desafio (3, a do bloco "Mover sprite
@@ -480,6 +502,48 @@ export type EnemyFireOrigin = (typeof ENEMY_FIRE_ORIGINS)[number]
 /** Os três lugares da nave, embaixo: à esquerda, no meio e à direita. */
 export const ENEMY_FIRE_SHIP_XS = [200, 400, 600] as const
 export type EnemyFireShipX = (typeof ENEMY_FIRE_SHIP_XS)[number]
+
+/**
+ * O chefão com resistência (`boss-health`, Poder "Chefão com resistência" do Construtor,
+ * 28/11/2026), visto de cima, numa tela de `width` por `height`: o chefão no alto, no meio
+ * (`bossY`), e a nave embaixo (`shipY`). O chefão começa com `life` de vida (`vidaDoChefao`); cada
+ * laser que acerta tira 1, e no 0 o chefão cai e o placar ganha `prize`. O tempo é DISCRETO: cada
+ * "Avançar um quadro" é um quadro do jogo. Sem a guarda, o prêmio soma de novo a cada quadro com a
+ * vida no 0; com a guarda (`chefaoDerrotado`), uma vez só. Depois da queda, a partida anda no máximo
+ * `maxFrames` quadros (o placar sem guarda fica abaixo de um teto). O DTO do servidor e o editor do
+ * admin leem daqui.
+ */
+export const BOSS_HEALTH = {
+  width: 800,
+  height: 480,
+  bossY: 110,
+  shipY: 420,
+  middle: 400,
+  life: 5,
+  prize: 10,
+  maxFrames: 20,
+} as const
+
+/**
+ * A troca de arma (`weapon-swap`, Poder "Troca de arma" do Construtor, 28/11/2026), visto de cima:
+ * a nave embaixo, no meio (`ship`), e uma pedra parada no alto (`rockY`). A arma começa no laser e o
+ * plasma começa trancado. Cada tiro sobe da ponta da nave até a pedra: o laser é fino e rápido, o
+ * plasma é grande e lento (`shots`: a largura do desenho e quanto sobe por quadro). O DTO do servidor
+ * e o editor do admin leem daqui.
+ */
+export const WEAPON_SWAP = {
+  width: 800,
+  height: 480,
+  ship: { x: 400, y: 420 },
+  rockY: 80,
+  shots: {
+    laser: { width: 4, speed: 85 },
+    plasma: { width: 28, speed: 34 },
+  },
+} as const
+/** As duas armas da troca de arma: o laser (a de começo) e o plasma (a liberada pelo item). */
+export const WEAPON_SWAP_WEAPONS = ['laser', 'plasma'] as const
+export type WeaponSwapWeapon = (typeof WEAPON_SWAP_WEAPONS)[number]
 
 /** Os dois sinais da vitória da `score-goal` (Nave, Dia 5): maior que e maior ou igual. */
 export const SCORE_GOAL_OPS = ['>', '>='] as const
@@ -628,6 +692,8 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'timed-shield': [],
   'spread-shot': [],
   'enemy-fire': [],
+  'boss-health': [],
+  'weapon-swap': [],
 }
 
 /**
@@ -979,6 +1045,17 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'enemy-next-shot':
     case 'enemy-restart':
       return scene === 'enemy-fire'
+    case 'boss-guard':
+      return scene === 'boss-health' && typeof value.on === 'boolean'
+    case 'boss-fire':
+    case 'boss-frame':
+    case 'boss-restart':
+      return scene === 'boss-health'
+    case 'weapon-pickup':
+    case 'weapon-key-e':
+    case 'weapon-fire':
+    case 'weapon-new-match':
+      return scene === 'weapon-swap'
     case 'remember-collection':
       return scene === 'collect-and-remember' && typeof value.enabled === 'boolean'
     case 'collect-key':
@@ -1491,5 +1568,11 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
   // O inimigo que atira (28/11/2026): o caso não escolhe nada. A partida começa sempre no tique 0,
   // com a origem no meio, a nave no meio e as três vidas; as escolhas e o tempo são da criança.
   if (scene === 'enemy-fire') return false
+  // O chefão com resistência (28/11/2026): o caso não escolhe nada. A partida começa sempre com a
+  // vida em 5, o placar em 0 e a guarda desligada; a guarda, os lasers e os quadros são da criança.
+  if (scene === 'boss-health') return false
+  // A troca de arma (28/11/2026): o caso não escolhe nada. A partida começa sempre no laser, com o
+  // plasma trancado; o item, as teclas e os tiros são da criança.
+  if (scene === 'weapon-swap') return false
   return true
 }
