@@ -8,7 +8,11 @@ import { isDocumentRecord } from '../../core/projectDocument'
 import { assertProjectContentPreserved } from '../../core/projectDocumentGuards'
 import { loadExtensionBootstrapScript } from '../../extensions/runtime'
 import { findExtension } from '../../official-extensions'
-import { isRegionalProjectScope, type ProjectStorageScope } from '../../state/projectStorageRuntime'
+import {
+  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
+  type ProjectStorageScope,
+} from '../../state/projectStorageRuntime'
 import type { StudioProRuntimeAdapter } from '../../studio/pro-runtime'
 
 const proRegionalEnginePath = (extensionId: string) => `public/sz-ext/${extensionId}.js`
@@ -38,22 +42,28 @@ export async function proRegionalEngineCopy(
   return source.content === full || source.content === minimal ? 'current' : 'changed'
 }
 
-/** Converted JS projects use the existing local Pro planner/iframe. No hosted build fallback. */
+/** Local planning preserves source; public account projects keep their configured hosted fallback. */
 export function createPintaRegionalProRuntime(
   scope: ProjectStorageScope,
   limits?: StudioProBuildLimits,
+  configuredHost?: StudioProRuntimeAdapter,
 ): StudioProRuntimeAdapter {
   if (!isRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
+  const hosted = isPrivateRegionalProjectScope(scope) ? undefined : configuredHost
+  const buildLimits = limits ?? hosted?.limits
+  const signal =
+    scope.signal && hosted?.signal
+      ? AbortSignal.any([scope.signal, hosted.signal])
+      : (scope.signal ?? hosted?.signal)
   return {
-    limits,
-    signal: scope.signal,
+    limits: buildLimits,
+    signal,
+    ...(hosted?.prepareDependencies ? { prepareDependencies: hosted.prepareDependencies } : {}),
     async build(input) {
       const start = performance.now()
       const captured = copyStudioProjectJson(input.project) as Project
       const lifetime =
-        input.signal && scope.signal
-          ? AbortSignal.any([input.signal, scope.signal])
-          : (input.signal ?? scope.signal)
+        input.signal && signal ? AbortSignal.any([input.signal, signal]) : (input.signal ?? signal)
       lifetime?.throwIfAborted()
       const [{ planLightProBuild }, { prepareJavaScriptRegionalMaterials }] = await Promise.all([
         import('./lightProBuild'),
@@ -97,9 +107,15 @@ export function createPintaRegionalProRuntime(
           })()
         : undefined
       lifetime?.throwIfAborted()
-      const plan = planLightProBuild(captured, limits, projection)
-      if (plan.kind === 'hosted')
+      const plan = planLightProBuild(captured, buildLimits, projection)
+      if (plan.kind === 'hosted') {
+        if (hosted) {
+          const result = await hosted.build({ ...input, project: captured, signal: lifetime })
+          lifetime?.throwIfAborted()
+          return result
+        }
         throw new Error(`Este projeto Pro ainda não abre neste ambiente local (${plan.reason}).`)
+      }
       if (plan.html.length > STUDIO_PRO_BUILD_LIMITS.maxOutputChars)
         throw new Error('O documento de execução ficou grande demais para o modo Pro.')
       lifetime?.throwIfAborted()

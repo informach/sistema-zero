@@ -6,6 +6,7 @@ import { ensureBlocklyInitialized } from '../blockly/setup'
 import { admitRegionalProjectAssets } from '../core/pintaRegionalProjectAdmission'
 import { buildProFileMap } from '../export/fileMap'
 import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
+import { prepareEditableStudioProject } from '../state/editableProjectValidation'
 import { loadProjectById, persistProject } from '../state/persistence'
 import { listAllProjects } from '../state/projectListStorage'
 import {
@@ -53,6 +54,12 @@ for (const projection of ['hexagonal', 'isometric'] as const) {
           admitRegionalProjectAssets(converted.assets?.map((asset) => ({ ...asset, proPath }))),
         ).rejects.toThrow()
       }
+      await expect(
+        prepareEditableStudioProject({
+          ...converted,
+          assets: converted.assets?.map((asset) => ({ ...asset, proPath: 'assets/mapa.png' })),
+        }),
+      ).rejects.toThrow()
       const { files } = await buildProFileMap(converted)
       expect(files[`public/${name}`]).toBeInstanceOf(Uint8Array)
       expect(files['public/sz-assets.js']).toBeInstanceOf(Uint8Array)
