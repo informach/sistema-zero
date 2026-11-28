@@ -5,10 +5,10 @@
 
 ## Como retomar
 
-- **Lote atual:** 1, papéis em um lugar só.
-- **Situação:** revisado; falta só commit e push. O Lote 0 terminou (commit `de893bf4a`, push em 28/11/2026).
-- **Próximo passo exato:** commit e push do Lote 1. Depois, o Lote 2 (chaves dos pais e interruptor da IA), seguindo o desenho anotado em "Decisões".
-- **Trabalho sem commit:** o Lote 1 (`packages/core/src/identity`, `packages/core/src/staff`, `packages/auth/src/domain/user/user.role.ts`, a config da borda e os testes novos). Se esta máquina parar antes do push, recomece o lote no outro computador.
+- **Lote atual:** 2, chaves dos pais e interruptor da IA.
+- **Situação:** a fazer. Lotes 0 e 1 no ar na staging (`de893bf4a` e `2e04fa2bb`); o CI deles ainda estava rodando em 28/11/2026, conferir o resultado.
+- **Próximo passo exato:** conferir o CI dos lotes 0 e 1 (`gh run list --branch staging`) e começar o Lote 2 pelo desenho anotado em "Decisões" (tabela `parent_controls` no members).
+- **Trabalho sem commit:** nenhum desta frente.
 - **Última atualização:** 28/11/2026.
 
 ## Legenda
@@ -20,7 +20,7 @@
 | Lote | Nome | Estado | Commit | CI | Ressalvas |
 |---|---|---|---|---|---|
 | 0 | Preparação e registro | push | `de893bf4a` | acompanhar | Só documentos; o push levou junto 18 commits de outras sessões (docs da LG05 e `palco-gravacao`, testes do pacote verdes). |
-| 1 | Papéis em um lugar só | revisado | | | Typecheck de core, auth e api-gateway fica com o CI. Cerca de 90 arquivos ainda têm cópia da lista e migram quando o pacote for mexido. |
+| 1 | Papéis em um lugar só | push | `2e04fa2bb` | | Typecheck de core, auth e api-gateway fica com o CI. Cerca de 90 arquivos ainda têm cópia da lista e migram quando o pacote for mexido. |
 | 2 | Chaves dos pais e interruptor da IA | a fazer | | | |
 | 3 | Sequência sem perda, conversas e aviso | a fazer | | | |
 | 4 | Tempo de uso com limite (B12) | a fazer | | | |
@@ -80,7 +80,7 @@ Marque `[x]` ao concluir. Toda tarefa de código inclui os testes dela. Todo lot
 - [x] Testes: core 3.669, auth 310 (88 de banco pulados), api-gateway 338, sem falha
 - [x] `bun run ci` (sem erro)
 - [x] `code-review` em `high`: 1 importante (o tipo de retorno do `staffRoles` ficou estreito e quebraria o typecheck do auth; corrigido com `string[]`) e 2 menores (comentário que dizia "lista única" cedo demais; teste ampliado para a pasta inteira e para lista guardada em variável), todos corrigidos e testados de novo
-- [ ] Commit e push
+- [x] Commit (`2e04fa2bb`) e push
 
 ### Lote 2: chaves dos pais e interruptor da IA
 - [ ] Tabela `parent_controls` no members (migration conferida)
