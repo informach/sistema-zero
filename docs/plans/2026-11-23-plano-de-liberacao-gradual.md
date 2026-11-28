@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-**Estado em 2026-11-28T14:00:52.259Z:** leitores `7d65745b0` e gravador `7d184572b` aprovados nos 13 checks, planos e equivalência Classic. Staging consolidada `434fde8e0` com 13/13 checks aprovados; onda dos oito serviços em execução, preservando a implantação dos cursos e a revisão visual do Admin. A imagem e a staging anterior estão qualificadas; faltam a onda consolidada, o aceite da prévia hospedada corrigida e as duas ondas de produção. Campanhas preservadas.
+**Estado em 2026-11-28T14:24:37.447Z:** a staging `434fde8e0` concluiu os 13 checks e a onda dos oito serviços, com predecessores retirados, barreira publicada e três projeções reais aprovadas. O aceite encontrou uma recusa na abertura do Pro; a correção passou em 14 testes/95 expectativas e tipos. Novas fontes `8f020f99f` (leitores), `669571418` (gravador) e `5d273b258` (staging) em validação remota. Faltam o aceite final e as duas ondas de produção. Campanhas preservadas.
 
 Registrado em 23/11/2026. Atualizado em 27/11 para preservar as campanhas já publicadas e executar LG05. LG01, LG02 e LG04 estão concluídas em produção. LG03 segue parcial: Ilha do Farol 3/3 e Jardim Secreto 2/2, nos dois públicos; Pinta e Moedas em rascunho 0/1, conferidos por leitura de produção em 28/11, 01:54 UTC.
 
@@ -17,7 +17,7 @@ A prioridade é entregar à criança fluxos completos: criar, guardar, voltar de
 
 O levantamento de 23/11 é histórico; o quadro e os registros datados abaixo distinguem as entregas posteriores. Ao retomar uma etapa, conferir o código e a configuração vigentes antes de decidir o que ainda falta. Implementação local, qualificação em staging e liberação em produção são estados distintos.
 
-**Preservação das campanhas (27/11):** implantação urgente encerrada e retomada autorizada. A fonte comercial `5400ea1d1` está integrada; os 121 arquivos foram comparados nas três candidatas, sem divergências. As promoções continuam vinculadas às fontes exatas qualificadas.
+**Preservação das campanhas (27/11):** implantação urgente encerrada e retomada autorizada. A fonte comercial `5400ea1d1` está integrada; os 121 arquivos permanecem idênticos nas duas candidatas de produção; a staging preserva os recibos comerciais atualizados e o DTO adicional dos cursos. As promoções continuam vinculadas às fontes exatas qualificadas.
 
 ## Ordem e acompanhamento
 
@@ -27,7 +27,7 @@ O levantamento de 23/11 é histórico; o quadro e os registros datados abaixo di
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Concluída em produção em 24/11: sete serviços em `0180e39fd`, Worker/imagem qualificados, CI, staging e aceite infantil aprovados. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial, conferida em produção em 27/11: Ilha do Farol 3/3 e Jardim Secreto 2/2 em Kids e Adultos; Pinta e Moedas em rascunho, 0/1 em cada público |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Entregue em produção em 25/11, PR #289, fonte `fed288d8e`; atualização R2 corrigida e mesmo post/link aprovado em staging. A versão de produção conferida em 27/11 inclui a entrega. [Fechamento](https://github.com/informach/sistema-zero/pull/289) |
-| LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Staging anterior e três CIs aprovados integralmente; conta fria Pro aceita. O aceite identificou e motivou a correção do transporte hospedado público e da identidade do motor regional, agora com 13 testes/89 expectativas e tipos aprovados. Leitores e gravador corrigidos aprovados 13/13; staging consolidada aprovada 13/13, com implantação em execução. Falta observar a prévia hospedada na interface final e promover leitores e gravador único em duas ondas. Produção 8/9 pendente. [Plano e provas](../superpowers/plans/2026-11-27-lg05-regras-projecoes.md) |
+| LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Onda staging anterior concluída integralmente. Aceite real identificou uma recusa de admissão no Pro; corrigida e reproduzida em teste, com 14 testes/95 expectativas e tipos aprovados. Fontes novas em validação remota. Faltam o aceite real final e as duas ondas de produção, terminando com gravador único 8/teto 9. [Plano e provas](../superpowers/plans/2026-11-27-lg05-regras-projecoes.md) |
 | LG06 | Abertura gradual do Molda Cenários | 3 | Oficina implantada, produto e faixas da Jornada conferidos | Pendente |
 | LG07 | Habilitação da prévia isolada do Studio | 3 | Runtime e origens permitidas configurados | Pendente |
 | LG08 | Promoção da nova distribuição Python | 3 | Qualificação e configuração coerentes em todas as pontas | Pendente |
