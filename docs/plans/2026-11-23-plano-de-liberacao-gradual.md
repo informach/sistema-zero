@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-**Estado em 2026-11-28T16:42:46.502Z:** a correção da origem pública passou nos testes locais; a staging reprovou antes de implantar numa corrida do teste clássico de iframe. O teste foi sincronizado sem mudar a aplicação: 50 testes/394 expectativas e 20 repetições aprovados. Fontes `31aff7318` (leitores), `43f7e60fe` (gravador) e `caac1cfd4` (staging) em nova validação integral. Faltam o aceite final e duas ondas de produção; campanhas preservadas.
+**Estado em 2026-11-28T17:21:35.216Z:** a correção da origem pública passou nos testes locais; a staging reprovou antes de implantar numa corrida do teste clássico de iframe. O teste foi sincronizado sem mudar a aplicação: 50 testes/394 expectativas e 20 repetições aprovados. Fontes `31aff7318` (leitores), `43f7e60fe` (gravador) e `caac1cfd4` (staging) com 12/13 checks aprovados em cada uma, sem falhas; a suíte Studio e o teste sincronizado passaram nas três fontes. Faltam o aceite final e duas ondas de produção; campanhas preservadas.
 
 Registrado em 23/11/2026. Atualizado em 27/11 para preservar as campanhas já publicadas e executar LG05. LG01, LG02 e LG04 estão concluídas em produção. LG03 segue parcial: Ilha do Farol 3/3 e Jardim Secreto 2/2, nos dois públicos; Pinta e Moedas em rascunho 0/1, conferidos por leitura de produção em 28/11, 01:54 UTC.
 
