@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-material",
+    "video-experiencia",
+    "video-tiro",
+    "video-origem",
+    "video-dano",
+    "video-limpeza"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "um lado para o outro e, a cada um segundo e meio, atira para baixo. Se o tiro encosta na sua nave, ela perde uma vida.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: desvie dos tiros e acerte os asteroides. Quando terminar, clique",
+      "falaPrincipal": "Será que dá para desviar dos tiros dela?",
+      "falaPersonagem": "Será que dá para desviar dos tiros dela?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e não de um lugar fixo. No seu jogo, a inimiga é o carrinho. O tiro pode nascer num lugar fixo ou onde a inimiga está.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar de onde os tiros saem, o que acontece",
+      "falaPrincipal": "E se o tiro nascer sempre no mesmo lugar?",
+      "falaPersonagem": "E se o tiro nascer sempre no mesmo lugar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-tiro-K1",
+      "clipe": "video-tiro",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "no jogo e aperte Enter. A cada um segundo e meio, um tiro desce, sempre pelo meio, mesmo quando a inimiga está longe.",
+      "ancoraDepois": "Devia. Como na experiência, com a origem no meio. A origem é a próxima parte. Se algo não funcionou no seu jogo, volte",
+      "falaPrincipal": "Mas o tiro não devia sair da inimiga?",
+      "falaPersonagem": "Mas o tiro não devia sair da inimiga?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-origem-K1",
+      "clipe": "video-origem",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "mais 52, a altura da inimiga. Clique no jogo e aperte Enter. Agora cada tiro sai de baixo da inimiga, onde ela estiver.",
+      "ancoraDepois": "Por enquanto, nada: o tiro atravessa. O dano é a próxima parte. Se algo não funcionou no seu jogo, volte aos blocos e",
+      "falaPrincipal": "E quando um tiro encosta na nave, o que acontece?",
+      "falaPersonagem": "E quando um tiro encosta na nave, o que acontece?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

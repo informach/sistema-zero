@@ -3,10 +3,16 @@
  * projetos de cada um, e os textos da capa do caderno.
  */
 
+import { armaAulas, armaExperiencia } from '../../qa/arma-conteudo'
+import { ARMA_ETAPAS, montarProjetoArma } from '../../qa/arma-projeto'
+import { chefaoAulas, chefaoExperiencia } from '../../qa/chefao-conteudo'
+import { CHEFAO_ETAPAS, montarProjetoChefao } from '../../qa/chefao-projeto'
 import type { PoderDimensaoConstrutor } from '../../qa/construtor-poderes-base'
 import type { MontagemPoder } from '../../qa/construtor-poderes-conteudo'
 import { escudoAulas, escudoExperiencia } from '../../qa/escudo-conteudo'
 import { ESCUDO_ETAPAS, montarProjetoEscudo } from '../../qa/escudo-projeto'
+import { inimigoAulas, inimigoExperiencia } from '../../qa/inimigo-conteudo'
+import { INIMIGO_ETAPAS, montarProjetoInimigo } from '../../qa/inimigo-projeto'
 import type { PoderAula } from '../../qa/poder-gerador'
 import { triploAulas, triploExperiencia } from '../../qa/triplo-conteudo'
 import { montarProjetoTriplo, TRIPLO_ETAPAS } from '../../qa/triplo-projeto'
@@ -147,6 +153,139 @@ export const PODERES_DO_CADERNO: Record<string, PoderDoCaderno> = {
             Number(etapa.slice(-1)),
           )
         : montarProjetoTriplo(d, etapa as (typeof TRIPLO_ETAPAS)[number]),
+  },
+  inimigo: {
+    curso: 'poder-inimigo-que-atira',
+    titulo: 'Inimigo que atira',
+    linha1: 'Inimigo',
+    linha2: 'que atira',
+    frase: 'Uma nave inimiga com tiros próprios, em 2D e na patrulha 3D.',
+    jogoPronto: {
+      '2d': 'Clique no jogo e aperte Enter. A nave inimiga patrulha o alto e atira a cada um segundo e meio: desvie dos tiros dela e acerte os asteroides.',
+      '3d': 'Clique no jogo e aperte Enter. A inimiga anda lá na frente e atira na direção da nave: desvie dos tiros.',
+    },
+    resumo: {
+      '2d': 'Na Nave Contra Asteroides: o relógio dos tiros, a origem na inimiga, o dano na nave e a limpeza dos tiros.',
+      '3d': 'A mesma inimiga na Patrulha Espacial: as cópias do tiro, a posição x da inimiga, o encontro e a limpeza.',
+    },
+    programou:
+      'Um relógio que cria os tiros só na partida, a origem que lê a posição da inimiga, o encontro que tira a vida e a limpeza de quem sai da tela. Uma partida nova começa sem tiros.',
+    experiencia: inimigoExperiencia,
+    frases: {
+      'aula-1': [
+        'Jogue contra a nave inimiga e conheça o seu Poder.',
+        'O seu Passo a passo, para consultar quando quiser.',
+        'De onde sai cada tiro da inimiga?',
+        'Um relógio cria os tiros, só na partida.',
+        'O tiro nasce embaixo da inimiga.',
+        'O tiro que encosta na nave tira uma vida.',
+        'Os tiros que saem da tela saem do grupo.',
+        'Pense na inimiga antes de seguir.',
+      ],
+      'aula-2': [
+        'A inimiga chegou à patrulha em três dimensões.',
+        'Um relógio cria as cópias do tiro.',
+        'O tiro sai da frente da inimiga.',
+        'O tiro inimigo machuca a nave.',
+        'A limpeza dos tiros. Envie o seu projeto.',
+        'Pense na inimiga da patrulha.',
+      ],
+    },
+    etapas: INIMIGO_ETAPAS,
+    aulas: inimigoAulas as () => PoderAula<string>[],
+    montar: (d, etapa) => montarProjetoInimigo(d, etapa as (typeof INIMIGO_ETAPAS)[number]),
+  },
+  chefao: {
+    curso: 'poder-chefao-com-resistencia',
+    titulo: 'Chefão com resistência',
+    linha1: 'Chefão com',
+    linha2: 'resistência',
+    frase:
+      'Um chefão que aguenta cinco lasers e um prêmio que vale uma vez, em 2D e na patrulha 3D.',
+    jogoPronto: {
+      '2d': 'Clique no jogo e aperte Enter. O chefão espera no alto, com a barra de vida embaixo. Deixe a nave no meio, dispare e conte quantos lasers ele aguenta. Depois olhe o placar.',
+      '3d': 'Clique no jogo e aperte Enter. O chefão espera lá na frente, e o texto Chefão, no alto à esquerda, mostra a vida dele. Dispare com a nave no meio.',
+    },
+    resumo: {
+      '2d': 'Na Nave Contra Asteroides: a vida do chefão na barra, o laser que tira 1, o fim no zero e a guarda que faz o prêmio valer uma vez.',
+      '3d': 'O mesmo chefão na Patrulha Espacial: a vida no texto, o encontro do chefão com os lasers, o fim no zero e a guarda.',
+    },
+    programou:
+      'Uma variável com a vida do chefão, o encontro que tira o laser e 1 da vida, o Se que derruba o chefão no zero e a guarda que faz o prêmio valer uma vez só. As mesmas ideias nas duas dimensões.',
+    experiencia: chefaoExperiencia,
+    frases: {
+      'aula-1': [
+        'Enfrente o chefão e conheça o seu Poder.',
+        'O seu Passo a passo, para consultar quando quiser.',
+        'Quantos lasers o chefão aguenta?',
+        'A vida do chefão numa variável, com a barra.',
+        'Cada laser que acerta sai e tira 1.',
+        'No zero, o chefão cai e dá o prêmio.',
+        'A guarda faz o prêmio valer uma vez.',
+        'Pense no chefão antes de seguir.',
+      ],
+      'aula-2': [
+        'O chefão chegou à patrulha em três dimensões.',
+        'A vida do chefão no alto, à esquerda.',
+        'O chefão encosta num laser: a vida perde 1.',
+        'No zero, o chefão sai e dá o prêmio.',
+        'O prêmio vale uma vez. Envie o seu projeto.',
+        'Pense no chefão da patrulha.',
+      ],
+    },
+    etapas: CHEFAO_ETAPAS,
+    aulas: chefaoAulas as () => PoderAula<string>[],
+    montar: (d, etapa) => montarProjetoChefao(d, etapa as (typeof CHEFAO_ETAPAS)[number]),
+  },
+  arma: {
+    curso: 'poder-troca-de-arma',
+    titulo: 'Troca de arma',
+    linha1: 'Troca',
+    linha2: 'de arma',
+    frase: 'Duas armas para a nave, laser e plasma, em 2D e na patrulha 3D.',
+    jogoPronto: {
+      '2d': 'Clique no jogo e aperte Enter. A placa mostra a arma. Deixe a nave no meio para pegar o item roxo, aperte E e dispare: o plasma é grande e lento.',
+      '3d': 'Clique no jogo e aperte Enter. O item vem pela esquerda: pegue, aperte E e olhe o texto Arma, no alto à esquerda. Dispare com as duas armas.',
+    },
+    resumo: {
+      '2d': 'Na Nave Contra Asteroides: o item que libera o plasma, a tecla E que troca, a placa da arma e o Espaço que pergunta.',
+      '3d': 'A mesma troca na Patrulha Espacial: o item pela esquerda, a tecla E, o texto escrito de novo e o Espaço que pergunta.',
+    },
+    programou:
+      'Um relógio que solta o item só na partida, o encontro que libera o plasma, a tecla E que só troca com o plasma liberado, a placa da arma e o Espaço que pergunta qual arma está na mão. Uma partida nova volta ao laser.',
+    experiencia: armaExperiencia,
+    frases: {
+      'aula-1': [
+        'Troque de arma e conheça o seu Poder.',
+        'O seu Passo a passo, para consultar quando quiser.',
+        'O que a tecla E faz antes do item?',
+        'O item cai pelo meio e libera o plasma.',
+        'A tecla E troca, mas só com o plasma liberado.',
+        'A placa mostra qual é a arma.',
+        'O Espaço pergunta a arma antes de atirar.',
+        'Pense na troca de arma antes de seguir.',
+      ],
+      'aula-2': [
+        'A troca de arma chegou à patrulha em três dimensões.',
+        'O item vem pela esquerda e libera o plasma.',
+        'A tecla E troca a arma na patrulha.',
+        'O texto da arma é escrito de novo a cada troca.',
+        'O Espaço pergunta a arma. Envie o seu projeto.',
+        'Pense na troca de arma da patrulha.',
+      ],
+    },
+    etapas: ARMA_ETAPAS,
+    divisoes: {
+      '2d:disparo': [
+        { titulo: 'O Se da arma, com o laser no senão', depois: 'disparo-senao' },
+        { titulo: 'O plasma no então', depois: 'disparo' },
+      ],
+    },
+    aulas: armaAulas as () => PoderAula<string>[],
+    montar: (d, etapa) =>
+      etapa === 'disparo-senao'
+        ? montarProjetoArma(d, 'disparo', true)
+        : montarProjetoArma(d, etapa as (typeof ARMA_ETAPAS)[number]),
   },
 }
 

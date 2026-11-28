@@ -39,6 +39,10 @@ export interface ManifestQuiz {
       | 'triplo-leque'
       | 'triplo-um'
       | 'triplo-grupos'
+      | 'inimigo-meio'
+      | 'inimigo-segue'
+      | 'inimigo-acerta'
+      | 'inimigo-limpeza'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -94,6 +98,10 @@ export function validatePredictionQuiz(
           'triplo-leque',
           'triplo-um',
           'triplo-grupos',
+          'inimigo-meio',
+          'inimigo-segue',
+          'inimigo-acerta',
+          'inimigo-limpeza',
         ].includes(q.predictionScene ?? ''),
     )
   )
@@ -158,6 +166,10 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
           'triplo-leque',
           'triplo-um',
           'triplo-grupos',
+          'inimigo-meio',
+          'inimigo-segue',
+          'inimigo-acerta',
+          'inimigo-limpeza',
         ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||

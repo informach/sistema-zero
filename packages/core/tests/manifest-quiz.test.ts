@@ -39,6 +39,10 @@ const SCENES = [
   'triplo-leque',
   'triplo-um',
   'triplo-grupos',
+  'inimigo-meio',
+  'inimigo-segue',
+  'inimigo-acerta',
+  'inimigo-limpeza',
 ] as const satisfies readonly PredictionScene[]
 
 const quiz = (predictionScene: string): unknown => ({

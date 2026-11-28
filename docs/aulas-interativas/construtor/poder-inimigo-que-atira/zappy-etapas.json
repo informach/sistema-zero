@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia": [
+      {
+        "id": "enemy-fire-start",
+        "text": "A nave inimiga anda de um lado para o outro no alto da tela e atira a cada um segundo e meio. A Origem do tiro está No meio. De onde você acha que os tiros vão sair? Clique em Avançar até o próximo tiro duas vezes e olhe a inimiga e os tiros."
+      },
+      {
+        "id": "enemy-fire-ask-fixed",
+        "text": "E com a origem No meio? Escolha No meio e clique em Avançar até o próximo tiro duas vezes. Quando a inimiga muda de lugar, de onde saem os tiros?"
+      },
+      {
+        "id": "enemy-fire-ask-enemy",
+        "text": "E com a origem Na inimiga? Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. De onde você acha que cada tiro vai sair?"
+      },
+      {
+        "id": "enemy-fire-ask-hurts",
+        "text": "E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+      },
+      {
+        "id": "enemy-fire-ask-restart",
+        "text": "E o que acontece ao recomeçar? Com tiros no ar, clique em Recomeçar a partida. Olhe os tiros e as Vidas."
+      },
+      {
+        "id": "enemy-fire-over",
+        "text": "A partida acabou. Para o próximo teste, clique em Recomeçar a partida."
+      },
+      {
+        "id": "enemy-fire-fixed-then-enemy",
+        "text": "Com a origem No meio, os dois tiros nasceram no meio da tela, mesmo com a inimiga em lugares diferentes. O lugar fixo não muda. E com a origem Na inimiga? Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. De onde você acha que cada tiro vai sair?"
+      },
+      {
+        "id": "enemy-fire-fixed-then-hurts",
+        "text": "Com a origem No meio, os dois tiros nasceram no meio da tela, mesmo com a inimiga em lugares diferentes. O lugar fixo não muda. E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+      },
+      {
+        "id": "enemy-fire-fixed-then-restart",
+        "text": "Com a origem No meio, os dois tiros nasceram no meio da tela, mesmo com a inimiga em lugares diferentes. O lugar fixo não muda. E o que acontece ao recomeçar? Com tiros no ar, clique em Recomeçar a partida. Olhe os tiros e as Vidas."
+      },
+      {
+        "id": "enemy-fire-fixed-then-over",
+        "text": "Com a origem No meio, os dois tiros nasceram no meio da tela, mesmo com a inimiga em lugares diferentes. O lugar fixo não muda. A partida acabou. Para o próximo teste, clique em Recomeçar a partida."
+      },
+      {
+        "id": "enemy-fire-enemy-then-fixed",
+        "text": "Com a origem Na inimiga, cada tiro nasceu embaixo da inimiga, no lugar onde a inimiga estava. A origem acompanha a inimiga. E com a origem No meio? Escolha No meio e clique em Avançar até o próximo tiro duas vezes. Quando a inimiga muda de lugar, de onde saem os tiros?"
+      },
+      {
+        "id": "enemy-fire-enemy-then-hurts",
+        "text": "Com a origem Na inimiga, cada tiro nasceu embaixo da inimiga, no lugar onde a inimiga estava. A origem acompanha a inimiga. E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+      },
+      {
+        "id": "enemy-fire-enemy-then-restart",
+        "text": "Com a origem Na inimiga, cada tiro nasceu embaixo da inimiga, no lugar onde a inimiga estava. A origem acompanha a inimiga. E o que acontece ao recomeçar? Com tiros no ar, clique em Recomeçar a partida. Olhe os tiros e as Vidas."
+      },
+      {
+        "id": "enemy-fire-enemy-then-over",
+        "text": "Com a origem Na inimiga, cada tiro nasceu embaixo da inimiga, no lugar onde a inimiga estava. A origem acompanha a inimiga. A partida acabou. Para o próximo teste, clique em Recomeçar a partida."
+      },
+      {
+        "id": "enemy-fire-hurts-then-fixed",
+        "text": "O tiro encostou na nave, sumiu da tela, e a nave perdeu uma vida. E com a origem No meio? Escolha No meio e clique em Avançar até o próximo tiro duas vezes. Quando a inimiga muda de lugar, de onde saem os tiros?"
+      },
+      {
+        "id": "enemy-fire-hurts-then-enemy",
+        "text": "O tiro encostou na nave, sumiu da tela, e a nave perdeu uma vida. E com a origem Na inimiga? Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. De onde você acha que cada tiro vai sair?"
+      },
+      {
+        "id": "enemy-fire-hurts-then-restart",
+        "text": "O tiro encostou na nave, sumiu da tela, e a nave perdeu uma vida. E o que acontece ao recomeçar? Com tiros no ar, clique em Recomeçar a partida. Olhe os tiros e as Vidas."
+      },
+      {
+        "id": "enemy-fire-hurts-then-over",
+        "text": "O tiro encostou na nave, sumiu da tela, e a nave perdeu uma vida. A partida acabou. Para o próximo teste, clique em Recomeçar a partida."
+      },
+      {
+        "id": "enemy-fire-restart-then-fixed",
+        "text": "Recomeçar a partida tirou os tiros do ar, as vidas voltaram a 3, e a inimiga voltou ao começo. As suas descobertas continuam guardadas. E com a origem No meio? Escolha No meio e clique em Avançar até o próximo tiro duas vezes. Quando a inimiga muda de lugar, de onde saem os tiros?"
+      },
+      {
+        "id": "enemy-fire-restart-then-enemy",
+        "text": "Recomeçar a partida tirou os tiros do ar, as vidas voltaram a 3, e a inimiga voltou ao começo. As suas descobertas continuam guardadas. E com a origem Na inimiga? Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. De onde você acha que cada tiro vai sair?"
+      },
+      {
+        "id": "enemy-fire-restart-then-hurts",
+        "text": "Recomeçar a partida tirou os tiros do ar, as vidas voltaram a 3, e a inimiga voltou ao começo. As suas descobertas continuam guardadas. E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas."
+      },
+      {
+        "id": "enemy-fire-complete",
+        "text": "Você testou tudo. Com a origem No meio, todo tiro sai do mesmo lugar fixo. Com a origem Na inimiga, cada tiro sai de onde a inimiga está. Um relógio decide o ritmo: um tiro a cada um segundo e meio. O tiro que encosta na nave sai e tira uma vida, e Recomeçar a partida limpa os tiros. Pode continuar testando quando quiser."
+      }
+    ]
+  }
+}

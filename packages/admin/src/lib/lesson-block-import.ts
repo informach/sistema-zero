@@ -63,6 +63,10 @@ const QuizQuestionImportSchema = z
         'triplo-leque',
         'triplo-um',
         'triplo-grupos',
+        'inimigo-meio',
+        'inimigo-segue',
+        'inimigo-acerta',
+        'inimigo-limpeza',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),

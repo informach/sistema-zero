@@ -1,0 +1,437 @@
+[
+  {
+    "id": "encontre",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Cada montagem do Poder, bloco por bloco, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "Os vídeos montam cada parte com você. Este caderno guarda os mesmos passos: o caminho na paleta, o bloco, onde encaixar e como testar. Volte aqui sempre que esquecer um passo."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Uma inimiga que atira",
+        "text": "Na Nave Contra Asteroides: o relógio dos tiros, a origem na inimiga, o dano na nave e a limpeza dos tiros.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-limpeza}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. A inimiga na patrulha",
+        "text": "A mesma inimiga na Patrulha Espacial: as cópias do tiro, a posição x da inimiga, o encontro e a limpeza.",
+        "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-limpeza}}"
+      },
+      {
+        "kind": "note",
+        "text": "O jogo da trilha já vem pronto, com as peças novas do Poder. Você programa a regra nova e testa cada parte."
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3",
+    "title": "A experiência: a inimiga que atira",
+    "subtitle": "A inimiga cria um tiro a cada um segundo e meio. O lugar onde o tiro nasce decide de onde ele sai: num lugar fixo, todo tiro sai do mesmo ponto; na posição da inimiga, ele acompanha a inimiga. O tiro que encosta na nave sai e tira uma vida, e uma partida nova começa sem tiros.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O que investigar",
+        "text": "Com a origem No meio, avance até a inimiga atirar duas vezes e veja de onde os tiros saem.<br>Troque a origem para Na inimiga e avance até ela atirar duas vezes.<br>Deixe um tiro chegar até a nave e olhe as vidas.<br>Com tiros no ar, clique em Recomeçar a partida e olhe os tiros e as vidas."
+      },
+      {
+        "kind": "note",
+        "text": "Antes e depois de cada teste, observe onde a inimiga está, de onde cada tiro sai, os tiros no ar e as vidas. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Uma nave inimiga",
+    "subtitle": "Jogue a versão pronta antes de programar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. A nave inimiga patrulha o alto e atira a cada um segundo e meio: desvie dos tiros dela e acerte os asteroides."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-tiro",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "O relógio dos tiros",
+    "subtitle": "Criar o relógio que cria um tiro inimigo a cada 1,5 s, só na partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que cria um tiro inimigo a cada 1,5 s, só na partida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos (o das pedras): outro A cada segundos, com 1.5."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No fazer, um Se com o estado do jogo é jogando."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No então: No grupo tirosInimigos criar um sprite com imagem laser-inimigo-vermelho, x 395, y 76, largura 10, altura 26, vx 0 e vy 5."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:inicio",
+        "after": "2d:tiro"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do Enter, a inimiga não atira; na partida, um tiro desce a cada 1,5 segundo.",
+          "Por enquanto, os tiros saem sempre do meio."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-origem",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "O tiro sai da inimiga",
+    "subtitle": "Fazer o tiro nascer embaixo da inimiga: o x lê o centro x dela e o y lê a posição y dela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Fazer o tiro nascer embaixo da inimiga: o x lê o centro x dela e o y lê a posição y dela."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No x do tiro da inimiga: o centro x do sprite inimiga − 5 (Programação → Matemática e Jogo 2D → Movimento → Posição e tamanho)."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No y: a posição y do sprite inimiga + 52."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:tiro",
+        "after": "2d:origem"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Na partida, cada tiro sai de baixo da inimiga, onde ela estiver."]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-dano",
+    "lesson": "aula-1",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "O tiro machuca a nave",
+    "subtitle": "Usar o encontro da nave com o grupo tirosInimigos: o tiro sai e a nave perde uma vida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Usar o encontro da nave com o grupo tirosInimigos: o tiro sai e a nave perde uma vida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro do jogo, logo abaixo do encontro das pedras com a nave: Para cada sprite do grupo tirosInimigos que colidir com o sprite nave, chamando de tiroQueAcertou."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro: Tirar o sprite tiroQueAcertou do grupo tirosInimigos, Machucar o sprite nave tirando 1 e Tocar efeito batida."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:origem",
+        "after": "2d:dano"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["O tiro inimigo que encosta na nave some, e a nave perde uma vida."]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-limpeza",
+    "lesson": "aula-1",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "Os tiros saem da tela",
+    "subtitle": "Tirar do grupo tirosInimigos os tiros que saem da tela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Tirar do grupo tirosInimigos os tiros que saem da tela."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro do jogo, logo abaixo de Tirar do grupo asteroides quem sair da tela: Tirar do grupo tirosInimigos quem sair da tela."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:dano",
+        "after": "2d:limpeza"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Os tiros que passam pela nave saem do grupo.",
+          "Uma partida nova começa sem tiros."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-abertura",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "A inimiga chegou à patrulha",
+    "subtitle": "O mesmo Poder, agora em três dimensões.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. A inimiga anda lá na frente e atira na direção da nave: desvie dos tiros."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-tiro",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "O relógio dos tiros",
+    "subtitle": "Criar o relógio que cria uma cópia do tiro inimigo a cada 1,5 s, só na partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que cria uma cópia do tiro inimigo a cada 1,5 s, só na partida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos (o das pedras): outro A cada segundos, com 1.5."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de o relógio da inimiga, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No então: Criar uma cópia de moldeTiroInimigo no grupo tirosInimigos, em x 0, y 1, z −22."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:inicio",
+        "after": "3d:tiro"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do Enter, a inimiga não atira; na partida, um tiro vem a cada 1,5 segundo."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-origem",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "O tiro sai da inimiga",
+    "subtitle": "Fazer o tiro nascer na frente da inimiga: o x da cópia lê a posição x dela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Fazer o tiro nascer na frente da inimiga: o x da cópia lê a posição x dela."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No x da cópia do tiro: posição x do objeto inimiga (Jogo 3D → Objetos → Posição, giro e tamanho)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:tiro",
+        "after": "3d:origem"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Na partida, cada tiro sai da frente da inimiga, onde ela estiver."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-dano",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "O tiro machuca a nave",
+    "subtitle": "Usar o encontro da nave com o grupo tirosInimigos: o tiro sai e a nave perde uma vida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Usar o encontro da nave com o grupo tirosInimigos: o tiro sai e a nave perde uma vida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, logo abaixo do encontro com os asteroides: Quando nave encostar em algum do grupo tirosInimigos, chamando de tiroQueAcertou."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de o encontro da nave com os tiros inimigos, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No então: Tirar o objeto tiroQueAcertou do grupo tirosInimigos e Machucar nave tirando 1 de vida."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:origem",
+        "after": "3d:dano"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["O tiro inimigo que encosta na nave some, e a nave perde uma vida."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-limpeza",
+    "lesson": "aula-2",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "Os tiros saem da tela",
+    "subtitle": "Tirar do grupo tirosInimigos os tiros que passam da nave.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Tirar do grupo tirosInimigos os tiros que passam da nave."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No quadro, logo abaixo de No grupo asteroides, tirar quem saiu: No grupo tirosInimigos, tirar quem saiu, no z, de −36 até 6."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:dano",
+        "after": "3d:limpeza"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Os tiros que passam pela nave saem do grupo.",
+          "Voltar ao início começa uma partida sem tiros."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "poder-pronto",
+    "kicker": "Poder do Construtor",
+    "title": "Poder pronto",
+    "subtitle": "A mesma regra nova em duas dimensões e em três.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "O que você programou",
+        "text": "Um relógio que cria os tiros só na partida, a origem que lê a posição da inimiga, o encontro que tira a vida e a limpeza de quem sai da tela. Uma partida nova começa sem tiros."
+      },
+      {
+        "kind": "note",
+        "text": "O Poder conta quando as duas aulas estão concluídas. Para subir de posto, a jornada pede dois Poderes diferentes."
+      }
+    ]
+  }
+]

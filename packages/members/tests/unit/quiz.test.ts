@@ -197,6 +197,10 @@ test.each([
   'triplo-leque',
   'triplo-um',
   'triplo-grupos',
+  'inimigo-meio',
+  'inimigo-segue',
+  'inimigo-acerta',
+  'inimigo-limpeza',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

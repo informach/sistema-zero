@@ -18,6 +18,7 @@ import { useLessonPreview } from './lesson-preview-context'
 import { CabanaQuizScene } from './quiz-cabana-scene'
 import { EscudoQuizScene } from './quiz-escudo-scene'
 import { GardenQuizScene } from './quiz-garden-scene'
+import { InimigoQuizScene } from './quiz-inimigo-scene'
 import { IslandQuizScene } from './quiz-island-scene'
 import { JardimQuizScene } from './quiz-jardim-scene'
 import { LighthouseQuizScene } from './quiz-lighthouse-scene'
@@ -342,6 +343,8 @@ function PredictionQuizSession({
             <EscudoQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('triplo-') ? (
             <TriploQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('inimigo-') ? (
+            <InimigoQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('jardim-') ? (
             <JardimQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('island-') ? (

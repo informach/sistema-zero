@@ -12,7 +12,7 @@ const files = listarArquivosAulas()
   .sort()
 
 test('os cursos têm um ponto de envio por projeto, com as partes intermediárias independentes dele', () => {
-  expect(files).toHaveLength(60)
+  expect(files).toHaveLength(62)
   let projects = 0
   for (const file of files) {
     const manifest = JSON.parse(readFileSync(caminhoAula(file), 'utf8')) as LearningManifest
@@ -59,7 +59,7 @@ test('os cursos têm um ponto de envio por projeto, com as partes intermediária
       }
     }
   }
-  expect(projects).toBe(59)
+  expect(projects).toBe(61)
 })
 
 test.each([

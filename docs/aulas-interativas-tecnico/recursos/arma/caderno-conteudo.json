@@ -1,0 +1,494 @@
+[
+  {
+    "id": "encontre",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Cada montagem do Poder, bloco por bloco, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "Os vídeos montam cada parte com você. Este caderno guarda os mesmos passos: o caminho na paleta, o bloco, onde encaixar e como testar. Volte aqui sempre que esquecer um passo."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Laser ou plasma",
+        "text": "Na Nave Contra Asteroides: o item que libera o plasma, a tecla E que troca, a placa da arma e o Espaço que pergunta.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-disparo}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. A troca de arma na patrulha",
+        "text": "A mesma troca na Patrulha Espacial: o item pela esquerda, a tecla E, o texto escrito de novo e o Espaço que pergunta.",
+        "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-disparo}}"
+      },
+      {
+        "kind": "note",
+        "text": "O jogo da trilha já vem pronto, com as peças novas do Poder. Você programa a regra nova e testa cada parte."
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3",
+    "title": "A experiência: a troca de arma",
+    "subtitle": "A nave guarda numa variável qual é a arma: laser ou plasma. O item libera a troca, a tecla E troca a arma, e o Espaço pergunta qual arma está escolhida antes de criar o tiro. Uma partida nova começa de novo com o laser.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O que investigar",
+        "text": "Antes de pegar o item, aperte E e olhe a arma.<br>Pegue o item e aperte E de novo.<br>Dispare com o laser e com o plasma e compare os dois tiros.<br>Com o plasma escolhido, comece uma partida nova e olhe a arma."
+      },
+      {
+        "kind": "note",
+        "text": "Antes e depois de cada tecla, observe a placa da arma e o tiro que sai. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Uma arma nova",
+    "subtitle": "Jogue a versão pronta antes de programar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. A placa mostra a arma. Deixe a nave no meio para pegar o item roxo, aperte E e dispare: o plasma é grande e lento."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-item",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "O item de plasma",
+    "subtitle": "Criar o relógio que solta o item pelo meio, só na partida, e o encontro que libera o plasma.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que solta o item pelo meio, só na partida, e o encontro que libera o plasma."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos: A cada 4 segundos (Jogo 2D → Tempo → Quadros e intervalos), com um Se e a pergunta o estado do jogo é jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então: No grupo itensPlasma criar um sprite com imagem item-plasma-redondo, x 378, y −44, largura e altura 44, vx 0 e vy 2."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Logo abaixo do encontro das pedras com a nave: Para cada sprite do grupo itensPlasma que colidir com o sprite nave, chamando de itemPego."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Dentro dele: Tirar o sprite itemPego do grupo itensPlasma, Alterar variável plasmaLiberado para verdadeiro e Tocar efeito power-up."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:inicio",
+        "after": "2d:item"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do Enter, nenhum item cai; na partida, um item cai pelo meio a cada 4 segundos.",
+          "Com a nave parada no meio, ela pega o item e o som toca."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-troca",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "A tecla E troca a arma",
+    "subtitle": "Na tecla E, durante a partida: só com o plasma liberado, laser vira plasma e plasma vira laser.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Na tecla E, durante a partida: só com o plasma liberado, laser vira plasma e plasma vira laser."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 2D → Controles → Teclado, ações e toque), com um Se e a pergunta o estado do jogo é jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então: Se plasmaLiberado = verdadeiro."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Dentro: Se arma = \"laser\", com o senão aberto: no então, Alterar variável arma para \"plasma\"; no senão, Alterar variável arma para \"laser\". Logo abaixo, Tocar efeito selecionar."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:item",
+        "after": "2d:troca"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do item, a tecla E não troca nada.",
+          "Depois do item, a tecla E troca a arma e toca o som."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-placar",
+    "lesson": "aula-1",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "A placa da arma",
+    "subtitle": "Mostrar na tela qual é a arma: Arma, dois-pontos, mais o valor de arma.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Mostrar na tela qual é a arma: Arma, dois-pontos, mais o valor de arma."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No fim de A cada quadro do jogo, logo abaixo da legenda dos controles: Escrever (Jogo 2D → Vida e placar → Indicadores e texto na tela) com \"Arma: \" + valor da variável arma, x 700, y 82."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:troca",
+        "after": "2d:placar"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["A placa mostra Arma: laser e muda para plasma quando a tecla E troca a arma."]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-disparo",
+    "lesson": "aula-1",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "O Espaço pergunta a arma",
+    "subtitle": "No Espaço, Se arma = plasma, criar o plasma no grupo tirosPlasma; senão, o laser de sempre.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "No Espaço, Se arma = plasma, criar o plasma no grupo tirosPlasma; senão, o laser de sempre."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No Espaço, dentro do então de Se jogando, encaixe um Se no começo (Programação → Lógica &amp; Se). O laser e o som descem para baixo dele."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Na pergunta: arma = \"plasma\"."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra o senão e leve o laser, com o som, para dentro dele."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Duplique o laser para o então e troque: grupo tirosPlasma, imagem plasma-roxo, x centro x da nave − 12, y da nave − 32, largura 24, altura 32, vy −4. Logo abaixo, Tocar efeito laser."
+      },
+      {
+        "kind": "drawings",
+        "title": "O Se da arma, com o laser no senão",
+        "before": "2d:placar",
+        "after": "2d:disparo-senao"
+      },
+      {
+        "kind": "drawings",
+        "title": "O plasma no então",
+        "before": "2d:disparo-senao",
+        "after": "2d:disparo"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com o laser, o Espaço cria o laser fino.",
+          "Depois de trocar, o Espaço cria o plasma grande e lento.",
+          "Uma partida nova volta ao laser."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-abertura",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "A troca chegou à patrulha",
+    "subtitle": "O mesmo Poder, agora em três dimensões.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. O item vem pela esquerda: pegue, aperte E e olhe o texto Arma, no alto à esquerda. Dispare com as duas armas."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-item",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "O item vem pela esquerda",
+    "subtitle": "Criar o relógio que cria uma cópia do item à esquerda, só na partida, e o encontro que libera o plasma.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que cria uma cópia do item à esquerda, só na partida, e o encontro que libera o plasma."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos: A cada 4 segundos (Jogo 3D → Tempo e sorteio → Tempo)."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de o relógio A cada 4 segundos, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −20."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Em Quando acontecer, logo abaixo do encontro com os asteroides: Quando nave encostar em algum do grupo itensPlasma, chamando de itemPego, com a guarda da partida."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "No então: Tirar o objeto itemPego do grupo itensPlasma e Alterar variável plasmaLiberado para verdadeiro."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:inicio",
+        "after": "3d:item"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do Enter, nenhum item nasce; na partida, um item vem pela esquerda a cada 4 segundos.",
+          "Na borda da esquerda, a nave pega o item."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-troca",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "A tecla E troca a arma",
+    "subtitle": "Na tecla E, durante a partida e só com o plasma liberado, trocar a arma.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Na tecla E, durante a partida e só com o plasma liberado, trocar a arma."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, logo abaixo de Quando apertar a tecla Enter: Quando apertar a tecla E (Jogo 3D → Controles)."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de a tecla E, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No então: Se plasmaLiberado = verdadeiro; dentro, Se arma = \"laser\", com o senão aberto: no então, Alterar variável arma para \"plasma\"; no senão, Alterar variável arma para \"laser\"."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:item",
+        "after": "3d:troca"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Antes do item, a tecla E não troca nada; depois do item, troca."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-placar",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "O texto da arma",
+    "subtitle": "Escrever a arma na tela em Ao iniciar e de novo a cada troca: Arma, dois-pontos, mais o valor de arma.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Escrever a arma na tela em Ao iniciar e de novo a cada troca: Arma, dois-pontos, mais o valor de arma."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, logo abaixo do placar dos acertos: Escrever na tela, em cima, à esquerda, \"Arma: \" + arma."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Na tecla E, dentro do Se plasmaLiberado, logo depois do Se arma = \"laser\": o mesmo Escrever na tela."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:troca",
+        "after": "3d:placar"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["O texto mostra Arma: laser e muda para plasma quando a tecla E troca a arma."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-disparo",
+    "lesson": "aula-2",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "O Espaço pergunta a arma",
+    "subtitle": "No Espaço, Se arma = plasma, a cópia do plasma no grupo tirosPlasma; senão, o laser de sempre.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "No Espaço, Se arma = plasma, a cópia do plasma no grupo tirosPlasma; senão, o laser de sempre."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No Espaço, dentro do então de Se jogando: Se arma = \"plasma\", com o senão aberto."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No senão: a cópia do laser e a nota de sempre."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No então: Criar uma cópia de moldePlasma no grupo tirosPlasma, na posição x da nave, y 1, z −1.6, e Tocar a nota 330 por 120."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:placar",
+        "after": "3d:disparo"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com o laser, o Espaço cria o laser.",
+          "Depois de trocar, o Espaço cria o plasma.",
+          "Voltar ao início começa de novo com o laser."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "poder-pronto",
+    "kicker": "Poder do Construtor",
+    "title": "Poder pronto",
+    "subtitle": "A mesma regra nova em duas dimensões e em três.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "O que você programou",
+        "text": "Um relógio que solta o item só na partida, o encontro que libera o plasma, a tecla E que só troca com o plasma liberado, a placa da arma e o Espaço que pergunta qual arma está na mão. Uma partida nova volta ao laser."
+      },
+      {
+        "kind": "note",
+        "text": "O Poder conta quando as duas aulas estão concluídas. Para subir de posto, a jornada pede dois Poderes diferentes."
+      }
+    ]
+  }
+]

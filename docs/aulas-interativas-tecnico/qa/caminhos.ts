@@ -16,6 +16,7 @@ export const CURSOS_POR_PREFIXO = {
   'patrulha-espacial': 'construtor/patrulha-espacial',
   escudo: 'construtor/poder-escudo-temporario',
   triplo: 'construtor/poder-tiro-triplo',
+  inimigo: 'construtor/poder-inimigo-que-atira',
   'corre-dino': 'inventor/corre-dino',
   'meu-jeito': 'construtor/o-jogo-do-meu-jeito',
 } as const

@@ -19,6 +19,7 @@ export const CAPAS: Record<string, string[]> = {
   triplo: ['item-triplo-redondo:2.2:-2.4:2.2:-4.5'],
   inimigo: ['inimiga-garra-vermelha:3.2:0:2.4:-9', 'laser-inimigo-vermelho:1.1:0:2.1:-5.5'],
   chefao: ['chefao-cruzador:7:0:3.4:-8'],
+  arma: ['item-plasma-redondo:2.2:-2.4:2.2:-4.5', 'plasma-roxo:1.2:0:2.1:-6'],
 }
 
 const poder = process.argv[2] ?? ''
