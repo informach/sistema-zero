@@ -1,4 +1,6 @@
-import projectRunContextFactorySource from './projectRunContextFactory.generated.json'
+import projectRunContextFactorySource from './projectRunContextFactory.generated.json' with {
+  type: 'json',
+}
 import type {
   ProjectRunContext,
   ProjectRunIntervalHandle,
