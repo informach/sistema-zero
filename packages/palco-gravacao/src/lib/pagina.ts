@@ -560,12 +560,92 @@ const CENTRADA = 0.15
 /** Quanto do arrasto pedido pode ficar de fora sem outro arrasto depois. */
 const FALTA = 24
 
+/** Onde o cabeçalho da área chega no primeiro arrasto: perto do alto, com um respiro em cima. */
+const CABECALHO_NO_ALTO = 0.12
+
+/**
+ * A área (a pilha de fora, como o Enquanto estiver rodando) cujo cabeçalho a criança viu por
+ * último em cada página: enquanto ela trabalha na mesma área, o cabeçalho não volta à toa.
+ */
+const areaVista = new WeakMap<Document, Element>()
+
+/** O bloco de cima da pilha de `el`: a área em que ele está. */
+function areaDe(el: Element): Element | null {
+  let raiz: Element | null = el.closest('.blocklyDraggable')
+  let acima = raiz?.parentElement?.closest('.blocklyDraggable') ?? null
+  while (acima) {
+    raiz = acima
+    acima = acima.parentElement?.closest('.blocklyDraggable') ?? null
+  }
+  return raiz
+}
+
+/** O cabeçalho de uma área: a primeira linha do bloco de cima, do começo dele ao fim do texto. */
+function cabecalhoDe(raiz: Element): DOMRect {
+  const r = raiz.getBoundingClientRect()
+  const t = rotuloDe(raiz)?.getBoundingClientRect()
+  if (!t) return new DOMRect(r.left, r.top, Math.min(r.width, 300), 48)
+  return new DOMRect(r.left, r.top, Math.max(t.right - r.left, 40), t.bottom - r.top + 8)
+}
+
+/**
+ * Trazer um bloco de dentro de uma área (Helena, 28/11/2026): primeiro o cabeçalho da área chega
+ * ao alto, para a criança ver em que área está ("Enquanto estiver rodando"); depois o lugar da
+ * mudança vem para o meio, sem tirar o cabeçalho da tela quando os dois cabem juntos. Vale para
+ * procurar a área e para pôr um bloco dentro de outro. Já com o cabeçalho visto, só o segundo.
+ */
+function rolagemNaArea(
+  doc: Document,
+  bloco: Element,
+  alvo: Element | DOMRect,
+  descoberto = false,
+  centrar = false,
+  margem = 0,
+): Rolagem | 'visivel' | null {
+  const area = areaDeTrabalho(doc)
+  const raiz = areaDe(bloco)
+  if (!area || !raiz) return rolagemDe(doc, alvo, descoberto, centrar, margem)
+  const view = areaVisivel(doc, area)
+  const cab = cabecalhoDe(raiz)
+  const m = MARGEM_A_VISTA
+  const cabecalhoAVista =
+    cab.top >= view.top + m / 2 &&
+    cab.bottom <= view.bottom - m &&
+    cab.left >= view.left &&
+    cab.right <= view.right
+  if (cabecalhoAVista || raiz === bloco) areaVista.set(doc, raiz)
+  // O próprio bloco de cima: centrado, o cabeçalho dele já fica à vista.
+  if (raiz === bloco) return rolagemDe(doc, alvo, descoberto, centrar, margem)
+  if (!cabecalhoAVista && areaVista.get(doc) !== raiz) {
+    const dy = view.top + view.height * CABECALHO_NO_ALTO - cab.top
+    const dx =
+      cab.left >= view.left + m && cab.right <= view.right - m
+        ? 0
+        : view.left + view.width * 0.08 - cab.left
+    const arrasto = arrastoDoFundo(doc, area, view, dx, dy)
+    // Depois do cabeçalho, a página é perguntada de novo para centrar o lugar da mudança.
+    return arrasto && { ...arrasto, falta: true }
+  }
+  const b = alvo instanceof DOMRect ? alvo : alvo.getBoundingClientRect()
+  const juntos = b.bottom - cab.top <= view.height - 2 * m
+  return rolagemDe(
+    doc,
+    alvo,
+    descoberto,
+    centrar,
+    margem,
+    juntos ? view.top + m - cab.top : undefined,
+  )
+}
+
 function rolagemDe(
   doc: Document,
   el: Element | DOMRect,
   descoberto = false,
   centrar = false,
   margem = 0,
+  // O menor deslocamento para baixo: com ele, o cabeçalho da área não sai pelo alto.
+  dyMinimo?: number,
 ): Rolagem | 'visivel' | null {
   const area = areaDeTrabalho(doc)
   if (!area) return null
@@ -582,12 +662,23 @@ function rolagemDe(
   // Para trabalhar numa área (centrar), ela vem para o meio da altura mesmo já à vista; de lado,
   // só anda se não couber inteira, para as outras áreas não saírem do lugar à toa.
   const dx = centrar && dentroX ? 0 : centro(b.left - view.left, b.width, view.width)
-  const dy = centro(b.top - view.top, b.height, view.height)
+  const dy = Math.max(centro(b.top - view.top, b.height, view.height), dyMinimo ?? -Infinity)
   // Um campo também precisa estar descoberto: com outra coisa por cima (a paleta aberta, um
   // painel), vai para o centro. Um bloco tem os de dentro por cima, e isso não conta.
   const topo = descoberto ? doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null
   const livre = !topo || el instanceof DOMRect || el.contains(topo) || topo.contains(el)
   if (centrar ? inside && Math.abs(dy) <= view.height * CENTRADA : inside && livre) return 'visivel'
+  return arrastoDoFundo(doc, area, view, dx, dy)
+}
+
+/** O arrasto de um ponto do fundo da área que desloca os blocos de (dx, dy), até onde alcança. */
+function arrastoDoFundo(
+  doc: Document,
+  area: Element,
+  view: DOMRect,
+  dx: number,
+  dy: number,
+): Rolagem | null {
   // Um ponto do fundo, sem bloco em cima, de onde arrastar.
   const fundo = (x: number, y: number) =>
     doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
@@ -698,13 +789,14 @@ export function paginaDe(doc: Document): PaginaDoPalco {
 
     rolagem(bloco) {
       const block = blocosCom(doc, bloco)[0]
-      // Para trabalhar nele: o bloco vem para o meio da área, mesmo já à vista.
-      return block ? rolagemDe(doc, block, false, true) : null
+      // Para trabalhar nele: o bloco vem para o meio da área, mesmo já à vista (antes, o cabeçalho
+      // da área em que ele está).
+      return block ? rolagemNaArea(doc, block, block, false, true) : null
     },
 
     rolagemDoCampo(valor, bloco) {
       const field = campoDe(doc, valor, bloco)
-      return field ? rolagemDe(doc, field, true) : null
+      return field ? rolagemNaArea(doc, donoDe(field) ?? field, field, true) : null
     },
 
     bloco(texto, onde) {
@@ -748,7 +840,7 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const r = (path ?? block).getBoundingClientRect()
       // Só o fim do bloco e o lugar de baixo: um bloco mais alto que a área à vista ainda cabe.
       const lugar = new DOMRect(r.left, r.bottom - 40, Math.min(r.width, 200), 40 + LUGAR_ABAIXO)
-      const rolagem = rolagemDe(doc, lugar, false, false, MARGEM_A_VISTA)
+      const rolagem = rolagemNaArea(doc, block, lugar, false, false, MARGEM_A_VISTA)
       if (rolagem !== 'visivel') return rolagem
       // À vista, mas com outra coisa por cima do ponto (um painel, a paleta aberta): também vem.
       const hit = doc.elementFromPoint(r.left + 12, r.bottom + 10)
