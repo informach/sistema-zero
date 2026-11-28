@@ -438,6 +438,16 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   'enemy-origin': ['origin'],
   'enemy-ship': ['x'],
   'boss-guard': ['on'],
+  // Os Poderes do Faísca: as moedas, as peças da cabana, o "depois de" da ponte e os símbolos do
+  // baú eram uma opção só por tipo ("Tocar a lua" selecionava "Tocar o sol").
+  'touch-coin': ['coin'],
+  'coin-disappears': ['enabled'],
+  'chest-rule': ['rule'],
+  'take-piece': ['piece'],
+  'cabin-rule': ['rule'],
+  'timer-place': ['place'],
+  'touch-symbol': ['symbol'],
+  'sequence-mode': ['mode'],
 }
 
 /**
