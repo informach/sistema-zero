@@ -1,0 +1,67 @@
+PRANCHA: B2 · Família que já é cliente · O bilhete da escola (arquivo Tela-JaAssina.dc.html, página "telas")
+
+com 
+
+CA 
+**Colégio Araucária** 
+
+Você entrou como **Fernanda** 
+
+# A Júlia agora tem acesso pelo Colégio Araucária 
+
+Você já é cliente do Sistema Zero. Use o bilhete para ligar a Júlia à turma do 7º ano A. Ela continua com tudo o que já fez, e nada muda na sua assinatura. 
+
+### 1. O bilhete 
+
+Código que veio no bilhete [campo: P4T8-W6HN-3C] 
+
+Data de nascimento da sua filha [campo: 09/02/2017] 
+
+Tudo certo: Júlia F., 7º ano A. 
+
+### 2. Quem é a Júlia na sua conta 
+
+Júlia, 12 anos, Inventora: o perfil que ela já usa 
+
+O perfil novo, que a escola criou para ela 
+A turma passa a usar o perfil que a Júlia já tem. Ela não fica com dois perfis e não perde nada do que criou. 
+
+### 3. O que muda no que você paga 
+
+Você continua pagando 
+R$ 97 por mês 
+
+A escola passa a pagar as aulas e as tarefas da Júlia. A sua assinatura continua dando o que a escola não dá: as ferramentas livres para criar em casa, o segundo filho, o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. 
+Se preferir pagar menos, as famílias do Colégio Araucária têm o plano pelo código da escola, de R$ 69,90. Ele mantém as ferramentas livres e o segundo filho, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. A troca é feita em Conta, na tela Planos. 
+
+Se preferir ficar só com o que a escola paga, você cancela o plano quando quiser, em Conta. Nada é cancelado nem cobrado sem você pedir. 
+
+Sou responsável pela Júlia. 
+
+Ligar a Júlia ao 7º ano A 
+
+O que muda para a Júlia 
+
+- Na escola, ela entra com o crachá e encontra a Jornada do jeito que deixou 
+
+- As tarefas do professor Caio aparecem no Início dela 
+
+- Em casa, ela continua com a Jornada, os projetos e as ferramentas 
+
+**A conversa com o Zappy** 
+Como o acesso passa a ser da escola, vale a regra da escola também em casa: no 7º ano, a conversa só funciona quando o professor liga na aula. As falas do Zappy dentro das aulas continuam iguais. 
+
+**O que a escola vê** 
+O posto da Júlia e o que ela fizer nas aulas das tarefas da escola. O resto do que ela cria continua sendo só da família. 
+
+Ver a lista completa
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o que a gestão vê enquanto a escola não está pronta. Cada passo leva a uma tela deste roteiro (A3, A4, A5). Quando os cinco passos terminam, o Início passa a ser a tela A6. Quem não usou o bilhete entra na aula do mesmo jeito, porque na grade o acesso é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o caso de quem já assina os R$ 97: a página pergunta qual perfil é o do aluno, para a criança não ficar com dois. Nada muda na cobrança, e a tela mostra o que a escola passa a cobrir e o que só a assinatura dá. A família pode escolher o plano pelo código da escola, de R$ 69,90, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Nada é cancelado sem ela pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o Início que já existe, com quatro mudanças: nome e logo da escola no menu, a tarefa da escola no alto, o cartão O que você praticou e só o Mural da escola no menu. No computador da escola o menu é igual para todos, sem o item Criar: as ferramentas livres aparecem só em casa, para quem tem o plano. No computador da escola não aparecem Arquipélago, Clube dos Criadores, Oficinas ao vivo, ranking geral, área dos pais nem compra, e a palavra Kids não é usada. O plano combinado da clínica não aparece no computador da escola. O ranking da escola só aparece se a gestão ligar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra a tarefa em andamento e a situação de cada aluno, sem nenhuma informação de pagamento. Ela diz quantos alunos estão sem o primeiro acesso da família, para quem a conversa com o Zappy não liga. As tentativas saem do registro de verificações, que já é guardado. O botão do Zappy é o mecanismo novo que cumpre a regra do CNE do 6º ao 9º ano. "Ver o projeto dela" abre o projeto só para olhar: hoje o visualizador existe só no Admin e mostra só projeto enviado, e abrir o projeto em andamento é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. A coordenação faz o papel da gestão: vê profissionais, crianças e famílias, e não vê pagamento. Ela vê cada família que entra pelo código e pode tirar quem não é atendido ali. A cada 20 famílias pagantes, a clínica indica um bolsista, que entra pelo código sem passar pelo pagamento. O mural da clínica começa desligado. O item Aparelhos funciona como na escola. Em Aparelhos, a coordenação autoriza os aparelhos da clínica e gera o crachá de cada criança.

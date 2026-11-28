@@ -1,0 +1,85 @@
+PRANCHA: B8 · Pais · Conta: acessos e pagamentos (arquivo Tela-Conta.dc.html, página "telas")
+
+ÁREA DOS PAIS 
+
+Início 
+
+Família 
+
+Theo 
+
+Lia 
+
+Cursos para pais 
+
+Oficinas ao vivo 
+
+Conta 
+
+Ajuda 
+
+Ir para a área da criança 
+
+**Marina** Responsável 
+
+# Conta 
+De onde vem o acesso dos seus filhos, o que você paga e os seus dados. 
+
+Você paga hoje 
+R$ 69,90 por mês 
+É o plano pelo código do Colégio Araucária, para até 2 filhos. O plano de R$ 97 acrescenta o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. 
+No cartão final 4321. Próxima cobrança em 3 de outubro. 
+
+Ver os planos 
+Trocar o cartão 
+Cancelar o plano 
+
+Tenho um bilhete ou um código 
+
+## De onde vem o acesso de cada filho 
+
+T 
+
+**Theo** 
+Colégio Araucária, 6º ano B 
+**A escola paga as aulas e as tarefas dele.** 
+O seu plano dá a ele as ferramentas livres e o acompanhamento da Clínica Girassol. 
+
+L 
+
+**Lia** 
+Colégio Araucária, contraturno 
+**Entra pelo seu plano, com o código da escola.** 
+O plano da família cobre a Lia e o Theo. 
+
+Tirar a Lia do contraturno 
+
+## Pagamentos 
+
+Data 
+O quê 
+Valor 
+Nota fiscal 
+
+3 de setembro Plano da família, código do Colégio Araucária R$ 69,90 
+Baixar 
+
+3 de agosto Plano da família, código do Colégio Araucária R$ 69,90 
+Baixar 
+
+## Se algo mudar 
+**Se você cancelar o plano,** o Theo continua com as aulas e as tarefas pela escola, sem as ferramentas livres e sem o acompanhamento da clínica, e a Lia sai do contraturno no fim do mês pago. 
+**Se a Lia sair do contraturno,** o plano continua valendo para os dois, pelo vínculo do Theo com a escola. 
+**Se a família deixar de ter vínculo com uma escola ou instituição,** o preço do código vale até o fim do período pago. Depois disso, o plano custa R$ 97, e só continua se você assinar. 
+**Em qualquer mudança,** o que eles criaram continua com eles. 
+
+## Seus dados 
+Marina Duarte 
+marina@exemplo.com.br 
+(31) 90000-0000 
+
+Alterar
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Junta o que a gestão faz com pessoas: convidar professor, ver quem fez o primeiro acesso, emitir outro bilhete, gerar outro crachá, mover de turma, corrigir o e-mail do responsável e indicar o bolsista do plano de cortesia. Tirar um aluno da turma mantém o acesso por 30 dias. A gestão também tira da turma de contraturno quem não é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É a página Conta que já existe na área dos pais. O que é novo: o que cada filho tem e de onde vem, o preço do código, o botão do bilhete ou código e o bloco Se algo mudar. Os pagamentos e a nota fiscal são os de hoje. É aqui que aparece a oferta do plano para a família que só tem o acesso da escola.

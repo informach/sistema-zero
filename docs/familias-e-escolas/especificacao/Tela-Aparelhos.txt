@@ -1,0 +1,75 @@
+PRANCHA: A4 · Gestão · Computadores da escola (arquivo Tela-Aparelhos.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Turmas 
+
+Pessoas 
+
+Tarefas 
+
+Relatórios 
+
+Formação 
+
+M 
+
+**Marta** Gestora 
+
+Pessoas e computadores 
+
+# Computadores da escola 
+Nos computadores autorizados, só entram alunos do Colégio Araucária, com o crachá. 
+
+## Este computador ainda não está autorizado 
+Dê um nome que ajude a encontrar a máquina depois, e autorize. Faça isso uma vez em cada computador. 
+
+Nome do computador [campo: Laboratório 1, mesa 07] 
+
+Autorizar este computador 
+
+## 30 computadores autorizados 
+
+Computador 
+Autorizado 
+Último uso 
+
+**Laboratório 1, mesa 01** 5 de fevereiro, por Marta Hoje 
+Remover 
+
+**Laboratório 1, mesa 02** 5 de fevereiro, por Marta Hoje 
+Remover 
+
+**Laboratório 1, mesa 03** 5 de fevereiro, por Marta Ontem 
+Remover 
+
+**Biblioteca, tablet 01** 7 de fevereiro, por Renata Há 3 dias 
+Remover 
+
+Ver os 30 
+
+## Como funciona um computador da escola 
+
+- O aluno entra digitando o código do crachá. 
+
+- Quando ele sai, o computador salva o trabalho e limpa o que ficou guardado na máquina. 
+
+- Parado por 10 minutos, ele sai sozinho. 
+
+- Não aparecem a área dos pais nem nenhuma compra. 
+
+## Quem pode autorizar 
+A gestão e os professores que você indicar. Remover um computador faz o crachá parar de funcionar nele na hora.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Hoje cada aparelho autorizado pertence a uma família. O computador da escola é um tipo novo de aparelho: aceita qualquer aluno daquela escola, não tem área dos pais nem compra, e limpa o que ficou guardado na máquina depois de salvar na nuvem.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, logo depois do cadastro. Leva aos três passos que faltam: autorizar o aparelho de casa, com a autorização que já existe, conhecer a área dos pais e começar o curso para pais, que vem incluído também para quem entra pela escola ou pela instituição parceira. Na escola nada depende desses passos.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o mural que já existe, com um espaço próprio por escola e por segmento: aqui, só o 6º e o 7º ano do Colégio Araucária veem e jogam. A publicação continua passando pela moderação atual e conta para a Jornada. Não há classificação nem liga. As capas são as que as crianças fazem, e aqui estão só indicadas. A Mostra de Jogos é um evento da escola: a plataforma entra com o mural, sem tela própria. O clube de cada escola entra numa fase seguinte, com o professor moderando.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Aulas feitas, objetivos cumpridos, quiz e tentativas são fatos separados, todos já registrados pela plataforma. "Onde a turma mais travou" sai do registro de verificações. "Abrir o projeto" segue a mesma regra da tela D2. "Baixar a lista" gera uma planilha para o diário da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. O profissional vê só as crianças que atende e só o que está no plano. Não há campo de observação: a anotação clínica fica no prontuário da clínica, e a plataforma entrega os fatos da semana para exportar. O profissional conversa com a família, e nunca com a criança. Clínica Girassol é um nome de exemplo.

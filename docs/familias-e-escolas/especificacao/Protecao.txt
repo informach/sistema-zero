@@ -1,0 +1,109 @@
+PRANCHA: 10 · Isolamento, dados e leis (arquivo Protecao.dc.html, página "plataforma")
+
+4 · Plataforma e plano · prancha 10 
+
+# Isolamento, dados e leis 
+
+Escola e clínica só confiam em uma plataforma que separa bem os espaços e cuida do dado da criança. Aqui estão as regras que o sistema segue e o que as leis pedem, com a resposta para cada uma. 
+
+## Cinco regras de isolamento 
+
+1 
+
+**O espaço vem do vínculo, nunca do navegador** A cada pedido, o servidor confere se a pessoa pertence àquela instituição, com aquele papel. Um número de escola enviado pela tela não autoriza nada. 
+
+2 
+
+**O próprio banco recusa a leitura de outra instituição** Turmas, tarefas, planos, notas e recados são gravados com a instituição. Nas tabelas novas, o banco só entrega os dados da instituição de quem está pedindo. Para isso valer, toda consulta ao banco passa a levar a instituição junto, e o próprio banco recusa o que for de outra. 
+
+3 
+
+**Um teste para cada caminho do sistema** Uma bateria de testes tenta ler os dados da escola A com um usuário da escola B, caminho por caminho, e precisa falhar sempre. Ela roda em um banco de verdade e é obrigatória antes de cada publicação. 
+
+4 
+
+**O que sai do banco também é separado** Exportações, arquivos, envios de mensagem e dados guardados para acelerar as telas são separados por instituição. Um relatório gerado em segundo plano nunca cai na caixa errada. 
+
+5 
+
+**A equipe entra com registro e motivo** O suporte usa o "entrar como" que já existe e já é auditado. Ele ganha um campo de motivo, e cada entrada em um espaço fica registrada com quem entrou e quando. 
+
+**O computador da instituição** 
+Só entra aluno daquela instituição, com o crachá. Não tem área dos pais nem compra. Quando o aluno toca em Sair, o computador confirma que tudo foi salvo na nuvem e só então limpa o que ficou guardado. Sem internet, ele avisa e guarda até a próxima conexão. Parado por 10 minutos, ele sai sozinho. 
+
+## Quem responde por quais dados 
+
+### Na família 
+
+O contrato é entre o responsável e o Sistema Zero, que responde pelos dados da conta, como hoje. É assim também quando a família entra pelo código de uma escola ou de uma instituição. 
+
+### Na escola 
+
+A escola decide sobre turmas, tarefas e notas, e o Sistema Zero opera para ela. O contrato traz o acordo sobre esses dados, que não são usados para propaganda, para oferecer produtos nem para treinar IA. A autorização para o aluno da grade é colhida pela escola na matrícula. 
+
+### Na instituição parceira 
+
+O responsável autoriza o acompanhamento de forma específica no cadastro. A plataforma não guarda anotação clínica nem diagnóstico. O único dado sensível é o próprio vínculo da criança com a clínica, que fica restrito a ela e à família. 
+
+## O que as leis pedem, e como a plataforma responde 
+
+Norma 
+O que pede 
+Como a plataforma responde 
+
+Lei das mensalidades e Código do Consumidor 
+A escola não pode obrigar a compra de um fornecedor para a aula nem punir o aluno por falta de pagamento. 
+Na grade, a escola paga e todo aluno tem acesso. A família só paga o que é opcional. 
+
+Código do Consumidor, compra pela internet 
+Arrependimento em 7 dias, com devolução de tudo, e cancelamento fácil. 
+A página do código mostra as regras antes do pagamento, e o cancelamento fica na área dos pais. 
+
+ECA Digital em vigor desde março de 2026 
+Supervisão dos pais: tempo de uso, privacidade, compras e com quem a criança fala, com aviso visível. 
+A área dos pais ganha o tempo de uso com limite e a lista de conversas. A área da criança continua sem nenhuma compra, e a criança vê o aviso de que os pais acompanham. 
+
+ECA Digital 
+Proteção por padrão e contato só com quem é autorizado. 
+O mural e os recados da instituição já nascem fechados para ela. O aluno sem o primeiro acesso da família usa um modo mais restrito. 
+
+ECA Digital 
+Sem caixa de recompensa paga e sem mecanismo que force o retorno ou o tempo de tela. 
+O baú é gratuito e sem sorteio. A sequência de dias vira um contador simples: não tira nada de quem falha um dia, deixa de ter o protetor comprado com moedas e pode ser desligada pelos pais. 
+
+ECA Digital 
+Denúncia com retorno e remoção do que viola as regras. 
+A moderação que já existe ganha o retorno para quem denunciou e o caminho de recurso para quem publicou. 
+
+Resolução do CNE sobre IA novembro de 2026 
+Vale para escola pública e particular e para os contratos com fornecedores. Proíbe IA de conversa até o 5º ano, exige o professor do 6º ao 9º e veda vender com os dados escolares. 
+A criança ligada a uma escola segue a regra do ano escolar dela em qualquer aparelho. A escola não usa o programa na educação infantil. O contrato já nasce com as cláusulas de IA. 
+
+Lei do celular na escola 2025 
+Aparelho pessoal fora da sala de aula. 
+A plataforma roda nos computadores e tablets da escola. 
+
+LGPD 
+Dado de criança só no interesse dela e só o necessário. Dado de saúde com autorização específica. 
+A planilha da escola pede nome, turma, data de nascimento e e-mail do responsável. Na clínica, a autorização é específica e não há campo de diagnóstico. 
+
+Códigos de ética da saúde 
+Sem comissão por indicação e sem promessa de resultado. 
+O link da clínica só rastreia. O ganho dela vem do honorário pelo serviço que presta, e a linguagem é sempre educacional. 
+
+## Quando o vínculo termina 
+
+### Na grade 
+
+No fim do ano ou na saída da escola, a turma encerra e a escola exporta as tarefas e os resultados. Os registros das turmas encerradas são apagados 90 dias depois. O cadastro do aluno continua com a família. O acesso pago pela escola segue por 30 dias, para a família decidir como continuar. Se nenhum responsável usou o bilhete, o cadastro do aluno que saiu fica guardado por 90 dias e é apagado. O aluno que continua na escola no ano seguinte mantém tudo: a gestão só muda a turma de ano. 
+
+### No contraturno e na parceira 
+
+A família cancela quando quiser, e o plano termina no fim do período pago. O professor ou o profissional deixa de ver a criança. Tudo o que é dela continua na conta da família. 
+
+### Se a instituição sair 
+
+A instituição exporta tarefas, resultados e relatórios a qualquer momento. No contrato anual da grade, o aviso para encerrar é de 90 dias, dos dois lados. Nos acordos mensais, é de 30 dias. 
+
+**O que passa por um advogado** 
+São três documentos: o termo de parceria das instituições, o termo do contraturno com o acordo de dados e o contrato da grade. O termo de parceria ganha um anexo de vagas quando a instituição paga. A IA prepara a primeira versão de cada um, e um advogado revisa antes do primeiro uso, porque eles serão reaproveitados com todas as instituições.

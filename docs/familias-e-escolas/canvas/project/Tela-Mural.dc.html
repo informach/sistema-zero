@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Aluno: mural da escola</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+body{margin:0;background:#e9eef6}
+*{box-sizing:border-box}
+a{color:#1343b8}a:hover{color:#0a2a7a}
+</style>
+</helmet>
+<div style="font-family: 'Nunito', system-ui, sans-serif; color: #0f1a33; font-size: 17px; line-height: 1.5; background: #e9eef6; display: flex; flex-wrap: wrap; min-height: 900px">
+
+<nav style="flex: 1 1 268px; max-width: 100%; background: #121a30; color: #cbd4e8; padding: 28px 20px; display: flex; flex-direction: column; gap: 24px">
+<img src="/_blob/b071f94b0478ee7c6b96469a94dbe0b1" alt="Sistema Zero" style="width: 180px; height: auto">
+<div style="display: flex; align-items: center; gap: 12px; background: #1b2540; border-radius: 16px; padding: 10px 12px">
+<div style="width: 40px; height: 40px; min-width: 40px; border-radius: 10px; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 17px">CA</div>
+<div style="display: flex; flex-direction: column; line-height: 1.25"><strong style="color: #ffffff">Colégio Araucária</strong><span style="font-size: 15px">6º ano B</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<a href="#inicio" style="color: #cbd4e8; text-decoration: none; font-weight: 700; padding: 12px 16px; border-radius: 14px">Início</a>
+<a href="#cursos" style="color: #cbd4e8; text-decoration: none; font-weight: 700; padding: 12px 16px; border-radius: 14px">Cursos</a>
+<a href="#mural" style="background: #1b5cf3; color: #ffffff; text-decoration: none; font-weight: 800; padding: 12px 16px; border-radius: 14px">Mural da escola</a>
+<a href="#recados" style="color: #cbd4e8; text-decoration: none; font-weight: 700; padding: 12px 16px; border-radius: 14px">Recados</a>
+<a href="#espaco" style="color: #cbd4e8; text-decoration: none; font-weight: 700; padding: 12px 16px; border-radius: 14px">Meu espaço</a>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 14px">
+<a href="#comofazer" style="color: #cbd4e8; text-decoration: none; font-weight: 700; padding: 0 16px">Como fazer</a>
+<div style="display: flex; align-items: center; gap: 12px; background: #1b2540; border-radius: 16px; padding: 12px">
+<div style="width: 44px; height: 44px; min-width: 44px; border-radius: 50%; background: #ffc02e; color: #121a30; display: flex; align-items: center; justify-content: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 22px">T</div>
+<div style="display: flex; flex-direction: column; line-height: 1.25"><strong style="color: #ffffff">Theo</strong><span style="font-size: 15px">Construtor · 1.240 XP</span></div>
+</div>
+</div>
+</nav>
+
+<main style="flex: 999 1 640px; min-width: 0; padding: 40px 44px 56px; display: flex; flex-direction: column; gap: 28px">
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 44px; line-height: 1.1">Mural da escola</h1>
+<span style="font-size: 19px; color: #46536e">Jogos do 6º e do 7º ano do Colégio Araucária. Só essas turmas veem e jogam.</span>
+</div>
+<a href="#publicar" style="display: inline-flex; align-items: center; height: 52px; padding: 0 30px; border-radius: 999px; background: #1b5cf3; color: #ffffff; text-decoration: none; font-weight: 800; box-shadow: 0 4px 0 #1343b8">Publicar um jogo</a>
+</div>
+
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<a href="#todos" style="background: #121a30; color: #ffffff; text-decoration: none; font-weight: 800; padding: 8px 18px; border-radius: 999px">Todos os jogos</a>
+<a href="#sexto" style="background: #ffffff; color: #0f1a33; text-decoration: none; font-weight: 700; padding: 8px 18px; border-radius: 999px">6º ano</a>
+<a href="#setimo" style="background: #ffffff; color: #0f1a33; text-decoration: none; font-weight: 700; padding: 8px 18px; border-radius: 999px">7º ano</a>
+<a href="#meus" style="background: #ffffff; color: #0f1a33; text-decoration: none; font-weight: 700; padding: 8px 18px; border-radius: 999px">Os meus</a>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px">
+<article style="background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 168px; background: #1b2540; color: #ffc02e; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Chuva de Meteoros</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><strong style="font-size: 19px">Chuva de Meteoros</strong><span style="background: #fff3c4; color: #5c4000; border-radius: 999px; padding: 2px 12px; font-weight: 800; font-size: 14px">Novo</span></div>
+<span style="color: #46536e">de Sofia S. · 6º ano B</span>
+<a href="#jogar" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 24px; border-radius: 999px; border: 2px solid #1b5cf3; color: #1343b8; text-decoration: none; font-weight: 800">Jogar</a>
+</div>
+</article>
+<article style="background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 168px; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Nave do Rafa</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><strong style="font-size: 19px">Nave do Rafa</strong><span style="background: #fff3c4; color: #5c4000; border-radius: 999px; padding: 2px 12px; font-weight: 800; font-size: 14px">Novo</span></div>
+<span style="color: #46536e">de Rafael L. · 6º ano B</span>
+<a href="#jogar" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 24px; border-radius: 999px; border: 2px solid #1b5cf3; color: #1343b8; text-decoration: none; font-weight: 800">Jogar</a>
+</div>
+</article>
+<article style="background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 168px; background: #ffc02e; color: #121a30; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Dino Veloz</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><strong style="font-size: 19px">Dino Veloz</strong><span style="background: #fff3c4; color: #5c4000; border-radius: 999px; padding: 2px 12px; font-weight: 800; font-size: 14px">Novo</span></div>
+<span style="color: #46536e">de Júlia F. · 7º ano A</span>
+<a href="#jogar" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 24px; border-radius: 999px; border: 2px solid #1b5cf3; color: #1343b8; text-decoration: none; font-weight: 800">Jogar</a>
+</div>
+</article>
+<article style="background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 168px; background: #8e1650; color: #ffffff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Labirinto da Alice</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><strong style="font-size: 19px">Labirinto da Alice</strong></div>
+<span style="color: #46536e">de Alice P. · 6º ano B</span>
+<a href="#jogar" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 24px; border-radius: 999px; border: 2px solid #1b5cf3; color: #1343b8; text-decoration: none; font-weight: 800">Jogar</a>
+</div>
+</article>
+<article style="background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 168px; background: #1343b8; color: #ffffff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Robô Perdido</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><strong style="font-size: 19px">Robô Perdido</strong></div>
+<span style="color: #46536e">de Miguel T. · 7º ano B</span>
+<a href="#jogar" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 24px; border-radius: 999px; border: 2px solid #1b5cf3; color: #1343b8; text-decoration: none; font-weight: 800">Jogar</a>
+</div>
+</article>
+<article style="background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 168px; background: #5b3fd6; color: #ffffff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Fuga do Asteroide</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><strong style="font-size: 19px">Fuga do Asteroide</strong></div>
+<span style="color: #46536e">de Isabela N. · 6º ano A</span>
+<a href="#jogar" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 24px; border-radius: 999px; border: 2px solid #1b5cf3; color: #1343b8; text-decoration: none; font-weight: 800">Jogar</a>
+</div>
+</article>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 24px">
+<section style="background: #fff3c4; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 8px">
+<strong style="font-size: 19px">Mostra de Jogos em novembro</strong>
+<span>As turmas vão mostrar os jogos para as famílias. O jogo que você publicar aqui pode entrar na mostra.</span>
+</section>
+<section style="background: #ffffff; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 8px">
+<strong style="font-size: 19px">Antes de aparecer aqui</strong>
+<span>Todo jogo passa pela conferência da equipe do Sistema Zero. Publicar um jogo no mural da escola conta para a sua Jornada.</span>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1134}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

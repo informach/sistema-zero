@@ -1,0 +1,92 @@
+PRANCHA: A9 · Gestão · Relatório da BNCC (arquivo Tela-Bncc.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Turmas 
+
+Pessoas 
+
+Tarefas 
+
+Relatórios 
+
+Formação 
+
+M 
+
+**Marta** Gestora 
+
+Relatórios 
+
+# Relatório da BNCC Computação 
+O que a turma trabalhou, com os códigos do ano escolar. Sai dos registros das aulas e das tarefas, sem ninguém preencher nada. 
+
+Baixar a planilha 
+
+Baixar em PDF 
+
+Turma 
+6º ano B 
+
+Período 
+De 3 a 11 de setembro de 2029 
+
+28 
+alunos na turma 
+
+25 
+com registro nas aulas da tarefa 
+
+2 
+códigos da BNCC trabalhados 
+
+1 
+tarefa em andamento 
+
+## O que foi trabalhado 
+
+Código 
+O que a BNCC pede 
+Habilidade do Mapa 
+Onde foi trabalhada 
+Com registro 
+
+**EF06CO02** Elaborar algoritmos que envolvam instruções sequenciais, de repetição e de seleção usando uma linguagem de programação. Pensar em passos Nave Contra Asteroides, aulas 1 a 3 25 de 28 
+
+**EF06CO03** Descrever com precisão a solução de um problema, construindo o programa que implementa a solução descrita. Testar e corrigir Nave Contra Asteroides, aulas 2 e 3 22 de 28 
+
+Os textos são os do documento oficial da BNCC Computação. O arquivo baixado traz também a lista das aulas. Planejar e persistir aparecem ligados às competências gerais da BNCC. 
+
+## Aluno por aluno 
+
+Ver os 28 
+
+Aluno 
+EF06CO02 
+EF06CO03 
+
+**Rafael L.** Com registro Com registro 
+
+**Theo M.** Com registro Com registro 
+
+**Sofia S.** Com registro Ainda não 
+
+**Pedro R.** Ainda não Ainda não 
+
+## O que este relatório é 
+Um registro do que foi trabalhado e de quem participou. Ele mostra o que o aluno fez, e não mede o quanto ele sabe. Não é nota. 
+
+## Para quem serve 
+Para a coordenação pedagógica mostrar que a escola cumpre o ensino de computação, e para o conselho de classe ver a participação de cada turma. 
+
+## O ano inteiro 
+Troque o período para ver o bimestre ou o ano letivo. O relatório do ano junta todas as turmas num arquivo só. 
+
+Ver o ano letivo de 2029
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, e a principal entrega para a escola. Os números saem dos registros de aulas e tarefas, sem ninguém preencher. Os códigos e os textos foram conferidos no documento oficial, o anexo ao Parecer CNE/CEB nº 2/2022. A ligação de cada código com as habilidades do Mapa e com as aulas é proposta, e a equipe pedagógica valida antes de publicar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, dentro de Conta. O plano é oferecido só aos pais, aqui e nas telas do bilhete e do código: nada aparece no espaço da escola nem na área da criança. A troca abre a assinatura nova e encerra a antiga na mesma tela, com a primeira cobrança descontada do que já foi pago no mês, recurso que já existe. O cartão é digitado de novo, porque o sistema não guarda o número. O perfil extra é uma oferta nova, que soma uma criança ao plano por R$ 39,90 ao mês. A família que só tem o acesso da escola vê esta tela com o primeiro cartão marcado e o botão Assinar no plano pelo código, sem digitar código, porque a conta dela já está ligada à escola.

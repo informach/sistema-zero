@@ -1,0 +1,151 @@
+PRANCHA: 3 · Aprender a pensar: o Mapa de habilidades (arquivo Habilidades.dc.html, página "funciona")
+
+2 · Como funciona · prancha 3 
+
+# Aprender a pensar: o Mapa de habilidades 
+
+É o Mapa que transforma "meu filho fez um jogo" em "meu filho aprendeu a planejar, a testar e a não desistir". Ele mostra a mesma informação de três jeitos: para a família, para a escola e para o profissional. 
+
+## As seis habilidades 
+
+Cada uma tem três faces: o que a criança faz no jogo, onde isso aparece na vida, e o que a plataforma registra. Os registros já existem hoje e só passam a ser lidos juntos. 
+
+### Planejar 
+
+**No jogo:** decide o que o jogo vai ter antes de começar a montar. 
+
+**Na vida:** organiza um trabalho da escola antes de sair fazendo. 
+
+**A plataforma registra:** as partes de planejamento das aulas e, depois que a Jornada libera o Pensa, o plano feito nele. 
+
+### Dividir o problema 
+
+**No jogo:** separa o jogo em personagem, regras, cenário e pontuação, e resolve uma parte de cada vez. 
+
+**Na vida:** quebra uma tarefa grande em pedaços que dá para fazer. 
+
+**A plataforma registra:** as partes da aula concluídas e os objetivos cumpridos um a um. 
+
+### Pensar em passos 
+
+**No jogo:** monta sequências, condições e repetições para o jogo obedecer. 
+
+**Na vida:** explica um caminho, segue e cria instruções claras. 
+
+**A plataforma registra:** os objetivos de lógica conferidos no projeto e os quizzes. 
+
+### Testar e corrigir 
+
+**No jogo:** roda, vê o que não funcionou, acha o erro e conserta. 
+
+**Na vida:** revisa o próprio trabalho antes de entregar. 
+
+**A plataforma registra:** as tentativas até cumprir os objetivos e as verificações que passaram depois de falhar. 
+
+### Persistir 
+
+**No jogo:** volta no dia seguinte e termina o que começou. 
+
+**Na vida:** não larga na primeira dificuldade. 
+
+**A plataforma registra:** as retomadas depois de uma tentativa que falhou e os projetos levados até o fim. 
+
+### Criar e mostrar 
+
+**No jogo:** muda o jogo do seu jeito, publica e conta o que fez. 
+
+**Na vida:** apresenta um trabalho e defende uma ideia. 
+
+**A plataforma registra:** os projetos próprios, as publicações no mural e o recado que acompanha a entrega. 
+
+## Três leituras do mesmo mapa 
+
+O fato é o mesmo: uma criança que tentou quatro vezes até a nave atirar, e conseguiu. Cada pessoa lê esse fato de um jeito. 
+
+Para a família 
+
+### Linguagem do dia a dia e uma dica de apoio 
+
+**Esta semana o Theo praticou testar e corrigir** 
+Ele tentou quatro vezes até a nave atirar, e conseguiu sozinho. 
+Como apoiar: pergunte o que ele mudou entre uma tentativa e a outra. 
+
+Cada dica leva a uma aula dos cursos para pais, onde o assunto é tratado com calma. 
+
+Para a escola 
+
+### Por turma, com os códigos da BNCC Computação 
+
+**7º ano A · Testar e corrigir** 
+26 de 31 alunos cumpriram os objetivos da aula depois de pelo menos uma correção. 
+Habilidade ligada: EF07CO02, depurar a solução de um problema. 
+
+A gestão recebe o resumo por turma e por aluno, em cada período, pronto para o registro do currículo. 
+
+Para o profissional 
+
+### Ligado ao plano combinado com a família 
+
+**Objetivo do plano: terminar o que começa** 
+O Theo retomou o projeto depois de errar e concluiu a aula no mesmo dia. 
+O profissional lê os fatos e faz a própria avaliação. 
+
+A plataforma não dá nota, não classifica e não sugere diagnóstico. 
+
+### O que o Mapa é 
+
+- Um registro do que a criança praticou e do que ela construiu. 
+
+- Feito de fatos que a plataforma já grava: conclusões, objetivos conferidos, tentativas, entregas e publicações. 
+
+- O mesmo em qualquer espaço, com a leitura certa para cada pessoa. 
+
+### O que o Mapa não é 
+
+- Não é teste de inteligência nem medida de atenção ou de memória. 
+
+- Não é diagnóstico nem nota de comportamento. 
+
+- Não compara uma criança com a outra e não promete resultado. 
+
+## O que isso cobre da BNCC Computação 
+
+A norma tem três eixos. A escola recebe a cobertura com clareza, para saber o que o programa entrega e o que ela ainda precisa trabalhar. O relatório de cada turma usa os códigos do ano dela. Planejar e Persistir se ligam às competências gerais da BNCC, que não têm código de Computação. 
+
+Coberto pelos cursos 
+
+### Pensamento Computacional 
+
+Algoritmos com sequência, condição e repetição (EF15CO02), decomposição (EF15CO04), programas em linguagem de programação (EF69CO02 a EF69CO04), variáveis (EF06CO06), depuração (EF07CO02) e programação por eventos (EF09CO03). 
+
+Coberto em parte 
+
+### Cultura Digital 
+
+Os cursos cobrem a autoria: criar, documentar e publicar (EF07CO11) e respeitar direitos autorais e de imagem (EF09CO09). Ficam de fora desinformação, cyberbullying e dados pessoais. 
+
+Fora dos cursos de jogos 
+
+### Mundo Digital 
+
+Máquinas e sistemas, redes e internet, segurança e criptografia não são assunto de criação de jogos. 
+
+Para a escola que quer a disciplina completa, o programa ganha módulos curtos de **Mundo Digital** e de **Cidadania Digital** , com aulas gravadas no mesmo formato. Eles ficam prontos em julho de 2027, para o piloto da grade, e não são necessários no contraturno. 
+
+## Como o Mapa é construído 
+
+1 
+**Uma lista só** 
+As seis habilidades são cadastradas uma vez, cada uma com os códigos da BNCC ligados a ela. 
+
+2 
+**Marcação nas aulas** 
+Cada parte, objetivo e quiz recebe as habilidades que pratica, e a marcação fica guardada no arquivo da aula. 
+
+3 
+**Soma dos registros** 
+A plataforma junta o que já grava hoje. A criança não faz nenhum teste novo. 
+
+4 
+**Três leituras** 
+A área dos pais, a sala do professor e o painel do profissional mostram cada um a sua.

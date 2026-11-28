@@ -1,0 +1,81 @@
+PRANCHA: C3 · Aluno · A tarefa (arquivo Tela-TarefaAluno.dc.html, página "telas")
+
+CA 
+
+**Colégio Araucária** 6º ano B 
+
+Início 
+
+Cursos 
+
+Mural da escola 
+
+Recados 
+
+Meu espaço 
+
+Como fazer 
+
+T 
+
+**Theo** Construtor · 1.240 XP 
+
+← Início 
+
+Tarefa da professora Renata 
+
+# Nave Contra Asteroides, aulas 1 a 3 
+Entrega até sexta, 14 de setembro. Faltam 3 dias. 
+
+**2 de 3 aulas feitas** 
+
+## Aula 1 · A nave se move 
+Feita 
+
+- A nave anda para os lados com as setas Cumprido 
+
+- A nave não sai da tela Cumprido 
+
+## Aula 2 · A nave atira 
+Feita 
+
+- O tiro sai da ponta da nave Cumprido 
+
+- O tiro some quando sai da tela Cumprido 
+
+- Quiz da aula Cumprido 
+
+## Aula 3 · Os asteroides 
+É a sua vez 
+
+- Os asteroides caem do alto da tela Falta 
+
+- O asteroide some quando o tiro acerta Falta 
+
+- O placar conta os acertos Falta 
+
+Continuar a aula 3 
+
+## Como a entrega funciona 
+Você não precisa enviar nada à parte. Quando o seu jogo cumpre os objetivos e você clica em **Verificar projeto** , a aula fica feita e a professora Renata fica sabendo. 
+
+## Travou? 
+Peça **Uma pista** dentro da aula. Se continuar difícil, chame a professora ou mande um recado. 
+
+Mandar um recado para a professora 
+A conversa com o Zappy aparece quando a professora liga na aula. 
+
+## O que você pratica aqui 
+
+Pensar em passos 
+Testar e corrigir
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. A planilha pede nome, turma, data de nascimento e e-mail do responsável. Com o e-mail, a conta da família é criada ou encontrada na importação, pelo mesmo caminho que a compra usa hoje, e nenhum perfil precisa mudar de dono depois. Sem e-mail, o aluno fica numa conta provisória. Linhas com pendência ficam de fora, e nada é gravado antes do botão.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, com o mini checkout que já existe na área dos pais. O contraturno é opcional, e a família entra pelo plano da família com o código da escola: R$ 69,90 por mês no cartão ou 6 meses por R$ 399 no Pix, para até 2 filhos. É a Comunidade sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Quem já paga R$ 97 inscreve o filho sem pagar nada a mais.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra o que falta para a tarefa, com os objetivos que a plataforma confere. A entrega acontece quando os objetivos são cumpridos e o aluno clica em Verificar projeto, sem botão de enviar. O botão leva para a aula do curso, que é a mesma de hoje. Uma pista é conteúdo pronto da aula, e não conversa com IA.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Os conjuntos são montados pela equipe no Admin, e o professor não monta aula. A nota só existe para o que a plataforma confere sozinha: objetivos cumpridos e a melhor tentativa do quiz. Quem já fez as aulas em casa aparece como feito, sem refazer. O aluno que ainda está no posto anterior recebe a tarefa quando terminar o que falta, porque a tarefa não pula a Jornada. Quem decide usar nota é o professor, em cada tarefa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. O plano usa o mesmo motor das tarefas da escola, sem nota e sem prazo de entrega. As aulas saem dos mesmos conjuntos preparados pela equipe. O objetivo é um texto curto, lido pela família, e não existe campo de diagnóstico nem de anotação clínica.

@@ -1,0 +1,967 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-28T11:25:26Z"
+  },
+  "title": "Sistema Zero: Famílias e Escolas",
+  "launch": {
+    "view": "canvas",
+    "page": "direcao"
+  },
+  "pages": [
+    {
+      "id": "direcao",
+      "name": "1 · Direção"
+    },
+    {
+      "id": "funciona",
+      "name": "2 · Como funciona"
+    },
+    {
+      "id": "telas",
+      "name": "3 · Telas"
+    },
+    {
+      "id": "plataforma",
+      "name": "4 · Plataforma e plano"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 4971,
+      "title": "0 · A direção",
+      "page": "direcao",
+      "expand": "fill"
+    },
+    "Pesquisa.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 4011,
+      "title": "1 · O que a pesquisa mostrou",
+      "page": "direcao",
+      "expand": "fill"
+    },
+    "Parecer.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 2737,
+      "title": "2 · Leitura do parecer",
+      "page": "direcao",
+      "expand": "fill"
+    },
+    "Habilidades.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 3505,
+      "title": "3 · Aprender a pensar: o Mapa de habilidades",
+      "page": "funciona",
+      "expand": "fill"
+    },
+    "Modelo.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 5190,
+      "title": "4 · Pessoas, espaços e papéis",
+      "page": "funciona",
+      "expand": "fill"
+    },
+    "Escola.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 4800,
+      "title": "5 · A escola, do aceite à primeira aula",
+      "page": "funciona",
+      "expand": "fill"
+    },
+    "Ofertas.dc.html": {
+      "x": 4560,
+      "y": 0,
+      "w": 1440,
+      "h": 4603,
+      "title": "6 · O que se vende",
+      "page": "funciona",
+      "expand": "fill"
+    },
+    "Clinica.dc.html": {
+      "x": 7600,
+      "y": 0,
+      "w": 1440,
+      "h": 5008,
+      "title": "8 · Instituições parceiras",
+      "page": "funciona",
+      "expand": "fill"
+    },
+    "Tela-Codigo.dc.html": {
+      "x": 0,
+      "y": 2411,
+      "w": 1440,
+      "h": 1183,
+      "title": "B1 · Família · O bilhete da escola",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Tela-Gestao.dc.html": {
+      "x": 7600,
+      "y": 0,
+      "w": 1440,
+      "h": 1611,
+      "title": "A6 · Gestão · Início",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Tela-Turma.dc.html": {
+      "x": 1520,
+      "y": 6706,
+      "w": 1440,
+      "h": 1429,
+      "title": "D2 · Professor · A turma",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Tela-Tarefa.dc.html": {
+      "x": 3040,
+      "y": 6706,
+      "w": 1440,
+      "h": 1665,
+      "title": "D3 · Professor · Nova tarefa",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Tela-Aluno.dc.html": {
+      "x": 1520,
+      "y": 4710,
+      "w": 1440,
+      "h": 927,
+      "title": "C2 · Aluno · Início",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Tela-Pais.dc.html": {
+      "x": 6080,
+      "y": 2411,
+      "w": 1440,
+      "h": 1322,
+      "title": "B5 · Pais · Início",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Tela-Profissional.dc.html": {
+      "x": 4560,
+      "y": 9171,
+      "w": 1440,
+      "h": 1216,
+      "title": "E4 · Profissional · Crianças que atende",
+      "page": "telas",
+      "expand": "fill"
+    },
+    "Plataforma.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 5312,
+      "title": "9 · O que muda na plataforma",
+      "page": "plataforma",
+      "expand": "fill"
+    },
+    "Protecao.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 3974,
+      "title": "10 · Isolamento, dados e leis",
+      "page": "plataforma",
+      "expand": "fill"
+    },
+    "Plano.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 5090,
+      "title": "11 · Plano em fases",
+      "page": "plataforma",
+      "expand": "fill"
+    },
+    "Tela-Admin.dc.html": {
+      "w": 1440,
+      "h": 918,
+      "expand": "fill",
+      "x": 0,
+      "y": 0,
+      "title": "A1 · Equipe · Nova instituição",
+      "page": "telas"
+    },
+    "Tela-Passos.dc.html": {
+      "w": 1440,
+      "h": 1155,
+      "expand": "fill",
+      "x": 1520,
+      "y": 0,
+      "title": "A2 · Gestão · Primeiros passos",
+      "page": "telas"
+    },
+    "Tela-Importar.dc.html": {
+      "w": 1440,
+      "h": 1020,
+      "expand": "fill",
+      "x": 3040,
+      "y": 0,
+      "title": "A3 · Gestão · Importar turma",
+      "page": "telas"
+    },
+    "Tela-Bilhetes.dc.html": {
+      "w": 1440,
+      "h": 1081,
+      "expand": "fill",
+      "x": 6080,
+      "y": 0,
+      "title": "A5 · Gestão · Crachás e bilhetes",
+      "page": "telas"
+    },
+    "Tela-Aparelhos.dc.html": {
+      "w": 1440,
+      "h": 956,
+      "expand": "fill",
+      "x": 4560,
+      "y": 0,
+      "title": "A4 · Gestão · Computadores da escola",
+      "page": "telas"
+    },
+    "Tela-Inscricao.dc.html": {
+      "w": 1440,
+      "h": 1217,
+      "expand": "fill",
+      "x": 3040,
+      "y": 2411,
+      "title": "B3 · Família · Inscrição no contraturno",
+      "page": "telas"
+    },
+    "Tela-Pronto.dc.html": {
+      "w": 1440,
+      "h": 925,
+      "expand": "fill",
+      "x": 4560,
+      "y": 2411,
+      "title": "B4 · Família · Primeiro acesso concluído",
+      "page": "telas"
+    },
+    "Tela-Filho.dc.html": {
+      "w": 1440,
+      "h": 1018,
+      "expand": "fill",
+      "x": 7600,
+      "y": 2411,
+      "title": "B6 · Pais · Página do filho",
+      "page": "telas"
+    },
+    "Tela-EscolaVe.dc.html": {
+      "w": 1440,
+      "h": 1135,
+      "expand": "fill",
+      "x": 9120,
+      "y": 2411,
+      "title": "B7 · Pais · O que a escola vê",
+      "page": "telas"
+    },
+    "Tela-Entrada.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 0,
+      "y": 4710,
+      "title": "C1 · Aluno · Entrar na escola",
+      "page": "telas"
+    },
+    "Tela-TarefaAluno.dc.html": {
+      "w": 1440,
+      "h": 1196,
+      "expand": "fill",
+      "x": 3040,
+      "y": 4710,
+      "title": "C3 · Aluno · A tarefa",
+      "page": "telas"
+    },
+    "Tela-Mural.dc.html": {
+      "w": 1440,
+      "h": 1134,
+      "expand": "fill",
+      "x": 4560,
+      "y": 4710,
+      "title": "C4 · Aluno · Mural da escola",
+      "page": "telas"
+    },
+    "Tela-Formacao.dc.html": {
+      "w": 1440,
+      "h": 930,
+      "expand": "fill",
+      "x": 0,
+      "y": 6706,
+      "title": "D1 · Professor · Minha formação",
+      "page": "telas"
+    },
+    "Tela-Resultado.dc.html": {
+      "w": 1440,
+      "h": 1349,
+      "expand": "fill",
+      "x": 4560,
+      "y": 6706,
+      "title": "D4 · Professor · Resultado da tarefa",
+      "page": "telas"
+    },
+    "Tela-CodigoInst.dc.html": {
+      "w": 1440,
+      "h": 1866,
+      "expand": "fill",
+      "x": 0,
+      "y": 9171,
+      "title": "E1 · Família · O código da instituição parceira",
+      "page": "telas"
+    },
+    "Tela-Coordenacao.dc.html": {
+      "w": 1440,
+      "h": 1712,
+      "expand": "fill",
+      "x": 1520,
+      "y": 9171,
+      "title": "E2 · Coordenação · Início",
+      "page": "telas"
+    },
+    "Tela-Plano.dc.html": {
+      "w": 1440,
+      "h": 1474,
+      "expand": "fill",
+      "x": 3040,
+      "y": 9171,
+      "title": "E3 · Profissional · Combinar o plano",
+      "page": "telas"
+    },
+    "Contas.dc.html": {
+      "x": 6080,
+      "y": 0,
+      "w": 1440,
+      "h": 6911,
+      "title": "7 · Quem paga em cada situação",
+      "page": "funciona",
+      "expand": "fill"
+    },
+    "Tela-JaAssina.dc.html": {
+      "w": 1440,
+      "h": 1499,
+      "expand": "fill",
+      "x": 1520,
+      "y": 2411,
+      "title": "B2 · Família que já é cliente · O bilhete da escola",
+      "page": "telas"
+    },
+    "Tela-Conta.dc.html": {
+      "w": 1440,
+      "h": 1388,
+      "expand": "fill",
+      "x": 10640,
+      "y": 2411,
+      "title": "B8 · Pais · Conta: acessos e pagamentos",
+      "page": "telas"
+    },
+    "Tela-Casa.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 6080,
+      "y": 4710,
+      "title": "C5 · Aluno · Início em casa",
+      "page": "telas"
+    },
+    "Tela-Cobranca.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 9120,
+      "y": 0,
+      "title": "A7 · Equipe · Vagas e cobrança",
+      "page": "telas"
+    },
+    "Tela-Planos.dc.html": {
+      "w": 1440,
+      "h": 1057,
+      "expand": "fill",
+      "x": 12160,
+      "y": 2411,
+      "title": "B9 · Pais · Planos",
+      "page": "telas"
+    },
+    "Tela-ClinicaVe.dc.html": {
+      "w": 1440,
+      "h": 1064,
+      "expand": "fill",
+      "x": 13680,
+      "y": 2411,
+      "title": "B10 · Pais · O que a clínica vê",
+      "page": "telas"
+    },
+    "Tela-ClinicaAluno.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 6080,
+      "y": 9171,
+      "title": "E5 · Criança · No aparelho da clínica",
+      "page": "telas"
+    },
+    "Tela-Pessoas.dc.html": {
+      "w": 1440,
+      "h": 1214,
+      "expand": "fill",
+      "x": 10640,
+      "y": 0,
+      "title": "A8 · Gestão · Pessoas",
+      "page": "telas"
+    },
+    "Tela-Bncc.dc.html": {
+      "w": 1440,
+      "h": 1453,
+      "expand": "fill",
+      "x": 12160,
+      "y": 0,
+      "title": "A9 · Gestão · Relatório da BNCC",
+      "page": "telas"
+    },
+    "Tela-RegraIA.dc.html": {
+      "w": 1440,
+      "h": 979,
+      "expand": "fill",
+      "x": 13680,
+      "y": 0,
+      "title": "A10 · Gestão · Conversa com o Zappy",
+      "page": "telas"
+    },
+    "Tela-RecadosPais.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 15200,
+      "y": 2411,
+      "title": "B11 · Pais · Recados",
+      "page": "telas"
+    },
+    "Tela-Limites.dc.html": {
+      "w": 1440,
+      "h": 1131,
+      "expand": "fill",
+      "x": 16720,
+      "y": 2411,
+      "title": "B12 · Pais · Limites do filho",
+      "page": "telas"
+    },
+    "Tela-RecadosAluno.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 7600,
+      "y": 4710,
+      "title": "C6 · Aluno · Recados",
+      "page": "telas"
+    },
+    "Tela-RecadosProf.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 6080,
+      "y": 6706,
+      "title": "D5 · Professor · Recados",
+      "page": "telas"
+    },
+    "Tela-EscolherArea.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 7600,
+      "y": 6706,
+      "title": "D6 · Entrar · Escolher a área",
+      "page": "telas"
+    },
+    "Tela-Ranking.dc.html": {
+      "w": 1440,
+      "h": 908,
+      "expand": "fill",
+      "x": 9120,
+      "y": 4710,
+      "title": "C7 · Aluno · Ranking da escola",
+      "page": "telas"
+    },
+    "Tela-VagasInst.dc.html": {
+      "w": 1440,
+      "h": 1028,
+      "expand": "fill",
+      "x": 7600,
+      "y": 9171,
+      "title": "E6 · Coordenação · Vagas e famílias",
+      "page": "telas"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Pesquisa.dc.html",
+    "Parecer.dc.html",
+    "Habilidades.dc.html",
+    "Modelo.dc.html",
+    "Escola.dc.html",
+    "Ofertas.dc.html",
+    "Contas.dc.html",
+    "Clinica.dc.html",
+    "Tela-Admin.dc.html",
+    "Tela-Passos.dc.html",
+    "Tela-Importar.dc.html",
+    "Tela-Aparelhos.dc.html",
+    "Tela-Bilhetes.dc.html",
+    "Tela-Gestao.dc.html",
+    "Tela-Cobranca.dc.html",
+    "Tela-Pessoas.dc.html",
+    "Tela-Bncc.dc.html",
+    "Tela-RegraIA.dc.html",
+    "Tela-Codigo.dc.html",
+    "Tela-JaAssina.dc.html",
+    "Tela-Inscricao.dc.html",
+    "Tela-Pronto.dc.html",
+    "Tela-Pais.dc.html",
+    "Tela-Filho.dc.html",
+    "Tela-EscolaVe.dc.html",
+    "Tela-Conta.dc.html",
+    "Tela-Planos.dc.html",
+    "Tela-ClinicaVe.dc.html",
+    "Tela-RecadosPais.dc.html",
+    "Tela-Limites.dc.html",
+    "Tela-Entrada.dc.html",
+    "Tela-Aluno.dc.html",
+    "Tela-TarefaAluno.dc.html",
+    "Tela-Mural.dc.html",
+    "Tela-Casa.dc.html",
+    "Tela-RecadosAluno.dc.html",
+    "Tela-Ranking.dc.html",
+    "Tela-Formacao.dc.html",
+    "Tela-Turma.dc.html",
+    "Tela-Tarefa.dc.html",
+    "Tela-Resultado.dc.html",
+    "Tela-RecadosProf.dc.html",
+    "Tela-EscolherArea.dc.html",
+    "Tela-CodigoInst.dc.html",
+    "Tela-Coordenacao.dc.html",
+    "Tela-Plano.dc.html",
+    "Tela-Profissional.dc.html",
+    "Tela-ClinicaAluno.dc.html",
+    "Tela-VagasInst.dc.html",
+    "Plataforma.dc.html",
+    "Protecao.dc.html",
+    "Plano.dc.html"
+  ],
+  "notes": {
+    "t-direcao": {
+      "x": 0,
+      "y": -320,
+      "text": "1 · Direção: para onde o Sistema Zero vai",
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "direcao"
+    },
+    "t-funciona": {
+      "x": 0,
+      "y": -320,
+      "text": "2 · Como funciona: habilidades, pessoas, escola, ofertas, quem paga e instituições parceiras",
+      "kind": "title1",
+      "maxW": 7520,
+      "page": "funciona"
+    },
+    "t-plataforma": {
+      "x": 0,
+      "y": -320,
+      "text": "4 · Plataforma e plano: o que construir e em que ordem",
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "plataforma"
+    },
+    "t-telas": {
+      "x": 0,
+      "y": -620,
+      "text": "3 · Telas: o roteiro completo, em cinco fluxos",
+      "kind": "title1",
+      "maxW": 18160,
+      "page": "telas"
+    },
+    "t-telas-a": {
+      "x": 0,
+      "y": -300,
+      "text": "A · A escola entra: da adesão à primeira aula",
+      "kind": "title1",
+      "maxW": 15120,
+      "page": "telas"
+    },
+    "n-tela-admin": {
+      "x": 0,
+      "y": 988,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova no Admin da equipe, num grupo novo do menu chamado Instituições. O espaço nasce aqui, depois que o contrato ou o termo é assinado fora da plataforma. É aqui também que se define como a instituição contrata: grade paga pela escola, a família pagando pelo código ou programa próprio. Criar o espaço já manda o convite a quem vai cuidar dele. Os nomes são exemplos.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-passos": {
+      "x": 1520,
+      "y": 1225,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. É o que a gestão vê enquanto a escola não está pronta. Cada passo leva a uma tela deste roteiro (A3, A4, A5). Quando os cinco passos terminam, o Início passa a ser a tela A6. Quem não usou o bilhete entra na aula do mesmo jeito, porque na grade o acesso é da escola.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-importar": {
+      "x": 3040,
+      "y": 1090,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. A planilha pede nome, turma, data de nascimento e e-mail do responsável. Com o e-mail, a conta da família é criada ou encontrada na importação, pelo mesmo caminho que a compra usa hoje, e nenhum perfil precisa mudar de dono depois. Sem e-mail, o aluno fica numa conta provisória. Linhas com pendência ficam de fora, e nada é gravado antes do botão.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-aparelhos": {
+      "x": 4560,
+      "y": 1026,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Hoje cada aparelho autorizado pertence a uma família. O computador da escola é um tipo novo de aparelho: aceita qualquer aluno daquela escola, não tem área dos pais nem compra, e limpa o que ficou guardado na máquina depois de salvar na nuvem.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-bilhetes": {
+      "x": 6080,
+      "y": 1151,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. O bilhete é individual e vale uma vez, e por isso a família nunca vê a lista da turma. O crachá é um tipo novo de código: curto, sem QR (a câmera fica desligada na área da criança), trocável pelo professor e preso aos computadores autorizados da escola. O limite de tentativas é por computador.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-gestao": {
+      "x": 7600,
+      "y": 1681,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, na área das instituições (hoje comunidade adulta). Mostra as turmas, os bilhetes usados e o que as turmas praticaram. Os números de habilidade saem dos registros da plataforma, e os códigos da BNCC são os do ano de cada turma. A gestão não vê pagamento de família. Ela vê quem usou cada bilhete e pode desfazer um engano, e quando abre um recado fica o registro de quem abriu. Colégio Araucária e as pessoas são exemplos. A escola indica o bolsista do plano de cortesia em Pessoas. Depois da preparação, a gestão fala com a equipe pela Central do mediador, em Formação. Os recados de uma turma são abertos a partir de Turmas, com o registro de quem abriu. O ranking da escola começa desligado: hoje o ranking é um só para todas as crianças, e o da escola é parte nova.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-cobranca": {
+      "x": 9120,
+      "y": 978,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova no Admin da equipe. Nas primeiras instituições não há cobrança automática: a equipe confere o Pix e emite a nota fiscal para CNPJ à mão, e a tela guarda o registro. A conta usa os alunos ativos no dia 1º. Os planos de cortesia são contados aqui. As telas mostram a primeira versão: a cobrança feita pelo sistema e o clube de cada escola ficam para quando o número de escolas pedir.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-pessoas": {
+      "x": 10640,
+      "y": 1284,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Junta o que a gestão faz com pessoas: convidar professor, ver quem fez o primeiro acesso, emitir outro bilhete, gerar outro crachá, mover de turma, corrigir o e-mail do responsável e indicar o bolsista do plano de cortesia. Tirar um aluno da turma mantém o acesso por 30 dias. A gestão também tira da turma de contraturno quem não é da escola.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-bncc": {
+      "x": 12160,
+      "y": 1523,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, e a principal entrega para a escola. Os números saem dos registros de aulas e tarefas, sem ninguém preencher. Os códigos e os textos foram conferidos no documento oficial, o anexo ao Parecer CNE/CEB nº 2/2022. A ligação de cada código com as habilidades do Mapa e com as aulas é proposta, e a equipe pedagógica valida antes de publicar.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-regraia": {
+      "x": 13680,
+      "y": 1049,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Até o 9º ano a regra é fixa, e a tela só informa. A escolha existe só no ensino médio. A chave por criança é o mecanismo novo descrito na prancha da plataforma.",
+      "page": "telas",
+      "size": "m"
+    },
+    "t-telas-b": {
+      "x": 0,
+      "y": 2111,
+      "text": "B · A família entra: do bilhete à área dos pais",
+      "kind": "title1",
+      "maxW": 18160,
+      "page": "telas"
+    },
+    "n-tela-codigo": {
+      "x": 0,
+      "y": 3664,
+      "w": 760,
+      "text": "PARA A EQUIPE. Página nova, em sistemazero.com.br/codigo. É o caso da grade: a escola já paga, e a família não passa por pagamento. Como a planilha da escola traz o e-mail do responsável, a conta da família já existe: o bilhete serve para o primeiro acesso, confirmado pela data de nascimento do filho. O que a escola paga cobre as aulas e as tarefas, também em casa. Quem já assina segue pela tela B2.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-jaassina": {
+      "x": 1520,
+      "y": 3980,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. É o caso de quem já assina os R$ 97: a página pergunta qual perfil é o do aluno, para a criança não ficar com dois. Nada muda na cobrança, e a tela mostra o que a escola passa a cobrir e o que só a assinatura dá. A família pode escolher o plano pelo código da escola, de R$ 69,90, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Nada é cancelado sem ela pedir.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-inscricao": {
+      "x": 3040,
+      "y": 3698,
+      "w": 760,
+      "text": "PARA A EQUIPE. Página nova, com o mini checkout que já existe na área dos pais. O contraturno é opcional, e a família entra pelo plano da família com o código da escola: R$ 69,90 por mês no cartão ou 6 meses por R$ 399 no Pix, para até 2 filhos. É a Comunidade sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Quem já paga R$ 97 inscreve o filho sem pagar nada a mais.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-pronto": {
+      "x": 4560,
+      "y": 3406,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, logo depois do cadastro. Leva aos três passos que faltam: autorizar o aparelho de casa, com a autorização que já existe, conhecer a área dos pais e começar o curso para pais, que vem incluído também para quem entra pela escola ou pela instituição parceira. Na escola nada depende desses passos.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-pais": {
+      "x": 6080,
+      "y": 3803,
+      "w": 760,
+      "text": "PARA A EQUIPE. É a área dos pais que já existe, com o menu e o Início de hoje. O que é novo: a habilidade da semana com a dica ligada ao curso para pais, os cartões Escola e Quem acompanha, o tempo de uso, com quem os filhos conversam e a ajuda do Zappy por conversa. O tempo de uso não é gravado hoje e o interruptor do Zappy não existe: são mecanismos novos, pedidos pelo ECA Digital e pela regra do CNE.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-filho": {
+      "x": 7600,
+      "y": 3499,
+      "w": 760,
+      "text": "PARA A EQUIPE. É a página do filho que já existe, com as abas de hoje. O que é novo na aba Progresso: as habilidades praticadas, a tarefa da escola e o plano combinado da instituição parceira. Os outros blocos (Esta semana, Jornada do Criador) são os atuais. A contagem de habilidades vem das partes de aula e dos objetivos marcados no arquivo de cada aula.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-escolave": {
+      "x": 9120,
+      "y": 3616,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. É a transparência que sustenta a confiança da família: o que a escola vê, o que ela não vê e quem são as pessoas com acesso. A escola não fica sabendo do acompanhamento na clínica, e a clínica não fica sabendo da escola. A inscrição do contraturno pode ser cancelada aqui, sem falar com ninguém.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-conta": {
+      "x": 10640,
+      "y": 3869,
+      "w": 760,
+      "text": "PARA A EQUIPE. É a página Conta que já existe na área dos pais. O que é novo: o que cada filho tem e de onde vem, o preço do código, o botão do bilhete ou código e o bloco Se algo mudar. Os pagamentos e a nota fiscal são os de hoje. É aqui que aparece a oferta do plano para a família que só tem o acesso da escola.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-planos": {
+      "x": 12160,
+      "y": 3538,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, dentro de Conta. O plano é oferecido só aos pais, aqui e nas telas do bilhete e do código: nada aparece no espaço da escola nem na área da criança. A troca abre a assinatura nova e encerra a antiga na mesma tela, com a primeira cobrança descontada do que já foi pago no mês, recurso que já existe. O cartão é digitado de novo, porque o sistema não guarda o número. O perfil extra é uma oferta nova, que soma uma criança ao plano por R$ 39,90 ao mês. A família que só tem o acesso da escola vê esta tela com o primeiro cartão marcado e o botão Assinar no plano pelo código, sem digitar código, porque a conta dela já está ligada à escola.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-clinicave": {
+      "x": 13680,
+      "y": 3545,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, irmã de O que a escola vê. É aqui que a família autoriza, ou não, a participação no mural da clínica, que começa desligado. Encerrar o acompanhamento tira o acesso da profissional em até 15 minutos. A coordenação vê só a lista de crianças.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-recadospais": {
+      "x": 15200,
+      "y": 3389,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Junta o que o ECA Digital pede, que os pais vejam com quem os filhos conversam, e a conversa da família com o profissional da instituição parceira. A escola não vê a conversa com a clínica.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-limites": {
+      "x": 16720,
+      "y": 3612,
+      "w": 760,
+      "text": "PARA A EQUIPE. Aba nova na página do filho. O tempo de uso não é gravado hoje e a chave da conversa com o Zappy não existe: são os mecanismos novos da fase 1, pedidos pelo ECA Digital. Para a criança ligada a uma escola, a regra da escola é o limite: os pais podem desligar de vez, e não podem ligar além dela. Os pais também decidem se o filho aparece no ranking.",
+      "page": "telas",
+      "size": "m"
+    },
+    "t-telas-c": {
+      "x": 0,
+      "y": 4410,
+      "text": "C · O aluno: do crachá ao mural da escola",
+      "kind": "title1",
+      "maxW": 10560,
+      "page": "telas"
+    },
+    "n-tela-entrada": {
+      "x": 0,
+      "y": 5688,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, só nos computadores autorizados da escola. O aluno digita o código do crachá. Não há senha nem e-mail. A frase \"Quem vai criar hoje?\" é a da entrada atual. O aluno sem o primeiro acesso da família entra do mesmo jeito, no modo restrito: aulas, tarefas, mural da escola e recados com o professor.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-aluno": {
+      "x": 1520,
+      "y": 5707,
+      "w": 760,
+      "text": "PARA A EQUIPE. É o Início que já existe, com quatro mudanças: nome e logo da escola no menu, a tarefa da escola no alto, o cartão O que você praticou e só o Mural da escola no menu. No computador da escola o menu é igual para todos, sem o item Criar: as ferramentas livres aparecem só em casa, para quem tem o plano. No computador da escola não aparecem Arquipélago, Clube dos Criadores, Oficinas ao vivo, ranking geral, área dos pais nem compra, e a palavra Kids não é usada. O plano combinado da clínica não aparece no computador da escola. O ranking da escola só aparece se a gestão ligar.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-tarefaaluno": {
+      "x": 3040,
+      "y": 5976,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Mostra o que falta para a tarefa, com os objetivos que a plataforma confere. A entrega acontece quando os objetivos são cumpridos e o aluno clica em Verificar projeto, sem botão de enviar. O botão leva para a aula do curso, que é a mesma de hoje. Uma pista é conteúdo pronto da aula, e não conversa com IA.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-mural": {
+      "x": 4560,
+      "y": 5914,
+      "w": 760,
+      "text": "PARA A EQUIPE. É o mural que já existe, com um espaço próprio por escola e por segmento: aqui, só o 6º e o 7º ano do Colégio Araucária veem e jogam. A publicação continua passando pela moderação atual e conta para a Jornada. Não há classificação nem liga. As capas são as que as crianças fazem, e aqui estão só indicadas. A Mostra de Jogos é um evento da escola: a plataforma entra com o mural, sem tela própria. O clube de cada escola entra numa fase seguinte, com o professor moderando.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-casa": {
+      "x": 6080,
+      "y": 5688,
+      "w": 760,
+      "text": "PARA A EQUIPE. É o Início de hoje, em casa. O que é novo: a tarefa da escola e o plano combinado da clínica aparecem com a origem escrita, e o aviso de que a mãe acompanha, pedido pelo ECA Digital. O menu tem Criar porque a família do Theo tem o plano pelo código. O Mural e o Clube dos Criadores aparecem só para quem paga o plano de R$ 97. O aluno só com o acesso da escola vê Início, Cursos, Mural da escola, Recados e Meu espaço. O Arquipélago, como o Mural e o Clube dos Criadores, aparece só para quem paga o plano de R$ 97.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-recadosaluno": {
+      "x": 7600,
+      "y": 5688,
+      "w": 760,
+      "text": "PARA A EQUIPE. É a tela de recados que já existe. O que é novo: no espaço da escola, quem responde é o professor da turma, e não a equipe. O aluno sem o primeiro acesso da família também usa.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-ranking": {
+      "x": 9120,
+      "y": 5688,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. No exemplo do roteiro o ranking do Colégio Araucária está desligado (tela A6): esta tela mostra como fica quando a gestão liga. Hoje o ranking é um só para todas as crianças, e o da escola é parte nova, prevista para 2028. A lista mostra os três primeiros e a posição da própria criança, e não incentiva a subir de posição. Os pais podem tirar o filho do ranking na área dos pais.",
+      "page": "telas",
+      "size": "m"
+    },
+    "t-telas-d": {
+      "x": 0,
+      "y": 6406,
+      "text": "D · O professor: da formação ao resultado da tarefa",
+      "kind": "title1",
+      "maxW": 9040,
+      "page": "telas"
+    },
+    "n-tela-formacao": {
+      "x": 0,
+      "y": 7706,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, na área das instituições. As trilhas são cursos gravados, no formato de aula que já existe. A trilha técnica usa os cursos de criação de jogos na versão adulta, que já estão no catálogo. Concluir a formação de mediador libera as turmas. A mesma formação serve aos profissionais das instituições parceiras, com a aula Como combinar um plano no lugar de Como passar uma tarefa.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-turma": {
+      "x": 1520,
+      "y": 8205,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Mostra a tarefa em andamento e a situação de cada aluno, sem nenhuma informação de pagamento. Ela diz quantos alunos estão sem o primeiro acesso da família, para quem a conversa com o Zappy não liga. As tentativas saem do registro de verificações, que já é guardado. O botão do Zappy é o mecanismo novo que cumpre a regra do CNE do 6º ao 9º ano. \"Ver o projeto dela\" abre o projeto só para olhar: hoje o visualizador existe só no Admin e mostra só projeto enviado, e abrir o projeto em andamento é parte nova.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-tarefa": {
+      "x": 3040,
+      "y": 8441,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Os conjuntos são montados pela equipe no Admin, e o professor não monta aula. A nota só existe para o que a plataforma confere sozinha: objetivos cumpridos e a melhor tentativa do quiz. Quem já fez as aulas em casa aparece como feito, sem refazer. O aluno que ainda está no posto anterior recebe a tarefa quando terminar o que falta, porque a tarefa não pula a Jornada. Quem decide usar nota é o professor, em cada tarefa.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-resultado": {
+      "x": 4560,
+      "y": 8125,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. Aulas feitas, objetivos cumpridos, quiz e tentativas são fatos separados, todos já registrados pela plataforma. \"Onde a turma mais travou\" sai do registro de verificações. \"Abrir o projeto\" segue a mesma regra da tela D2. \"Baixar a lista\" gera uma planilha para o diário da escola.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-recadosprof": {
+      "x": 6080,
+      "y": 7684,
+      "w": 760,
+      "text": "PARA A EQUIPE. Hoje só a equipe do Sistema Zero responde recados, numa caixa única. O que é novo: o professor responde, com uma caixa por turma e o recado para a turma inteira. A gestão pode abrir uma conversa, com o registro de quem abriu. Há também uma caixa para falar com a equipe do Sistema Zero.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-escolherarea": {
+      "x": 7600,
+      "y": 7684,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, na página Entrar do site. A área dos pais e a área das instituições são dois aplicativos, e hoje quem entra em um não fica dentro do outro. Por isso a escolha acontece antes de entrar, e cada área pede a senha. A entrada única fica como melhoria para depois.",
+      "page": "telas",
+      "size": "m"
+    },
+    "t-telas-e": {
+      "x": 0,
+      "y": 8871,
+      "text": "E · A instituição parceira: do código da família ao plano",
+      "kind": "title1",
+      "maxW": 9040,
+      "page": "telas"
+    },
+    "n-tela-codigoinst": {
+      "x": 0,
+      "y": 11107,
+      "w": 760,
+      "text": "PARA A EQUIPE. Página nova, irmã da página do bilhete da escola. A família entra pelo plano da família, com o preço do código, e autoriza o acompanhamento, que fica registrado e pode ser encerrado na área dos pais. A família paga ao Sistema Zero, e a clínica não recebe valor por inscrição. Quem já tem o plano não paga de novo. Quando a instituição paga as vagas, o passo do pagamento não aparece.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-coordenacao": {
+      "x": 1520,
+      "y": 10953,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, na área das instituições. A coordenação faz o papel da gestão: vê profissionais, crianças e famílias, e não vê pagamento. Ela vê cada família que entra pelo código e pode tirar quem não é atendido ali. A cada 20 famílias pagantes, a clínica indica um bolsista, que entra pelo código sem passar pelo pagamento. O mural da clínica começa desligado. O item Aparelhos funciona como na escola. Em Aparelhos, a coordenação autoriza os aparelhos da clínica e gera o crachá de cada criança.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-plano": {
+      "x": 3040,
+      "y": 10715,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova. O plano usa o mesmo motor das tarefas da escola, sem nota e sem prazo de entrega. As aulas saem dos mesmos conjuntos preparados pela equipe. O objetivo é um texto curto, lido pela família, e não existe campo de diagnóstico nem de anotação clínica.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-profissional": {
+      "x": 4560,
+      "y": 10457,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, na área das instituições. O profissional vê só as crianças que atende e só o que está no plano. Não há campo de observação: a anotação clínica fica no prontuário da clínica, e a plataforma entrega os fatos da semana para exportar. O profissional conversa com a família, e nunca com a criança. Clínica Girassol é um nome de exemplo.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-clinicaaluno": {
+      "x": 6080,
+      "y": 10149,
+      "w": 760,
+      "text": "PARA A EQUIPE. É o Início de hoje, no aparelho autorizado da clínica, com entrada pelo crachá. Aparece só o plano combinado com a profissional. Nada da escola aparece ali, e a criança não troca recados com a profissional.",
+      "page": "telas",
+      "size": "m"
+    },
+    "n-tela-vagasinst": {
+      "x": 7600,
+      "y": 10269,
+      "w": 760,
+      "text": "PARA A EQUIPE. Tela nova, na área das instituições. Junta o que a coordenação faz com as famílias: ver quem entrou pelo código e tirar quem não é atendido ali, acompanhar o plano de cortesia, ligar o mural da clínica, pedir o programa próprio e completar a página da clínica no site. A coordenação não vê pagamento de nenhuma família.",
+      "page": "telas",
+      "size": "m"
+    }
+  },
+  "designSystems": []
+}

@@ -1,0 +1,75 @@
+PRANCHA: C2 · Aluno · Início (arquivo Tela-Aluno.dc.html, página "telas")
+
+CA 
+
+**Colégio Araucária** 6º ano B 
+
+Início 
+
+Cursos 
+
+Mural da escola 
+
+Recados 
+
+Meu espaço 
+
+Como fazer 
+
+T 
+
+**Theo** Construtor · 1.240 XP 
+
+# Oi, Theo! 
+Hoje tem aula de criação com a turma do 6º ano B. 
+
+Tarefa da professora Renata 
+
+## Nave Contra Asteroides, aulas 1 a 3 
+Entrega até sexta, 14 de setembro. 
+
+**Aula 1** A nave se move. Feita! 
+
+**Aula 2** A nave atira. Feita! 
+
+**Aula 3** Os asteroides. É a sua vez. 
+
+Continuar a aula 3 
+
+Ver a tarefa 
+
+## Missões 
+
+**Hoje** Conclua 1 aula 
+
+**Esta semana** Verifique o seu projeto 3 vezes 
+
+**Este mês** Publique um jogo no mural da escola 
+
+## Jornada do Criador 
+**Hoje:** Construtor 
+**Próxima conquista:** Inventor 
+
+Ver a minha Jornada 
+
+## O que você praticou 
+
+Pensar em passos 
+Testar e corrigir 
+
+Você tentou 4 vezes até a nave atirar, e conseguiu. É assim que se cria um jogo. 
+
+## Mural da escola 
+3 jogos novos do 6º e do 7º ano para você jogar. 
+
+Ver o mural
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o que a gestão vê enquanto a escola não está pronta. Cada passo leva a uma tela deste roteiro (A3, A4, A5). Quando os cinco passos terminam, o Início passa a ser a tela A6. Quem não usou o bilhete entra na aula do mesmo jeito, porque na grade o acesso é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o caso de quem já assina os R$ 97: a página pergunta qual perfil é o do aluno, para a criança não ficar com dois. Nada muda na cobrança, e a tela mostra o que a escola passa a cobrir e o que só a assinatura dá. A família pode escolher o plano pelo código da escola, de R$ 69,90, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Nada é cancelado sem ela pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o Início que já existe, com quatro mudanças: nome e logo da escola no menu, a tarefa da escola no alto, o cartão O que você praticou e só o Mural da escola no menu. No computador da escola o menu é igual para todos, sem o item Criar: as ferramentas livres aparecem só em casa, para quem tem o plano. No computador da escola não aparecem Arquipélago, Clube dos Criadores, Oficinas ao vivo, ranking geral, área dos pais nem compra, e a palavra Kids não é usada. O plano combinado da clínica não aparece no computador da escola. O ranking da escola só aparece se a gestão ligar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra a tarefa em andamento e a situação de cada aluno, sem nenhuma informação de pagamento. Ela diz quantos alunos estão sem o primeiro acesso da família, para quem a conversa com o Zappy não liga. As tentativas saem do registro de verificações, que já é guardado. O botão do Zappy é o mecanismo novo que cumpre a regra do CNE do 6º ao 9º ano. "Ver o projeto dela" abre o projeto só para olhar: hoje o visualizador existe só no Admin e mostra só projeto enviado, e abrir o projeto em andamento é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. A coordenação faz o papel da gestão: vê profissionais, crianças e famílias, e não vê pagamento. Ela vê cada família que entra pelo código e pode tirar quem não é atendido ali. A cada 20 famílias pagantes, a clínica indica um bolsista, que entra pelo código sem passar pelo pagamento. O mural da clínica começa desligado. O item Aparelhos funciona como na escola. Em Aparelhos, a coordenação autoriza os aparelhos da clínica e gera o crachá de cada criança.

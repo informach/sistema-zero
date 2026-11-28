@@ -1,0 +1,182 @@
+PRANCHA: 8 · Instituições parceiras (arquivo Clinica.dc.html, página "funciona")
+
+2 · Como funciona · prancha 8 
+
+# Instituições parceiras 
+
+Clínicas, consultórios e projetos educativos seguem o desenho da escola, com um código para as famílias. O negócio é outro: a clínica recomenda, não obriga. Por isso o volume é menor, o preço para a família é o mesmo do contraturno, e ela precisa ganhar com a parceria. 
+
+## O mesmo desenho, outro negócio 
+
+Na escola 
+Na instituição parceira 
+
+Como a família entra 
+Pelo bilhete do aluno ou pelo código da escola 
+Pelo código da instituição 
+
+Quem cuida do espaço 
+O gestor 
+O coordenador 
+
+Quem acompanha 
+O professor mediador, por turma 
+O profissional, criança por criança 
+
+O que é combinado 
+Tarefa com prazo, com nota se a escola quiser 
+Plano com aulas e ritmo, sem nota 
+
+Força da indicação 
+A turma inteira, quando a escola põe na grade 
+Só quem aceitar a recomendação 
+
+Volume 
+De dezenas a centenas de alunos 
+De 10 a 30 crianças 
+
+O que ela ganha 
+BNCC e diferencial na matrícula 
+Honorário, autoria e clientes novos 
+
+## Dois jeitos de contratar 
+
+Nos dois, é o responsável quem cria a conta, cadastra a criança e autoriza o acompanhamento. A instituição escolhe um jeito para as famílias novas. Quem já tem o plano pelo código continua com ele. 
+
+O mais simples para começar 
+
+### A família paga R$ 69,90 por mês 
+
+A família entra pelo código da instituição e paga direto ao Sistema Zero, no cartão, sem fidelidade, ou em 6 meses no Pix. A instituição não mexe com dinheiro e não assume risco. 
+
+O acompanhamento do profissional faz parte do atendimento que a família já tem com ela. 
+
+Para quem quer um serviço com o nome dela 
+
+### Programa próprio, a R$ 49,90 por vaga 
+
+A instituição paga as vagas ao Sistema Zero e oferece às famílias um programa dela. Ela repassa a vaga pelo valor que paga e cobra à parte o honorário do acompanhamento que presta. 
+
+O conteúdo é o mesmo do acesso pago pela escola, com o acompanhamento da instituição. 
+
+## O que a instituição ganha 
+
+Com volume pequeno, a parceria só se sustenta se a instituição tiver ganho direto. São quatro, e nenhum deles é comissão por indicar um produto ao próprio paciente. 
+
+**Honorário do programa próprio** 
+O serviço de acompanhamento é dela, com o preço que ela definir. É remuneração pelo trabalho dos profissionais. 
+
+**Autoria de cursos** 
+Profissionais da instituição assinam cursos para pais e recebem uma parte de cada venda, apurada no relatório de vendas. Quando o curso vem incluído num acesso pago, não há venda nem repasse: o ganho vem das vendas a quem não tem acesso. O curso feito com a psicóloga da Laopa é o primeiro caso. 
+
+**Clientes novos** 
+O site ganha a página das instituições parceiras. As famílias do Sistema Zero que procuram apoio encontram a instituição ali. 
+
+**Equipe formada e espaço com a marca dela** 
+A formação fica aberta para os profissionais, e o espaço leva o nome e a logo da instituição. 
+
+**O link da instituição** 
+Cada instituição tem um link que rastreia as famílias que chegam por ela. Para profissional de saúde, esse link não paga bônus. O código de ética do psicólogo proíbe "receber comissões, empréstimos, doações ou vantagens outras de qualquer espécie, além dos honorários contratados" e "receber, pagar remuneração ou porcentagem por encaminhamento de serviços", e os códigos da fonoaudiologia e da terapia ocupacional têm regras parecidas. 
+Projetos educativos fora da área da saúde podem usar o programa de embaixadores como qualquer embaixador. 
+
+## O caminho da instituição 
+
+1 
+**Adere** 
+Assina o termo de parceria, e o espaço dela nasce com o nome, e a coordenação envia a logo. 
+
+2 
+**Monta a equipe** 
+A coordenação convida os profissionais e autoriza os aparelhos da instituição. 
+
+3 
+**Forma a equipe** 
+Os profissionais fazem a formação de mediador, na versão que ensina a combinar um plano. 
+
+4 
+**Traz as famílias** 
+Entrega o código. O responsável cria a conta, cadastra o filho e autoriza. 
+
+5 
+**Acompanha** 
+O profissional combina o plano, e a criança cria no atendimento e em casa. 
+
+## O que o profissional faz, e o que a plataforma não guarda 
+
+### O profissional 
+
+- Combina um plano: aulas de um curso, um ritmo e até três habilidades do Mapa, com o objetivo escrito nas palavras da família. 
+
+- Acompanha os fatos: o que foi feito, quantas vezes a criança verificou o projeto e se voltou depois de errar. 
+
+- Conversa com a família pelos recados. Ele não troca mensagens com a criança. 
+
+- Baixa o resumo da semana para anexar ao registro dele. 
+
+- Vê só as crianças que atende. A coordenação vê a lista de crianças e as vagas. 
+
+### A plataforma não guarda 
+
+- Anotação clínica. O que o profissional observa fica no prontuário dele, fora do Sistema Zero. 
+
+- Diagnóstico, laudo ou qualquer campo sobre a condição da criança. 
+
+- Nota, pontuação de atenção ou de memória, ou comparação entre crianças. 
+
+O Sistema Zero continua sendo um produto educacional, e assim não passa a guardar dado de saúde além do próprio vínculo com a clínica. 
+
+## Como falar disso 
+
+Unir a plataforma ao atendimento é um serviço da instituição, e ela responde por ele. A coluna da direita é a que gerou multa lá fora e a que os conselhos profissionais proíbem aqui. 
+
+### O Sistema Zero diz 
+
+- "Ao criar um jogo, a criança planeja, testa, corrige e persiste." 
+
+- "Pesquisas associam aprender programação a melhor desempenho em resolução de problemas, planejamento e criatividade." 
+
+- "A instituição usa a plataforma como uma atividade dentro do plano dela." 
+
+- "A família acompanha o que o filho praticou." 
+
+### O Sistema Zero não diz 
+
+- "Treina o cérebro" ou "treino cognitivo". 
+
+- "Melhora a atenção" ou "melhora a memória". 
+
+- "Ajuda no TDAH", "indicado para autismo" ou qualquer nome de condição. 
+
+- "Resultado comprovado", nem depoimento de paciente. 
+
+## As regras deste espaço 
+
+- Saber que uma criança é atendida por uma clínica já é informação de saúde. Por isso o cadastro pelo código traz uma autorização específica do responsável. 
+
+- Nada do espaço da instituição aparece na escola, no Mural dos Criadores ou no perfil público da criança. 
+
+- O programa é particular e opcional. Ele não faz parte da sessão coberta por convênio e não é condição para o atendimento. 
+
+- Toda instituição parceira tem CNPJ e termo assinado, e cada uma confere as regras do conselho da sua profissão. 
+
+- Quando o atendimento termina, o preço do código vale até o fim do período pago. A criança continua com tudo o que é dela. 
+
+- A cada 20 famílias pagantes, a clínica recebe 1 plano de cortesia para um bolsista. 
+
+- A instituição parceira tem o mural dela, só para as crianças de lá. Na clínica ele começa desligado: a coordenação liga, e cada família autoriza a participação do filho na área dos pais, porque participar mostra às outras famílias que a criança é atendida ali. O Arquipélago, o ranking geral e o Mural e o Clube dos Criadores ficam só no plano de R$ 97. A clínica não tem ranking: são crianças em acompanhamento, e a lista mostraria às famílias quem mais é atendido ali. A conversa com o Zappy segue a escolha dos pais. 
+
+- O responsável encerra o acompanhamento quando quiser, na área dos pais, e o profissional deixa de ver a criança. 
+
+A primeira instituição 
+
+### A Laopa testa o desenho antes da escola 
+
+São poucas crianças e uma equipe próxima, usando as mesmas peças que a escola vai usar: adesão, código, cadastro pelo responsável, papéis e isolamento. 
+
+Como a Laopa já é parceira, ela prova que o desenho funciona, e não que existe procura. Quem prova a procura é a segunda instituição, sem relação anterior com o Sistema Zero. 
+
+### Quem mais cabe neste desenho 
+
+Escolas de reforço, espaços maker e projetos sociais usam o mesmo espaço: alguém responsável, profissionais, um código para as famílias e um plano combinado. 
+
+O profissional que atende sozinho entra do mesmo jeito, como uma instituição de uma pessoa, com o CNPJ do consultório.

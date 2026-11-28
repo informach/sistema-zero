@@ -1,0 +1,216 @@
+PRANCHA: 4 · Pessoas, espaços e papéis (arquivo Modelo.dc.html, página "funciona")
+
+2 · Como funciona · prancha 4 
+
+# Pessoas, espaços e papéis 
+
+Três ideias sustentam tudo o que vem depois. Elas valem do mesmo jeito para a família, para a escola e para a instituição parceira. 
+
+## Pessoa 
+
+Quem aprende tem um perfil de criador, com a Jornada, as habilidades praticadas, os projetos e os certificados. Quem acompanha tem uma conta com e-mail. 
+
+## Espaço 
+
+É o ambiente de uma família, de uma escola ou de uma instituição parceira. Cada espaço tem o seu nome, a sua logo e as suas regras, e o que é registrado nele não aparece nos outros. 
+
+## Vínculo 
+
+É a pessoa dentro de um espaço, com um papel e por um período. A mesma pessoa pode ter vários: o Theo é filho na família e aluno no colégio, e uma professora pode trabalhar em duas escolas. 
+
+## As palavras desta proposta 
+
+**Instituição.** Uma escola ou uma parceira que tem espaço no Sistema Zero. 
+
+**Instituição parceira.** Clínica, consultório ou projeto educativo, com CNPJ e termo assinado. 
+
+**Vaga.** O acesso de uma criança pago pela instituição: pela escola, na grade, ou pela parceira, no programa próprio. 
+
+**Plano da família.** A assinatura que a família paga, para até 2 crianças: R$ 69,90 com o código de uma escola ou instituição, e R$ 97 sem código. Cada criança além de duas entra com um perfil extra, por R$ 39,90. 
+
+**Plano combinado.** O que o profissional da instituição parceira combina com a família. Não é uma cobrança. 
+
+**Bilhete.** O convite individual que a escola entrega à família, com um código de uso único. 
+
+**Crachá do aluno.** O código que o aluno digita para entrar nos computadores da instituição. 
+
+**Conjunto.** Um grupo de aulas de um curso, montado pela equipe, que vira tarefa ou plano. 
+
+**Tarefa.** O que o professor passa para a turma, com prazo opcional. Na parceira, o nome é plano combinado. 
+
+**Ano escolar.** A série do aluno na escola. Não se confunde com o posto, que é o ponto dele na Jornada. 
+
+## Quem é quem em cada espaço 
+
+Família 
+
+**Responsável.** Cuida dos perfis dos filhos, autoriza os aparelhos de casa, paga, autoriza quem acompanha e faz os cursos para pais. 
+
+**Filho ou filha.** Aprende na área de quem aprende, com a Jornada e as ferramentas. 
+
+Escola 
+
+**Gestor ou gestora.** Cuida do espaço da escola: turmas, pessoas, computadores e relatórios. 
+
+**Professor mediador.** Acompanha as suas turmas, passa tarefas e faz a própria formação. 
+
+**Aluno ou aluna.** Aprende na mesma área de quem aprende, com as tarefas da escola. O responsável dele continua no espaço da família. 
+
+Instituição parceira 
+
+**Coordenador ou coordenadora.** Faz o papel do gestor: cuida dos profissionais, das crianças e das vagas. 
+
+**Profissional.** Faz o papel do professor, com as crianças que ele atende: combina um plano e acompanha. 
+
+**Criança atendida.** Entra pelo código da instituição, com o cadastro feito pelo responsável, e continua sendo filho ou filha na família. 
+
+## O que é da criança e o que é do espaço 
+
+### É da criança, e vai com ela 
+
+- Jornada do Criador e posto 
+
+- Habilidades praticadas 
+
+- XP, moedas e conquistas 
+
+- Projetos e criações 
+
+- Certificados 
+
+- Avatar e quarto 
+
+### É do espaço, e fica nele 
+
+- Turmas e grupos 
+
+- Tarefas, prazos e notas 
+
+- Planos combinados com o profissional 
+
+- Recados com o professor daquela escola 
+
+- Mural da instituição 
+
+- Relatórios da turma e da gestão 
+
+O que é do espaço nunca aparece em outro espaço. O que é da criança aparece para a escola ou para a instituição só no recorte da tarefa ou do plano que ela passou. Quando o vínculo termina, o que é do espaço fica para trás e o que é dela continua. 
+
+## Quem vê o quê 
+
+Informação 
+Responsável 
+Professor da turma 
+Gestor da escola 
+Profissional da instituição 
+
+Tarefas da escola e resultado 
+Sim 
+Sim, das suas turmas 
+Sim, de toda a escola 
+Não 
+
+Plano combinado 
+Sim 
+Não 
+Não 
+Sim, das crianças que atende 
+
+Posto e aulas concluídas 
+Sim 
+O posto e as aulas das tarefas, mesmo quando feitas em casa 
+Por turma e por aluno, só nas tarefas da escola 
+O posto e as aulas do plano, mesmo quando feitas em casa 
+
+Habilidades praticadas 
+Sim, todas 
+As das tarefas 
+Por turma e por aluno, só nas tarefas da escola 
+As do plano 
+
+Projetos 
+Todos 
+Os das aulas das tarefas, só para olhar 
+Não 
+Os das aulas do plano, só para olhar 
+
+Tempo de uso e aparelhos de casa 
+Sim 
+Não 
+Não 
+Não 
+
+Pagamentos da família 
+Sim 
+Não 
+No contraturno, só quem está inscrito 
+Não 
+
+A equipe do Sistema Zero só entra em um espaço para dar suporte. Cada entrada fica registrada, com quem entrou, quando e o motivo. 
+
+## Quem conversa com quem 
+
+Aluno e professor da turma 
+Pelos recados. Os pais leem, e a gestão pode abrir qualquer conversa, com registro de quem abriu. 
+
+Criança e equipe do Sistema Zero 
+Só a criança que não tem escola ligada, como é hoje. O aluno que entra pela escola fala com o professor dele. 
+
+Responsável e profissional 
+Pelos recados. O profissional não troca mensagens com a criança. 
+
+Professor ou profissional e equipe 
+Pela central do mediador. 
+
+Responsável e equipe 
+Pelo atendimento da área dos pais, que já existe. 
+
+## Como cada pessoa entra 
+
+**Responsável** 
+Com e-mail e senha, ou com um código enviado por e-mail. 
+
+**Criança em casa** 
+Em um aparelho que o responsável autorizou, escolhendo o próprio perfil. 
+
+**Aluno na instituição** 
+Em um computador autorizado pela instituição, digitando o código do crachá. 
+
+**Professor, gestor e profissional** 
+Com e-mail e senha, a partir do convite da instituição. Um seletor no topo mostra em qual espaço a pessoa está. 
+
+## Uma criança em vários espaços 
+
+O Theo estuda no Colégio Araucária e é atendido na Clínica Girassol. O que ele vê depende do aparelho em que está. 
+
+### No computador da escola 
+
+Só o espaço da escola: as tarefas, o mural da escola e os recados com a professora. Nada da clínica aparece ali. 
+
+### No aparelho da clínica 
+
+Só o plano combinado com a profissional. Nada da escola aparece ali. 
+
+### Em casa 
+
+Tudo o que é dele: a Jornada, a tarefa da escola e as aulas do plano, cada uma com a origem escrita, como "Tarefa da professora Renata". 
+
+**A ajuda do Zappy por conversa.** A criança ligada a uma escola segue a regra da escola em qualquer aparelho, inclusive em casa. A criança sem escola, só com a família ou com uma instituição parceira, segue a escolha dos pais. 
+
+## Os casos que estas regras resolvem 
+
+**Irmãos na mesma escola.** Cada um tem a sua vaga e o seu bilhete, e o responsável cuida dos dois na mesma conta. 
+
+**Professora em duas escolas.** Uma conta, dois vínculos. Ela escolhe a escola no seletor e nunca vê as duas ao mesmo tempo. 
+
+**Professor que também é pai.** A mesma conta entra na área dos pais como responsável e na área das instituições como professor. O convite da escola pode ser aceito com a conta que a pessoa já tem, e o filho dela segue a regra de qualquer família. 
+
+**Troca de turma.** A gestão move o aluno. As tarefas abertas da turma antiga saem, e o que ele já fez continua. 
+
+**Crachá perdido.** O professor gera outro código na hora, e o antigo para de funcionar. 
+
+**Engano ou disputa de responsável.** O responsável titular é o do e-mail que a escola informou. Se o e-mail estiver errado, a gestão corrige e emite outro bilhete. 
+
+**Coordenação da instituição parceira.** Vê a lista de crianças, os profissionais e a situação das vagas. O plano e os fatos de cada criança ficam com o profissional e com a família. 
+
+**Família que já era cliente, criança que já tinha perfil e criança em duas instituições.** Estão na prancha Quem paga em cada situação.

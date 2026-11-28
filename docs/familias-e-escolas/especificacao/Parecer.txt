@@ -1,0 +1,85 @@
+PRANCHA: 2 · Leitura do parecer (arquivo Parecer.dc.html, página "direcao")
+
+1 · Direção · prancha 2 
+
+# Leitura do parecer 
+
+O parecer é cuidadoso, e eu concordo com a maior parte dele. O limite é que quase tudo fica como hipótese a validar, e você precisa de uma direção. Aqui eu separo o que mantenho, o que eu decido e onde penso diferente. 
+
+## O que ele acerta, e eu mantenho 
+
+Famílias e Escolas como as duas ofertas, com a Jornada do Criador no centro. 
+
+O professor dentro da oferta da escola, sem virar um produto à parte. 
+
+Não refazer os cursos por série: o ano escolar organiza a turma, e o posto mostra o percurso. 
+
+Direito de acesso, pré-requisito da Jornada e tarefa da escola são três coisas separadas. 
+
+Grupos flexíveis, sem obrigar cada turma a ter um professor único. 
+
+Prazo que não encerra a aprendizagem, e nota só do que a plataforma confere. 
+
+Um banco de dados só, em que o sistema confere a instituição a cada pedido, com testes que provam a separação. 
+
+Não trocar "adulto" por "escola" às cegas nos dados que já existem. 
+
+## O que ele deixou em aberto, e eu decido 
+
+Tema 
+O parecer diz 
+Esta proposta decide 
+
+Quem paga 
+É uma hipótese comercial, e não há dados para sugerir preço. 
+No que é opcional, a família paga R$ 69,90 por mês pelo código. Na grade, a escola paga R$ 39,90 por aluno ao mês, com 50 alunos ou mais. 
+
+Como o aluno entra 
+É necessário resolver o cadastro e o login de quem chega pela escola. 
+Na escola, o aluno entra com o crachá em um computador autorizado. Na grade, a escola cadastra cada aluno com o e-mail do responsável, e o bilhete individual serve para o primeiro acesso. 
+
+Comunidade adulta 
+Levantar clientes e promessas antes de mexer. 
+Ela vira o ambiente das instituições e mantém os alunos adultos com tudo o que compraram. 
+
+Quem ajuda o aluno 
+Definir canal, limites e prazo antes de precificar. 
+Primeiro a própria aula, depois o professor mediador, e a ajuda do Zappy por conversa conforme o ano escolar. O aluno não escreve para a equipe do Sistema Zero. 
+
+Quando 
+Piloto de seis a oito semanas, sem calendário. 
+2027 é o ano dos pilotos, e a venda mira o ano letivo de 2028, porque a escola decide no segundo semestre. 
+
+## Onde eu penso diferente 
+
+### Construir enquanto conversa com as escolas 
+
+O parecer põe as conversas com escolas antes de qualquer construção. Eu começo já pela parte que serve a todos, e as instituições entram em março, com uma parceira pequena e próxima. As conversas com escolas correm em paralelo. 
+
+### Instituição, e não só escola 
+
+O parecer modela a escola. Eu modelo a instituição, de vários tipos, porque a clínica e o espaço educativo usam as mesmas peças: pessoas com papéis, grupos, atividades combinadas e acompanhamento. 
+
+### O produto é aprender a pensar 
+
+O parecer descreve a oferta como um programa de criação de jogos. Com a sua direção, o produto é aprender a pensar, e o jogo é o meio. Isso tira o Mapa de habilidades do rodapé e o coloca no centro do que a família e a escola compram. 
+
+### A cobrança existe, longe da criança 
+
+O parecer pede para não usar o estudante como canal de cobrança. Concordo dentro da área do aluno, que continua sem nenhuma compra. No que é opcional, a família paga, e a cobrança fica na página do responsável, nunca na frente da criança. 
+
+## O que ele não viu 
+
+- **O risco da compra obrigatória.** A escola não pode exigir que a família compre de um fornecedor o que é da grade, e o Procon de Minas já multou um colégio por isso. 
+
+- **A regra de IA do CNE,** de novembro de 2026, que obriga a ajuda do Zappy por conversa a seguir o ano escolar do aluno. 
+
+- **O computador preso a uma família.** Hoje cada aparelho autorizado pertence a uma família só, o que impede o uso em laboratório de escola. 
+
+- **A nota fiscal só sai para CPF.** Por isso a escola pagante pede trabalho novo de cobrança, e a família pagante pede bem menos. 
+
+- **O tamanho do catálogo publicado.** O que está no ar hoje cobre o começo da Jornada, e um ano letivo inteiro pede mais postos publicados antes de vender a grade. 
+
+- **O calendário das escolas,** que concentra a decisão de adoção no segundo semestre. 
+
+- **As clínicas** e o cuidado com promessa terapêutica.

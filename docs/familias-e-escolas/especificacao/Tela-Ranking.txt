@@ -1,0 +1,62 @@
+PRANCHA: C7 · Aluno · Ranking da escola (arquivo Tela-Ranking.dc.html, página "telas")
+
+CA 
+
+**Colégio Araucária** 6º ano B 
+
+Início 
+
+Cursos 
+
+Mural da escola 
+
+Ranking da escola 
+
+Recados 
+
+Meu espaço 
+
+Como fazer 
+
+T 
+
+**Theo** Construtor · 1.240 XP 
+
+# Ranking da escola 
+Os primeiros lugares do 6º e do 7º ano nesta semana, e onde você está. 
+
+## Os primeiros lugares 
+
+1º 
+
+**Rafael L.** 6º ano B 
+**320 XP** 
+
+2º 
+
+**Júlia F.** 7º ano A 
+**300 XP** 
+
+3º 
+
+**Miguel T.** 7º ano B 
+**290 XP** 
+
+12º 
+
+**Você** 6º ano B 
+**180 XP** 
+
+A lista mostra só os três primeiros e a sua posição. 
+
+## Como funciona 
+Conta o que você fez nas aulas e nas tarefas na semana. Toda segunda começa de novo. 
+
+## Quem vê 
+Só os alunos do 6º e do 7º ano do Colégio Araucária. Ninguém de fora da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova no Admin da equipe. Nas primeiras instituições não há cobrança automática: a equipe confere o Pix e emite a nota fiscal para CNPJ à mão, e a tela guarda o registro. A conta usa os alunos ativos no dia 1º. Os planos de cortesia são contados aqui. As telas mostram a primeira versão: a cobrança feita pelo sistema e o clube de cada escola ficam para quando o número de escolas pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É a transparência que sustenta a confiança da família: o que a escola vê, o que ela não vê e quem são as pessoas com acesso. A escola não fica sabendo do acompanhamento na clínica, e a clínica não fica sabendo da escola. A inscrição do contraturno pode ser cancelada aqui, sem falar com ninguém.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. No exemplo do roteiro o ranking do Colégio Araucária está desligado (tela A6): esta tela mostra como fica quando a gestão liga. Hoje o ranking é um só para todas as crianças, e o da escola é parte nova, prevista para 2028. A lista mostra os três primeiros e a posição da própria criança, e não incentiva a subir de posição. Os pais podem tirar o filho do ranking na área dos pais.

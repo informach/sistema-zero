@@ -1,0 +1,87 @@
+PRANCHA: A8 · Gestão · Pessoas (arquivo Tela-Pessoas.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Turmas 
+
+Pessoas 
+
+Tarefas 
+
+Relatórios 
+
+Formação 
+
+M 
+
+**Marta** Gestora 
+
+# Pessoas 
+Professores, alunos e famílias do Colégio Araucária. 
+
+Cadastrar um aluno 
+
+Convidar professor 
+
+## Professores 
+
+Professor 
+Turmas 
+Formação de mediador 
+Situação 
+
+**Renata** 6º ano A e 6º ano B Concluída Ativa 
+
+**Caio** 7º ano A e 7º ano B Concluída Ativo 
+
+**Lúcia** Criação de Jogos, no contraturno Concluída Ativa 
+
+O professor só recebe as turmas depois de concluir a formação de mediador. Quem já tem conta no Sistema Zero aceita o convite com a conta que tem. 
+
+## Alunos e famílias 
+
+Turma 
+6º ano B 
+
+**21 de 28 famílias** já fizeram o primeiro acesso. 
+
+Aluno 
+Primeiro acesso da família 
+Crachá 
+
+**Theo M.** Feito por Marina, em 12 de fevereiro 7K3Q-M2 
+Mover de turma 
+
+**Sofia S.** Feito, em 14 de fevereiro 4T8W-N6 
+Mover de turma 
+
+**Bento A.** Ainda não fez 9P2H-R5 
+Emitir outro bilhete 
+
+**Pedro R.** Sem e-mail do responsável 3M7K-X4 
+Informar o e-mail 
+
+**Alice P.** Feito, em 13 de fevereiro 6C4D-V8 
+Gerar outro crachá 
+
+Ver os 28 
+
+## Plano de cortesia 
+Com 22 famílias pagantes no contraturno, a escola tem 1 plano de cortesia. Escolha o aluno que vai receber. 
+
+Escolher o aluno 
+
+Indicar o bolsista 
+
+## E-mail errado no cadastro? 
+Corrija o e-mail do responsável e emita outro bilhete. O bilhete antigo para de valer na hora. Se o aluno já usou a plataforma e o e-mail certo é de uma família que já tem conta, ela escolhe qual perfil segue. 
+
+## Quando um aluno sai da escola 
+Ao tirar o aluno da turma, o acesso pago pela escola segue por 30 dias, e a família é avisada. O que ele criou continua com ele. No contraturno, tirar o aluno da turma encerra a inscrição dele.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Junta o que a gestão faz com pessoas: convidar professor, ver quem fez o primeiro acesso, emitir outro bilhete, gerar outro crachá, mover de turma, corrigir o e-mail do responsável e indicar o bolsista do plano de cortesia. Tirar um aluno da turma mantém o acesso por 30 dias. A gestão também tira da turma de contraturno quem não é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É a página Conta que já existe na área dos pais. O que é novo: o que cada filho tem e de onde vem, o preço do código, o botão do bilhete ou código e o bloco Se algo mudar. Os pagamentos e a nota fiscal são os de hoje. É aqui que aparece a oferta do plano para a família que só tem o acesso da escola.

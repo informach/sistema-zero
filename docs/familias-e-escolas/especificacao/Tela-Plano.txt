@@ -1,0 +1,89 @@
+PRANCHA: E3 · Profissional · Combinar o plano (arquivo Tela-Plano.dc.html, página "telas")
+
+CG 
+**Clínica Girassol** 
+
+Início 
+
+Crianças 
+
+Planos combinados 
+
+Famílias 
+
+Minha formação 
+
+C 
+
+**Camila** Profissional 
+
+Crianças 
+
+# Combinar o plano do Davi P. 
+13 anos · posto Faísca · entrou na segunda, pelo código da Clínica Girassol. O pai, Jorge, autorizou o acompanhamento no cadastro. 
+
+### 1. O objetivo, nas palavras da família 
+
+O que vocês combinaram [campo: Começar sem adiar] 
+Escreva como a família fala, em poucas palavras. A família e o Davi leem este texto. Este campo não é para diagnóstico nem para anotação clínica. 
+
+### 2. O que ele vai fazer 
+São os mesmos conjuntos de aulas que as escolas usam, preparados pela equipe do Sistema Zero. 
+
+**A Chave do Farol, aulas 1 a 3** O começo da Jornada. Pratica pensar em passos e persistir. 
+
+**A Chave do Farol, aulas 4 a 6** Pratica planejar e dividir o problema. 
+
+### 3. O ritmo 
+
+Quantas aulas por semana 
+2 aulas por semana 
+
+Rever o plano em [campo: Segunda, 8 de outubro] 
+
+O plano não tem prazo de entrega nem nota. Ele mostra o ritmo combinado e o que foi feito. 
+
+### 4. Habilidades em foco 
+Escolha até três. Você vê os registros delas com mais destaque. 
+
+Planejar 
+
+Dividir o problema 
+
+Pensar em passos 
+
+Testar e corrigir 
+
+Persistir 
+
+Criar e mostrar 
+
+## Resumo 
+
+Objetivo **Começar sem adiar** 
+
+O quê **A Chave do Farol, aulas 1 a 3** 
+
+Ritmo **2 aulas por semana** 
+
+Em foco **Pensar em passos e persistir** 
+
+Combinar o plano 
+
+Salvar para depois 
+
+**Quem fica sabendo** 
+O Jorge vê o plano na área dos pais e pode escrever para você. O Davi vê o plano no Início dele, com o ritmo da semana. 
+
+**O que o plano não é** 
+Não é avaliação nem tratamento. Ele não aparece para a escola do Davi, e a plataforma não guarda anotação clínica.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. A planilha pede nome, turma, data de nascimento e e-mail do responsável. Com o e-mail, a conta da família é criada ou encontrada na importação, pelo mesmo caminho que a compra usa hoje, e nenhum perfil precisa mudar de dono depois. Sem e-mail, o aluno fica numa conta provisória. Linhas com pendência ficam de fora, e nada é gravado antes do botão.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, com o mini checkout que já existe na área dos pais. O contraturno é opcional, e a família entra pelo plano da família com o código da escola: R$ 69,90 por mês no cartão ou 6 meses por R$ 399 no Pix, para até 2 filhos. É a Comunidade sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Quem já paga R$ 97 inscreve o filho sem pagar nada a mais.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra o que falta para a tarefa, com os objetivos que a plataforma confere. A entrega acontece quando os objetivos são cumpridos e o aluno clica em Verificar projeto, sem botão de enviar. O botão leva para a aula do curso, que é a mesma de hoje. Uma pista é conteúdo pronto da aula, e não conversa com IA.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Os conjuntos são montados pela equipe no Admin, e o professor não monta aula. A nota só existe para o que a plataforma confere sozinha: objetivos cumpridos e a melhor tentativa do quiz. Quem já fez as aulas em casa aparece como feito, sem refazer. O aluno que ainda está no posto anterior recebe a tarefa quando terminar o que falta, porque a tarefa não pula a Jornada. Quem decide usar nota é o professor, em cada tarefa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. O plano usa o mesmo motor das tarefas da escola, sem nota e sem prazo de entrega. As aulas saem dos mesmos conjuntos preparados pela equipe. O objetivo é um texto curto, lido pela família, e não existe campo de diagnóstico nem de anotação clínica.

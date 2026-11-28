@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Gestão da escola</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap">
+<style>
+body{margin:0;background:#f5f7fb}
+*{box-sizing:border-box}
+a{color:#1343b8}a:hover{color:#0a2a7a}
+</style>
+</helmet>
+<div style="font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #0f1a33; font-size: 17px; line-height: 1.5; background: #f5f7fb">
+
+<header style="background: #0b0e1a; color: #f2f4fa">
+<div style="max-width: 1360px; margin: 0 auto; padding: 14px 40px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap">
+<img src="/_blob/b071f94b0478ee7c6b96469a94dbe0b1" alt="Sistema Zero" style="width: 170px; height: auto">
+<div style="display: flex; align-items: center; gap: 10px; background: #1a2040; border: 1px solid #2c3563; border-radius: 12px; padding: 6px 14px 6px 6px">
+<div style="width: 36px; height: 36px; border-radius: 9px; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 16px">CA</div>
+<strong>Colégio Araucária</strong>
+</div>
+<nav style="display: flex; gap: 6px; flex-wrap: wrap; flex: 1 1 420px">
+<a href="#inicio" style="color: #0b0e1a; background: #ffc02e; text-decoration: none; font-weight: 700; padding: 10px 16px; border-radius: 10px">Início</a>
+<a href="#turmas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Turmas</a>
+<a href="#pessoas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Pessoas</a>
+<a href="#tarefas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Tarefas</a>
+<a href="#relatorios" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Relatórios</a>
+<a href="#formacao" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Formação</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: #6e9bff; color: #0b0e1a; display: flex; align-items: center; justify-content: center; font-weight: 700">M</div>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><strong>Marta</strong><span style="color: #c9d1e6; font-size: 14px">Gestora</span></div>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1360px; margin: 0 auto; padding: 40px 40px 64px; display: flex; flex-direction: column; gap: 28px">
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 40px; line-height: 1.1">Bom dia, Marta</h1>
+<span style="color: #46536e">Colégio Araucária · ano letivo de 2029</span>
+</div>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button type="button" style="min-height: 50px; padding: 0 22px; border: 1.5px solid #74829f; border-radius: 12px; background: #ffffff; color: #0f1a33; font-family: inherit; font-size: 17px; font-weight: 700">Convidar professor</button>
+<button type="button" style="min-height: 50px; padding: 0 22px; border: 0; border-radius: 12px; background: #ffc02e; color: #0b0e1a; font-family: inherit; font-size: 17px; font-weight: 700; box-shadow: 0 4px 0 #c98a00">Importar turma</button>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 20px">
+<div style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 1.1">118</span>
+<span style="color: #46536e">alunos na grade, com a vaga da escola</span>
+</div>
+<div style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 1.1">22</span>
+<span style="color: #46536e">alunos inscritos no contraturno</span>
+</div>
+<div style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 1.1">96 <span style="font-size: 22px; font-weight: 700; color: #46536e">de 118</span></span>
+<span style="color: #46536e">famílias da grade já usaram o bilhete</span>
+</div>
+<div style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 24px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 1.1">3 <span style="font-size: 22px; font-weight: 700; color: #46536e">de 3</span></span>
+<span style="color: #46536e">professores com a formação feita</span>
+</div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<div data-colunas-ok style="flex: 999 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 26px">Turmas</h2>
+<a href="#turmas" style="font-weight: 700">Ver todas</a>
+</div>
+<div style="overflow-x: auto">
+<div style="min-width: 640px">
+<div style="display: grid; grid-template-columns: 1.5fr 0.8fr 0.6fr 2.1fr; gap: 12px; padding: 10px 0; color: #46536e; font-size: 15px; font-weight: 700; border-bottom: 1px solid #d6deea">
+<div>Turma</div><div>Professor</div><div>Alunos</div><div>Tarefa em andamento</div>
+</div>
+<div style="display: grid; grid-template-columns: 1.5fr 0.8fr 0.6fr 2.1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>6º ano A</strong><span>Renata</span><span>29</span><span>Nave Contra Asteroides, aulas 1 a 3, até 14 de setembro</span>
+</div>
+<div style="display: grid; grid-template-columns: 1.5fr 0.8fr 0.6fr 2.1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>6º ano B</strong><span>Renata</span><span>28</span><span>Nave Contra Asteroides, aulas 1 a 3, até 14 de setembro</span>
+</div>
+<div style="display: grid; grid-template-columns: 1.5fr 0.8fr 0.6fr 2.1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>7º ano A</strong><span>Caio</span><span>31</span><span>Corre, Dino, aulas 1 a 3, até 21 de setembro</span>
+</div>
+<div style="display: grid; grid-template-columns: 1.5fr 0.8fr 0.6fr 2.1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>7º ano B</strong><span>Caio</span><span>30</span><span style="color: #46536e">Sem tarefa aberta</span>
+</div>
+<div style="display: grid; grid-template-columns: 1.5fr 0.8fr 0.6fr 2.1fr; gap: 12px; padding: 14px 0; align-items: center">
+<strong>Criação de Jogos, no contraturno</strong><span>Lúcia</span><span>22</span><span>A Chave do Farol, aulas 4 a 6, sem prazo</span>
+</div>
+</div>
+</div>
+</section>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px">
+<section style="background: #121733; color: #f2f4fa; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Inscrição no contraturno</h2>
+<div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: 0.04em; color: #ffc02e">ARAUCARIA-JOGOS</div>
+<span style="color: #c9d1e6">As famílias usam este código para inscrever o filho. A escola vê só quem está inscrito. Com 22 famílias pagantes, a escola já tem 1 plano de cortesia. Indique o bolsista em Pessoas.</span>
+<a href="#link" style="color: #ffc02e; font-weight: 700">Copiar o link de inscrição</a>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Ranking da escola</h2>
+<span><strong>Desligado.</strong> Se você ligar, cada aluno vê os primeiros lugares do Colégio Araucária e a própria posição. A lista não vai até o último.</span>
+<a href="#ranking" style="font-weight: 700">Ligar o ranking da escola</a>
+</section>
+</div>
+</div>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 26px">Precisa de você</h2>
+<div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid #d6deea"><span>22 famílias da grade ainda não usaram o bilhete. Os filhos delas entram na escola normalmente.</span><a href="#bilhetes" style="font-weight: 700">Baixar os bilhetes de novo</a><a href="#quem" style="font-weight: 700">Ver quem usou cada bilhete e emitir outro</a></div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid #d6deea"><span>2 alunos novos do 7º ano B ainda estão sem crachá.</span><a href="#crachas" style="font-weight: 700">Imprimir os crachás</a></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span>A Mostra de Jogos do semestre é em novembro.</span><a href="#mostra" style="font-weight: 700">Ver os jogos do mural</a></div>
+</section>
+</aside>
+
+</div>
+
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 26px">O que as turmas praticaram em agosto</h2>
+<span style="color: #46536e">Alunos com registro em cada habilidade, entre os 140 da escola.</span>
+</div>
+<a href="#bncc" style="font-weight: 700">Baixar o relatório da BNCC</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 18px 40px">
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; gap: 12px"><strong>Pensar em passos</strong><span style="color: #46536e">127</span></div><div style="height: 12px; border-radius: 999px; background: #e2ebff"><div style="width: 91%; height: 12px; border-radius: 999px; background: #1b5cf3"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; gap: 12px"><strong>Testar e corrigir</strong><span style="color: #46536e">112</span></div><div style="height: 12px; border-radius: 999px; background: #e2ebff"><div style="width: 80%; height: 12px; border-radius: 999px; background: #1b5cf3"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; gap: 12px"><strong>Dividir o problema</strong><span style="color: #46536e">104</span></div><div style="height: 12px; border-radius: 999px; background: #e2ebff"><div style="width: 74%; height: 12px; border-radius: 999px; background: #1b5cf3"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; gap: 12px"><strong>Persistir</strong><span style="color: #46536e">96</span></div><div style="height: 12px; border-radius: 999px; background: #e2ebff"><div style="width: 69%; height: 12px; border-radius: 999px; background: #1b5cf3"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; gap: 12px"><strong>Planejar</strong><span style="color: #46536e">77</span></div><div style="height: 12px; border-radius: 999px; background: #e2ebff"><div style="width: 55%; height: 12px; border-radius: 999px; background: #1b5cf3"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; gap: 12px"><strong>Criar e mostrar</strong><span style="color: #46536e">51</span></div><div style="height: 12px; border-radius: 999px; background: #e2ebff"><div style="width: 36%; height: 12px; border-radius: 999px; background: #1b5cf3"></div></div></div>
+</div>
+<span style="color: #46536e">Habilidades da BNCC Computação trabalhadas pelo 6º e pelo 7º ano em agosto: EF06CO02, EF06CO03, EF06CO04 e EF07CO02.</span>
+</section>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1611}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+PRANCHA: A2 · Gestão · Primeiros passos (arquivo Tela-Passos.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Turmas 
+
+Pessoas 
+
+Tarefas 
+
+Relatórios 
+
+Formação 
+
+M 
+
+**Marta** Gestora 
+
+# Vamos preparar o Colégio Araucária 
+São cinco passos. Você já fez dois, e pode parar e voltar quando quiser. 
+
+1 
+
+**A logo da escola** Feito. Ela aparece para alunos, professores e famílias. 
+
+2 
+
+**As turmas** Feito. 4 turmas da grade, com 118 alunos, e 1 turma de contraturno. 
+Importar outra turma 
+
+3 
+
+**Os professores** 
+Você convidou 3 professores. 2 já entraram e fizeram a formação de mediador, e 1 ainda não abriu o convite. 
+
+Convidar professor 
+
+Reenviar o convite 
+
+4 
+
+**Os computadores da escola** Abra o Sistema Zero em cada computador que os alunos vão usar e autorize. Nenhum foi autorizado ainda. 
+Autorizar os computadores 
+
+5 
+
+**Os crachás e os bilhetes** O crachá é o que o aluno usa para entrar nos computadores da escola. O bilhete vai para casa, e é com ele que o responsável faz o primeiro acesso. 
+Baixar os crachás e os bilhetes 
+
+## Quando mandar os bilhetes 
+Envie duas semanas antes da primeira aula. Quem ainda não tiver usado o bilhete entra na aula do mesmo jeito, porque o acesso da grade é garantido pela escola. 
+
+## A turma de contraturno 
+As famílias se inscrevem com o código da escola. 
+ARAUCARIA-JOGOS 
+
+Copiar o link de inscrição 
+
+## Precisa de ajuda? 
+A equipe do Sistema Zero acompanha a preparação da sua escola. 
+
+Falar com a equipe
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o que a gestão vê enquanto a escola não está pronta. Cada passo leva a uma tela deste roteiro (A3, A4, A5). Quando os cinco passos terminam, o Início passa a ser a tela A6. Quem não usou o bilhete entra na aula do mesmo jeito, porque na grade o acesso é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o caso de quem já assina os R$ 97: a página pergunta qual perfil é o do aluno, para a criança não ficar com dois. Nada muda na cobrança, e a tela mostra o que a escola passa a cobrir e o que só a assinatura dá. A família pode escolher o plano pelo código da escola, de R$ 69,90, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Nada é cancelado sem ela pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o Início que já existe, com quatro mudanças: nome e logo da escola no menu, a tarefa da escola no alto, o cartão O que você praticou e só o Mural da escola no menu. No computador da escola o menu é igual para todos, sem o item Criar: as ferramentas livres aparecem só em casa, para quem tem o plano. No computador da escola não aparecem Arquipélago, Clube dos Criadores, Oficinas ao vivo, ranking geral, área dos pais nem compra, e a palavra Kids não é usada. O plano combinado da clínica não aparece no computador da escola. O ranking da escola só aparece se a gestão ligar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra a tarefa em andamento e a situação de cada aluno, sem nenhuma informação de pagamento. Ela diz quantos alunos estão sem o primeiro acesso da família, para quem a conversa com o Zappy não liga. As tentativas saem do registro de verificações, que já é guardado. O botão do Zappy é o mecanismo novo que cumpre a regra do CNE do 6º ao 9º ano. "Ver o projeto dela" abre o projeto só para olhar: hoje o visualizador existe só no Admin e mostra só projeto enviado, e abrir o projeto em andamento é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. A coordenação faz o papel da gestão: vê profissionais, crianças e famílias, e não vê pagamento. Ela vê cada família que entra pelo código e pode tirar quem não é atendido ali. A cada 20 famílias pagantes, a clínica indica um bolsista, que entra pelo código sem passar pelo pagamento. O mural da clínica começa desligado. O item Aparelhos funciona como na escola. Em Aparelhos, a coordenação autoriza os aparelhos da clínica e gera o crachá de cada criança.

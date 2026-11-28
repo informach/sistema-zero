@@ -1,0 +1,191 @@
+PRANCHA: 9 · O que muda na plataforma (arquivo Plataforma.dc.html, página "plataforma")
+
+4 · Plataforma e plano · prancha 9 
+
+# O que muda na plataforma 
+
+Cada bloco diz como a parte funciona hoje, conferido no código, e o que entra. Nada aqui troca um valor de "adulto" por "escola": o que entra é uma camada nova, a das instituições, por cima do que já funciona. 
+
+## O que não muda 
+
+Os cursos, as aulas, o Estúdio, o Pinta, o Pensa e o Molda, a Jornada do Criador, o checkout das famílias, as ofertas atuais e o programa de embaixadores continuam como estão. Para a criança que já usa a plataforma, as diferenças são a sequência de dias e o aviso de que os pais acompanham, descritos no bloco 8. 
+
+1 
+
+## Identidade e entrada 
+
+**Hoje:** cada pessoa tem um papel só no sistema inteiro, entre quatro possíveis, e essa lista está repetida em cerca de 20 partes do sistema. O perfil da criança só existe dentro da conta de um responsável, e cada aparelho autorizado pertence a uma família. 
+
+- Instituições, com tipo, nome, logo e situação, e os vínculos de cada pessoa: papel e período. 
+
+- Turmas e grupos, com os seus participantes. 
+
+- Cadastro do aluno: a planilha da escola traz o e-mail do responsável, e a conta da família é criada ou encontrada na importação, pelo mesmo caminho que a compra usa hoje. O aluno já nasce na conta certa, e nenhum perfil muda de dono. Ele só aparece para a família depois do bilhete. Se a criança já tinha perfil, a família escolhe qual segue e o outro é arquivado, sem somar. Sem e-mail, o aluno fica numa conta provisória que o responsável assume com o bilhete. 
+
+- Bilhete individual, com código de uso único, e a gestão vê quem já fez o primeiro acesso. 
+
+- Computador da instituição e crachá do aluno, que são um tipo novo de aparelho e de código. O limite de tentativas passa a ser por computador, porque todos os computadores de um laboratório usam a mesma conexão de internet. 
+
+- A lista de papéis passa a morar em um lugar só. 
+
+2 
+
+## A entrada dos serviços 
+
+**Hoje:** a entrada autoriza pelo papel e pela situação da pessoa, não informa de qual instituição ela é, e a sessão é renovada a cada 15 minutos. Ela ainda não confere em nome de qual instituição a pessoa está agindo. 
+
+- Na primeira versão, o sistema confere o vínculo da pessoa com a instituição quando a sessão é renovada, a cada 15 minutos. 
+
+- A entrada informa aos serviços a instituição e o papel de quem está pedindo, e ignora o que o navegador disser sobre isso. 
+
+- A entrada passa a dizer o papel, como "é gestor". Quem confere se é o gestor daquela escola é cada serviço, na própria consulta. 
+
+- Tirar o acesso de alguém vale em até 15 minutos. Exportar dados e mexer em pessoas conferem o vínculo na hora. 
+
+3 
+
+## Vagas e direito de acesso 
+
+**Hoje:** a matrícula é da conta, e não de cada criança. O número de perfis da conta é o do maior plano que ela tem, e os planos não se somam. 
+
+- O acesso pago pela escola é liberado na conta da família com a liberação manual com prazo, que já existe. Uma tabela de vagas guarda qual criança ocupa cada vaga, para o número de perfis, o mural e a cobrança da escola. As oficinas ao vivo já têm matrícula por criança, e esse é o precedente. 
+
+- O acesso da escola libera todos os cursos Kids, o que já inclui os cursos para pais, e não libera as ferramentas livres. O sistema já separa a ferramenta dentro da aula do Estúdio Completo, que é liberado à parte. O plano pelo código libera o mesmo que a Comunidade, menos o Mural e o Clube dos Criadores, que já são liberados à parte, e o Arquipélago e o ranking geral, que ganham uma trava própria. O perfil extra é uma oferta nova, de R$ 39,90 ao mês, que soma uma criança ao plano: hoje os perfis não se somam entre compras, e isso muda só para ela. 
+
+- A liberação leva a marca da instituição que paga, para o sistema saber de onde veio. Ela convive com o que a família já tem, e só ela expira quando a vaga termina. 
+
+- O número de perfis da conta passa a ser a união das crianças cobertas: o plano de 2 mais a vaga de um dos dois não vira 3. 
+
+- O maior valor, sem somar: a família tem um plano só, e nada é cancelado nem cobrado sem ela pedir. Quem paga R$ 97 e ganha um código continua nos R$ 97. Trocar de plano é parte nova e só acontece a pedido: abre a assinatura nova e encerra a antiga na mesma tela, com a primeira cobrança descontada do que já foi pago no mês, recurso que já existe. Não existe pausa de assinatura: voltar é assinar de novo. 
+
+4 
+
+## Tarefas e planos 
+
+**Hoje:** a plataforma confere os objetivos do projeto, calcula a nota do quiz no servidor e guarda cada verificação, tenha passado ou não. Não existe tarefa, prazo nem destinatário. 
+
+- Conjuntos: grupos de aulas de um curso, montados pela equipe no Admin. 
+
+- Tarefa, na escola, e plano, na parceira, sobre o mesmo motor: conjunto, destinatários, início, prazo opcional e nota opcional. 
+
+- O resultado é lido das verificações que já são guardadas e fica registrado no fim do prazo. Fez as aulas, cumpriu os objetivos e fez no prazo são três fatos separados. 
+
+- A nota junta os objetivos cumpridos e a melhor tentativa do quiz, mesmo feita antes da tarefa. 
+
+- Nada disso mexe em XP, posto ou conquistas. A mesma aula não dá XP duas vezes, e a tarefa não pula a ordem da Jornada. 
+
+5 
+
+## Mapa de habilidades 
+
+**Hoje:** os registros existem, mas ninguém os lê juntos. As partes de cada aula são recarregadas inteiras do arquivo da aula toda vez que ela é reimportada. 
+
+- A lista das seis habilidades, com os códigos da BNCC de cada ano escolar. 
+
+- A marcação das habilidades de cada parte, objetivo e quiz, guardada no próprio arquivo da aula, para não se perder na reimportação. 
+
+- A soma por criança, por turma e por instituição. 
+
+- O relatório da BNCC para a gestão, em arquivo. 
+
+6 
+
+## Mural e recados 
+
+**Hoje:** existe um mural por público, e publicar nele conta para a Jornada, sem ser obrigatório. Só a equipe do Sistema Zero modera. O ranking e a liga são um só por público. Nos recados, quem responde é sempre a equipe, em uma caixa única. 
+
+- Um mural para cada escola e para cada instituição, visível só para quem é de lá. Na primeira versão, o acesso usa a liberação de comunidade que já existe, uma por instituição e por segmento. Um jogo fica publicado em um mural só. O clube de cada escola entra depois, quando o professor puder moderar. Na clínica o mural começa desligado e depende da autorização de cada família. 
+
+- Publicar no mural da instituição passa a valer para a Jornada, como hoje vale o Mural dos Criadores. O professor e a gestão podem tirar do ar o que for publicado no espaço deles, e a moderação da equipe continua. A moderação ganha o retorno para quem denunciou e o caminho de recurso para quem publicou. 
+
+- O ranking e a liga gerais ficam só no plano de R$ 97. Cada escola pode ligar um ranking só dela, que começa desligado e mostra os primeiros lugares e a posição da própria criança, sem a lista até o último. A clínica não tem ranking, e o projeto educativo segue a regra da escola. 
+
+- O professor da instituição passa a responder recados, com uma caixa por turma e o recado para a turma inteira. A gestão pode abrir as conversas, com registro. 
+
+7 
+
+## Ajuda do Zappy e IA 
+
+**Hoje:** a ajuda por conversa depende do que a Jornada já liberou, da licença do Estúdio e de uma cota por conta, de 50 por dia e 500 por mês, paga pela plataforma. Não existe botão para desligar. As falas do Zappy nas aulas são conteúdo pronto, e não IA ao vivo. 
+
+- Um interruptor da IA de conversa por criança, que vale para a ajuda do Zappy, para o Pensa e para a descrição do jogo feita por IA. 
+
+- O ano escolar do aluno, guardado no vínculo com a escola, que decide a regra: desligada até o 5º ano, ligada pelo professor durante a aula do 6º ao 9º, e decidida pela gestão no ensino médio. 
+
+- O mesmo interruptor na área dos pais, para a família que quiser desligar. 
+
+- A cota continua por conta. O aluno sem o primeiro acesso da família não usa a conversa, e por isso não gasta cota. 
+
+8 
+
+## Área dos pais e supervisão 
+
+**Hoje:** a área dos pais mostra a semana de cada filho em XP, aulas, quizzes, entregas e medalhas. O tempo de uso não é gravado. 
+
+- O registro do tempo de uso, que é novo: a área da criança avisa o servidor enquanto está aberta, e os pais veem o tempo e definem um limite. 
+
+- Com quem cada filho conversa, e o aviso, para a criança, de que os pais acompanham. 
+
+- As habilidades da semana, a escola e a instituição conectadas. 
+
+- A sequência de dias continua como contador. Quebrar a sequência não tira nada, o protetor comprado com moedas sai, não há aviso de perda, e os pais podem desligar. 
+
+9 
+
+## Cobrança e nota fiscal 
+
+**Hoje:** a assinatura mensal é só no cartão, e o Pix vale para compras de uma vez. O boleto não tem tela. A nota fiscal sai só para CPF, e não existe contrato nem cobrança lançada pela equipe. 
+
+- A página do código é pública: quem já tem conta entra, e quem não tem cria a conta ali. O pagamento usa o mini checkout que já existe, com a conta já logada. 
+
+- O plano é da família, como hoje, e por isso continua valendo a trava que impede cobrança dobrada na mesma conta. 
+
+- Duas ofertas do plano pelo código: mensal no cartão e 6 meses no Pix. 
+
+- Para a instituição que paga: o contrato, a cobrança mensal lançada pela equipe e a nota fiscal para CNPJ, que hoje não existe e pede os dados da empresa que paga e a regra do imposto retido. Nas primeiras instituições, a cobrança é um Pix por mês e a nota é emitida à mão pela equipe. 
+
+10 
+
+## Formação e computador da instituição 
+
+**Hoje:** um curso adulto fora da Jornada já aceita aulas práticas, mas a assinatura adulta abriria a formação a qualquer assinante. No navegador, os trabalhos ficam guardados por perfil e nunca são apagados, e o salvamento na nuvem já existe para as ferramentas e para o rascunho da aula. 
+
+- Um tipo de curso para educadores, que a assinatura adulta não abre e que o vínculo com a instituição libera. 
+
+- A regra nova de que concluir a formação de mediador libera as turmas, e a trilha técnica aberta só enquanto houver turma ou criança ativa. 
+
+- No computador da instituição, o botão Sair confirma o salvamento na nuvem e só então limpa a máquina. Sem internet, ele avisa e guarda até a próxima conexão. 
+
+- O visualizador de entregas, que hoje é só do Admin, passa a existir também na área das instituições. 
+
+## As áreas, uma por uma 
+
+### Área de quem aprende 
+Hoje é a Comunidade Kids 
+
+Ganha o nome e a logo da instituição, a tarefa ou o plano no Início, o mural da instituição e a entrada pelo crachá. No espaço da escola o menu é mais curto, e a palavra Kids não aparece. 
+
+### Área dos pais 
+Já existe, dentro da Comunidade Kids 
+
+Ganha a página do código, as habilidades da semana, a escola e a instituição conectadas, o tempo de uso, com quem os filhos conversam e o interruptor da IA. 
+
+### Área das instituições 
+Hoje é a comunidade adulta 
+
+Ganha a gestão, a sala do professor, o painel do profissional e a formação. Os alunos adultos continuam entrando por ela, com os cursos, as ferramentas e o progresso que já têm. 
+
+### Admin da equipe 
+Hoje tem Turma, Conteúdo e Negócio 
+
+Ganha o grupo Instituições, para criar o espaço, acompanhar as vagas, lançar a cobrança das que pagam e dar suporte com entrada registrada. Os conjuntos e o Mapa de habilidades entram em Conteúdo. 
+
+### Site e páginas de venda 
+Hoje falam com Kids e com adultos 
+
+Ganham a entrada Para escolas, a entrada Para clínicas e projetos educativos e a página das instituições parceiras. 
+
+### Conteúdo novo 
+Gravado no formato que já existe 
+
+A formação de mediador, a trilha Ensinar a pensar, os postos seguintes da Jornada e, para a grade, os módulos de Mundo Digital e de Cidadania Digital.

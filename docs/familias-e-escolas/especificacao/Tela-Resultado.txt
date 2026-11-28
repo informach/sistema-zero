@@ -1,0 +1,102 @@
+PRANCHA: D4 · Professor · Resultado da tarefa (arquivo Tela-Resultado.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Minhas turmas 
+
+Tarefas 
+
+Recados 
+
+Minha formação 
+
+R 
+
+**Renata** Professora 
+
+Tarefas 
+
+# Nave Contra Asteroides, aulas 1 a 3 
+6º ano B · de 3 a 14 de setembro · faltam 3 dias · sem nota 
+
+Baixar a lista 
+
+Passar as aulas 4 a 6 
+
+17 de 28 
+alunos concluíram as três aulas 
+
+25 
+fizeram a aula 1, A nave se move 
+
+22 
+fizeram a aula 2, A nave atira 
+
+17 
+fizeram a aula 3, Os asteroides 
+
+## Aluno por aluno 
+
+Ver os 28 
+
+Aluno 
+Aulas 
+Objetivos 
+Quiz 
+Tentativas 
+Situação 
+
+**Rafael L.** 3 de 3 7 de 7 Aprovado 8 Concluiu no prazo 
+
+**Alice P.** 3 de 3 7 de 7 Aprovado 7 Fez em casa, em agosto 
+
+**Theo M.** 2 de 3 4 de 7 Aprovado 5 Fazendo a aula 3 
+
+**Sofia S.** 1 de 3 3 de 7 Ainda não fez 6 Parada na aula 2 
+
+**Pedro R.** 0 de 3 0 de 7 Ainda não fez 0 Não começou 
+
+**Bento A.** Não abriu Não abriu Não abriu 0 No posto Faísca 
+
+Tentativas são as vezes em que o aluno clicou em Verificar projeto. Tentar de novo faz parte da aula, e não tira ponto. 
+
+## Onde a turma mais travou 
+**Aula 2, objetivo "O tiro some quando sai da tela".** 9 alunos precisaram de 4 tentativas ou mais para cumprir. 
+Vale retomar com a turma: o que acontece com o tiro depois que ele passa do alto da tela? 
+
+Nesta tarefa a turma praticou: 
+Pensar em passos 
+Testar e corrigir 
+
+## Sofia S. 
+Construtora · 1 de 3 aulas · 6 tentativas 
+
+**Aula 2 · A nave atira** 
+
+O tiro sai da ponta da nave Cumprido 
+
+O tiro some quando sai da tela Falta 
+Última verificação na terça passada, 4 de setembro. 
+
+Recado dela, na terça passada 
+"Prof, o meu tiro fica parado lá em cima e não some." 
+
+Abrir o projeto 
+
+Responder 
+
+**O que conta como entrega** 
+A aula fica feita quando o projeto cumpre os objetivos e o aluno verifica. Ninguém precisa enviar arquivo, e você não precisa corrigir jogo por jogo.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Hoje cada aparelho autorizado pertence a uma família. O computador da escola é um tipo novo de aparelho: aceita qualquer aluno daquela escola, não tem área dos pais nem compra, e limpa o que ficou guardado na máquina depois de salvar na nuvem.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, logo depois do cadastro. Leva aos três passos que faltam: autorizar o aparelho de casa, com a autorização que já existe, conhecer a área dos pais e começar o curso para pais, que vem incluído também para quem entra pela escola ou pela instituição parceira. Na escola nada depende desses passos.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o mural que já existe, com um espaço próprio por escola e por segmento: aqui, só o 6º e o 7º ano do Colégio Araucária veem e jogam. A publicação continua passando pela moderação atual e conta para a Jornada. Não há classificação nem liga. As capas são as que as crianças fazem, e aqui estão só indicadas. A Mostra de Jogos é um evento da escola: a plataforma entra com o mural, sem tela própria. O clube de cada escola entra numa fase seguinte, com o professor moderando.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Aulas feitas, objetivos cumpridos, quiz e tentativas são fatos separados, todos já registrados pela plataforma. "Onde a turma mais travou" sai do registro de verificações. "Abrir o projeto" segue a mesma regra da tela D2. "Baixar a lista" gera uma planilha para o diário da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. O profissional vê só as crianças que atende e só o que está no plano. Não há campo de observação: a anotação clínica fica no prontuário da clínica, e a plataforma entrega os fatos da semana para exportar. O profissional conversa com a família, e nunca com a criança. Clínica Girassol é um nome de exemplo.

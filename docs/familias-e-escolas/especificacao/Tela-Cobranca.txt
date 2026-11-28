@@ -1,0 +1,76 @@
+PRANCHA: A7 · Equipe · Vagas e cobrança (arquivo Tela-Cobranca.dc.html, página "telas")
+
+TURMA 
+
+Hoje 
+
+Projetos 
+
+Recados 
+
+Alunos 
+
+CONTEÚDO 
+
+Cursos 
+
+Jornada 
+
+Conjuntos 
+
+Mapa de habilidades 
+
+INSTITUIÇÕES 
+
+Escolas e parceiras 
+
+Vagas e cobrança 
+
+NEGÓCIO 
+
+Visão geral 
+
+Vendas 
+
+Catálogo 
+
+# Vagas e cobrança 
+A conta de cada instituição no mês, pelos alunos ativos no dia 1º. 
+
+Mês 
+Setembro de 2029 
+
+Instituição 
+Como contrata 
+Ativos no dia 1º 
+Valor 
+Total do mês 
+Pix 
+Nota fiscal 
+
+**Colégio Araucária** Grade, paga pela escola 118 alunos R$ 39,90 R$ 4.708,20 Recebido no dia 5 
+Nota nº 142 
+
+**Ateliê Curumim** Programa próprio, pago pela instituição 22 crianças R$ 49,90 R$ 1.097,80 Aguardando 
+Registrar o Pix 
+
+**Clínica Girassol** As famílias pagam pelo código 7 famílias pagantes Sem cobrança Sem cobrança Sem cobrança Sem nota 
+
+**Colégio Ipê** Contraturno Preparando Sem cobrança Sem cobrança Sem cobrança Sem nota 
+
+## Como a conta é feita 
+Contam os alunos ativos no dia 1º. Quem entra no meio do mês conta a partir do mês seguinte. 
+A escola na grade paga R$ 39,90 por aluno com 50 alunos ou mais, e R$ 49,90 abaixo disso. A instituição que paga as vagas paga R$ 49,90. 
+
+## Planos de cortesia 
+**Colégio Araucária:** 22 famílias pagantes no contraturno, 1 plano de cortesia. Bolsista ainda não indicado. 
+**Clínica Girassol:** 7 famílias pagantes. Faltam 13 para o primeiro plano de cortesia. 
+
+## Nesta fase 
+A equipe confere o Pix e emite a nota fiscal para CNPJ à mão, no emissor nacional. Esta tela guarda o registro. A cobrança feita pelo sistema fica para quando houver mais instituições.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova no Admin da equipe. Nas primeiras instituições não há cobrança automática: a equipe confere o Pix e emite a nota fiscal para CNPJ à mão, e a tela guarda o registro. A conta usa os alunos ativos no dia 1º. Os planos de cortesia são contados aqui. As telas mostram a primeira versão: a cobrança feita pelo sistema e o clube de cada escola ficam para quando o número de escolas pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É a transparência que sustenta a confiança da família: o que a escola vê, o que ela não vê e quem são as pessoas com acesso. A escola não fica sabendo do acompanhamento na clínica, e a clínica não fica sabendo da escola. A inscrição do contraturno pode ser cancelada aqui, sem falar com ninguém.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. No exemplo do roteiro o ranking do Colégio Araucária está desligado (tela A6): esta tela mostra como fica quando a gestão liga. Hoje o ranking é um só para todas as crianças, e o da escola é parte nova, prevista para 2028. A lista mostra os três primeiros e a posição da própria criança, e não incentiva a subir de posição. Os pais podem tirar o filho do ranking na área dos pais.

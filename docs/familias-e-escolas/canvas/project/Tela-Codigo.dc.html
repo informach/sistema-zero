@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Família: bilhete da escola</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+body{margin:0;background:#e9eef6}
+*{box-sizing:border-box}
+a{color:#1343b8}a:hover{color:#0a2a7a}
+</style>
+</helmet>
+<div style="font-family: 'Nunito', system-ui, sans-serif; color: #0f1a33; font-size: 17px; line-height: 1.5; background: #e9eef6">
+
+<header style="background: #ffffff; border-bottom: 1px solid #d6deea">
+<div style="max-width: 1200px; margin: 0 auto; padding: 18px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap">
+<img src="/_blob/b4694f24ec9b20134b6821b124a4aa40" alt="Sistema Zero" style="width: 200px; height: auto">
+<span style="color: #46536e; font-weight: 700">com</span>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 44px; height: 44px; border-radius: 12px; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 20px">CA</div>
+<strong style="font-size: 18px">Colégio Araucária</strong>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1200px; margin: 0 auto; padding: 48px 40px 72px; display: flex; flex-direction: column; gap: 36px">
+
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 860px">
+<h1 style="margin: 0; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 46px; line-height: 1.1">O Theo já tem acesso pelo Colégio Araucária</h1>
+<p style="margin: 0; font-size: 20px; color: #46536e">Neste ano, ele vai aprender a pensar criando os próprios jogos nas aulas do 6º ano. A escola já garantiu o acesso, e não há nenhuma cobrança à parte. Faça o seu primeiro acesso para ele continuar em casa e para você acompanhar.</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+
+<form style="flex: 999 1 560px; min-width: 0; background: #ffffff; border-radius: 24px; box-shadow: 0 8px 22px rgba(28,48,90,0.1); padding: 36px; display: flex; flex-direction: column; gap: 32px">
+
+<fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px">
+<legend style="padding: 0; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 26px; margin-bottom: 12px">1. O bilhete</legend>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="codigo" style="font-weight: 700">Código que veio no bilhete</label><input id="codigo" type="text" value="K7Q3-M2XP-9R" style="height: 52px; border: 2px solid #0b7a54; border-radius: 14px; padding: 0 16px; font-family: inherit; font-size: 18px; font-weight: 800; letter-spacing: 0.06em; color: #0f1a33; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="nascimento" style="font-weight: 700">Data de nascimento do seu filho</label><input id="nascimento" type="text" value="14/11/2017" style="height: 52px; border: 2px solid #0b7a54; border-radius: 14px; padding: 0 16px; font-family: inherit; font-size: 18px; color: #0f1a33; width: 100%"></div>
+</div>
+<span style="color: #096b4a; font-weight: 700">Tudo certo: Theo M., 6º ano B.</span>
+</fieldset>
+
+<fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px">
+<legend style="padding: 0; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 26px; margin-bottom: 12px">2. Seu primeiro acesso</legend>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="nome" style="font-weight: 700">Seu nome completo</label><input id="nome" type="text" value="Marina Duarte" style="height: 48px; border: 1.5px solid #74829f; border-radius: 14px; padding: 0 14px; font-family: inherit; font-size: 17px; color: #0f1a33; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="email" style="font-weight: 700">Seu e-mail, o que a escola tem no cadastro</label><input id="email" type="email" value="marina@exemplo.com.br" style="height: 48px; border: 1.5px solid #74829f; border-radius: 14px; padding: 0 14px; font-family: inherit; font-size: 17px; color: #0f1a33; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="celular" style="font-weight: 700">Seu celular</label><input id="celular" type="tel" value="(31) 90000-0000" style="height: 48px; border: 1.5px solid #74829f; border-radius: 14px; padding: 0 14px; font-family: inherit; font-size: 17px; color: #0f1a33; width: 100%"></div>
+</div>
+<a href="#entrar" style="font-weight: 700">Já tenho senha no Sistema Zero</a>
+</fieldset>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<label style="display: flex; gap: 12px; align-items: flex-start"><input type="checkbox" checked style="width: 22px; height: 22px; min-width: 22px; margin-top: 2px"><span>Sou responsável pelo Theo e quero acompanhar o que ele faz no Sistema Zero.</span></label>
+<button type="button" style="align-self: flex-start; height: 52px; padding: 0 32px; border: 0; border-radius: 999px; background: #1b5cf3; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 800; box-shadow: 0 4px 0 #1343b8">Confirmar e entrar</button>
+<p style="margin: 0; color: #46536e; font-size: 16px">O Colégio Araucária vê o posto do Theo e o que ele fizer nas aulas das tarefas da escola, mesmo quando ele fizer em casa. O resto do que ele criar continua sendo só da família.</p>
+</div>
+</form>
+
+<aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<div style="background: #121a30; color: #ffffff; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #cbd4e8">O que vem com a sua conta</div>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px">
+<li>O Theo faz as aulas e as tarefas também em casa, nos aparelhos que você autorizar</li>
+<li>Você vê as habilidades que ele pratica e as tarefas da escola</li>
+<li>Você recebe os cursos para pais</li>
+<li>Você acompanha o tempo de uso e com quem ele conversa</li>
+</ul>
+<div style="font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 26px; line-height: 1.1">Sem cobrança à parte</div>
+</div>
+<div style="background: #ffffff; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<strong>Tem outro filho no Colégio Araucária?</strong>
+<span>Use o bilhete dele em Conta, na área dos pais. Cada filho aparece depois do bilhete dele.</span>
+</div>
+<div style="background: #ffffff; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<strong>Perdeu o bilhete?</strong>
+<span>Peça outro na secretaria da escola. O código antigo deixa de valer.</span>
+</div>
+</aside>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1183}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

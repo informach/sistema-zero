@@ -1,0 +1,181 @@
+PRANCHA: 0 · A direção (arquivo Main.dc.html, página "direcao")
+
+Proposta de direção · 28 de novembro de 2026 · para Helena e Júlio 
+
+# Famílias e Escolas 
+
+Criar jogos é o meio. Aprender a pensar é o fim. 
+
+Uma plataforma com duas portas de entrada e uma Jornada só. A criança aprende a pensar criando jogos, em casa e na escola, e cada adulto que cuida dela ganha o seu lugar e o apoio de que precisa. 
+
+A promessa 
+
+## O que cada pessoa vem fazer aqui 
+
+Ninguém entra no Sistema Zero para "fazer um curso de jogos". O jogo é a atividade que prende a criança, e é por meio dela que a criança pratica o jeito de pensar que vai usar na escola e na vida. 
+
+A criança e o adolescente 
+
+### Aprendem a pensar criando jogos 
+
+Cada jogo pede que eles planejem, dividam um problema grande em partes, pensem em passos, testem, corrijam o que deu errado e mostrem o que fizeram. 
+
+A família 
+
+### Entende o que o filho pratica e aprende a apoiar 
+
+A área dos pais mostra as habilidades da semana em linguagem do dia a dia, e os cursos para pais ajudam a lidar com frustração, telas e autonomia. 
+
+A escola 
+
+### Ensina pensamento computacional com evidência 
+
+Cada turma tem o registro do que foi praticado, ligado às habilidades da BNCC Computação, sem depender de um professor de programação. 
+
+As seis habilidades que todo projeto pede 
+
+Planejar 
+Dividir o problema 
+Pensar em passos 
+Testar e corrigir 
+Persistir 
+Criar e mostrar 
+
+A plataforma mostra o que a criança praticou e o que ela construiu. Ela fala em praticar e em aprender a pensar, e não em "treino cognitivo" nem em ganho garantido, porque a pesquisa associa programação a essas habilidades mas não permite prometer resultado para cada criança. 
+
+Minha resposta 
+
+## Sua direção está certa. Eu só mudo o eixo da divisão. 
+
+Em vez de trocar "criança e adulto" por "família e escola", a plataforma passa a separar quem aprende de quem acompanha. Famílias e Escolas viram as duas portas de venda, e por dentro existe uma área de quem aprende e uma área para cada adulto que acompanha. 
+
+Ajuste 1 
+
+### A área de quem aprende é uma só 
+
+Aluno de escola é criança ou adolescente. Por isso ele usa a área que hoje é a Comunidade Kids, com a Jornada do Criador, as ferramentas e todas as proteções. Na escola ela aparece com o nome e a logo da escola, sem a palavra Kids. 
+
+Ajuste 2 
+
+### A comunidade adulta vira a casa de quem ensina 
+
+Ela passa a ser o ambiente das instituições, com gestão, sala do professor e formação. Os mesmos cursos de criação de jogos, na versão adulta que já existe, viram a trilha técnica dos professores. Quem é aluno adulto hoje continua com tudo o que comprou. 
+
+Ajuste 3 
+
+### A família paga o que é opcional, e a escola paga a grade 
+
+No contraturno e na clínica, a família entra por um código e paga, como você intuiu, com a cobrança que já funciona. Na grade, a escola não pode obrigar a família a comprar de um fornecedor, e por isso é ela quem paga pela turma inteira. 
+
+A ideia central 
+
+## Uma criança, uma Jornada, vários espaços 
+
+O Theo tem 11 anos e é Construtor. A Jornada, os projetos e os certificados são dele e vão com ele. O que muda é o espaço em que ele está, e cada espaço tem as suas pessoas e as suas regras. 
+
+T 
+
+Theo, 11 anos 
+
+O que é dele vai junto para qualquer espaço 
+
+Jornada do Criador 
+Posto: Construtor 
+Habilidades praticadas 
+Projetos e certificados 
+
+Espaço da família 
+
+### A casa do Theo 
+
+**Quem está:** a mãe, como responsável, e a irmã dele. 
+
+**O que acontece aqui:** assinatura e compras, aparelhos e tempo de uso, cursos para pais, a escola conectada e quem acompanha o Theo. 
+
+Espaço da escola 
+
+### O colégio do Theo, 6º ano B 
+
+**Quem está:** a gestora, a professora mediadora e os colegas da turma. 
+
+**O que acontece aqui:** tarefas com prazo, acompanhamento da turma, mural da escola e relatórios para a gestão. 
+
+Espaço de uma instituição parceira 
+
+### A clínica que acompanha o Theo 
+
+**Quem está:** a coordenadora e a profissional que atende o Theo. 
+
+**O que acontece aqui:** um plano combinado, o acompanhamento do que ele fez e a conversa com a família. 
+
+O que é de um espaço não aparece no outro. A escola vê as tarefas da escola, a clínica vê o plano que combinou, e a família acompanha os dois. 
+
+O que eu proponho 
+
+## As dez decisões desta proposta 
+
+1 
+
+**A promessa é aprender a pensar** Criar jogos é o meio. O Mapa de habilidades mostra o que cada criança praticou, com uma leitura para a família, uma para a escola e uma para o profissional. 
+
+2 
+
+**Duas portas: Famílias e Escolas** O professor entra pela escola, sem virar um terceiro produto. Clínicas e projetos educativos entram como instituições parceiras, com o desenho da escola e o mesmo preço para a família. 
+
+3 
+
+**Uma área de quem aprende, dos 5 aos 17 anos** A mesma Jornada do Criador em casa e na escola. O progresso é da criança e não recomeça quando ela muda de espaço. 
+
+4 
+
+**A área dos pais vira o centro da família** Filhos, habilidades da semana, aparelhos e tempo de uso, cursos para pais, a escola conectada e quem acompanha cada filho. 
+
+5 
+
+**A comunidade adulta vira o ambiente das instituições** Gestão, sala do professor e formação, sem tirar nada de quem já é aluno adulto. 
+
+6 
+
+**Quem paga depende de ser opcional ou para todos** No contraturno e na parceira, a família paga pelo código. Na grade, a escola paga e todo aluno tem acesso. 
+
+7 
+
+**O professor é mediador** As aulas gravadas ensinam, a plataforma confere, e o professor acompanha a turma sem precisar saber programar. 
+
+8 
+
+**Tarefas com prazo em cima da Jornada que já existe** A nota é opcional e só usa o que a plataforma confere sozinha: quiz e objetivos do projeto. 
+
+9 
+
+**Cada instituição é um espaço isolado** Pessoas, turmas, tarefas, recados e mural de uma escola nunca aparecem para outra. 
+
+10 
+
+**Uma ordem que protege o que já funciona** Primeiro a família, depois a primeira parceira, depois a escola no contraturno e, no segundo semestre de 2027, o piloto e a venda da grade para 2028. 
+
+### O que fica para depois 
+
+Nada disto é necessário para a proposta funcionar, e cada item pode voltar quando houver pedido de cliente: 
+
+- cursos refeitos por série escolar; 
+
+- formação de professor vendida avulsa; 
+
+- domínio e aplicativo próprios de cada escola; 
+
+- boletim completo e integração de notas; 
+
+- convite para um segundo responsável na mesma conta. 
+
+**E o que o Sistema Zero não faz:** ranking entre escolas, anotação clínica e promessa de tratamento ou de ganho garantido. 
+
+### Como ler este Canvas 
+
+**1 · Direção.** Esta prancha, o que a pesquisa mostrou e a minha leitura do parecer que você recebeu. 
+
+**2 · Como funciona.** O Mapa de habilidades, pessoas, espaços e papéis, a escola do aceite à primeira aula, o que se vende, quem paga em cada situação e as instituições parceiras. 
+
+**3 · Telas.** O roteiro completo em cinco fluxos, com 41 telas e o texto que cada pessoa leria, na identidade visual que a plataforma já tem. 
+
+**4 · Plataforma e plano.** O que muda no sistema, como os dados ficam protegidos e o plano em fases.

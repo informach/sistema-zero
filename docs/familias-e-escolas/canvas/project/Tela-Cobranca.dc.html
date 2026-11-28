@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Admin: vagas e cobrança</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap">
+<style>
+body{margin:0;background:#e9eef6}
+*{box-sizing:border-box}
+a{color:#1b5cf3}a:hover{color:#164cca}
+</style>
+</helmet>
+<div style="font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #0f1a33; font-size: 16px; line-height: 1.5; background: #e9eef6; display: flex; flex-wrap: wrap; min-height: 900px">
+
+<nav style="flex: 1 1 250px; max-width: 100%; background: #121a30; color: #cbd4e8; padding: 24px 18px; display: flex; flex-direction: column; gap: 22px">
+<img src="/_blob/b071f94b0478ee7c6b96469a94dbe0b1" alt="Sistema Zero" style="width: 170px; height: auto">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">TURMA</span>
+<a href="#hoje" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Hoje</a>
+<a href="#projetos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Projetos</a>
+<a href="#recados" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Recados</a>
+<a href="#alunos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Alunos</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">CONTEÚDO</span>
+<a href="#cursos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Cursos</a>
+<a href="#jornada" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Jornada</a>
+<a href="#conjuntos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Conjuntos</a>
+<a href="#habilidades" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Mapa de habilidades</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">INSTITUIÇÕES</span>
+<a href="#instituicoes" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Escolas e parceiras</a>
+<a href="#cobranca" style="background: #1b5cf3; color: #ffffff; text-decoration: none; font-weight: 700; padding: 8px 12px; border-radius: 10px">Vagas e cobrança</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">NEGÓCIO</span>
+<a href="#visao" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Visão geral</a>
+<a href="#vendas" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Vendas</a>
+<a href="#catalogo" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Catálogo</a>
+</div>
+</nav>
+
+<main style="flex: 999 1 640px; min-width: 0; padding: 32px 36px 48px; display: flex; flex-direction: column; gap: 22px">
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 34px; line-height: 1.1">Vagas e cobrança</h1>
+<span style="color: #46536e">A conta de cada instituição no mês, pelos alunos ativos no dia 1º.</span>
+</div>
+<label style="display: flex; align-items: center; gap: 10px; font-weight: 700">Mês<select style="height: 44px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #0f1a33; background: #ffffff"><option>Setembro de 2029</option></select></label>
+</div>
+
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 6px">
+<div style="overflow-x: auto">
+<div style="min-width: 1000px">
+<div style="display: grid; grid-template-columns: 1.3fr 1.5fr 1fr 0.8fr 0.9fr 1.3fr 1.2fr; gap: 12px; padding: 10px 0; color: #46536e; font-size: 14px; font-weight: 700; border-bottom: 1px solid #d6deea">
+<div>Instituição</div><div>Como contrata</div><div>Ativos no dia 1º</div><div>Valor</div><div>Total do mês</div><div>Pix</div><div>Nota fiscal</div>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 1.5fr 1fr 0.8fr 0.9fr 1.3fr 1.2fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>Colégio Araucária</strong><span>Grade, paga pela escola</span><span>118 alunos</span><span>R$ 39,90</span><span>R$ 4.708,20</span><span><span style="background: #dcf0e4; color: #096b4a; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: 14px">Recebido no dia 5</span></span><span><a href="#nota" style="font-weight: 700">Nota nº 142</a></span>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 1.5fr 1fr 0.8fr 0.9fr 1.3fr 1.2fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>Ateliê Curumim</strong><span>Programa próprio, pago pela instituição</span><span>22 crianças</span><span>R$ 49,90</span><span>R$ 1.097,80</span><span><span style="background: #fff3c4; color: #5c4000; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: 14px">Aguardando</span></span><span><a href="#registrar" style="font-weight: 700">Registrar o Pix</a></span>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 1.5fr 1fr 0.8fr 0.9fr 1.3fr 1.2fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>Clínica Girassol</strong><span>As famílias pagam pelo código</span><span>7 famílias pagantes</span><span>Sem cobrança</span><span>Sem cobrança</span><span>Sem cobrança</span><span>Sem nota</span>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 1.5fr 1fr 0.8fr 0.9fr 1.3fr 1.2fr; gap: 12px; padding: 14px 0; align-items: center">
+<strong>Colégio Ipê</strong><span>Contraturno</span><span>Preparando</span><span>Sem cobrança</span><span>Sem cobrança</span><span>Sem cobrança</span><span>Sem nota</span>
+</div>
+</div>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 22px">
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Como a conta é feita</h2>
+<span>Contam os alunos ativos no dia 1º. Quem entra no meio do mês conta a partir do mês seguinte.</span>
+<span>A escola na grade paga R$ 39,90 por aluno com 50 alunos ou mais, e R$ 49,90 abaixo disso. A instituição que paga as vagas paga R$ 49,90.</span>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Planos de cortesia</h2>
+<span><strong>Colégio Araucária:</strong> 22 famílias pagantes no contraturno, 1 plano de cortesia. Bolsista ainda não indicado.</span>
+<span><strong>Clínica Girassol:</strong> 7 famílias pagantes. Faltam 13 para o primeiro plano de cortesia.</span>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 10px; background: #fff3c4; border-color: #fff3c4">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Nesta fase</h2>
+<span>A equipe confere o Pix e emite a nota fiscal para CNPJ à mão, no emissor nacional. Esta tela guarda o registro. A cobrança feita pelo sistema fica para quando houver mais instituições.</span>
+</section>
+</div>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":908}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

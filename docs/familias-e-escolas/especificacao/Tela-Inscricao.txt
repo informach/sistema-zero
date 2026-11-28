@@ -1,0 +1,58 @@
+PRANCHA: B3 · Família · Inscrição no contraturno (arquivo Tela-Inscricao.dc.html, página "telas")
+
+com 
+
+CA 
+**Colégio Araucária** 
+
+Você entrou como **Marina** 
+
+# Criação de Jogos no contraturno do Colégio Araucária 
+
+Uma turma do 4º e do 5º ano, às terças, das 14h às 15h. As crianças aprendem a pensar criando os próprios jogos, com a professora Lúcia por perto. A participação é opcional. 
+
+### 1. Quem vai participar 
+
+Lia, 9 anos, 4º ano 
+
+Cadastrar outra criança 
+O Theo já tem as aulas pela turma do 6º ano. Com o plano, ele também ganha as ferramentas livres em casa. Como a Lia está no 4º ano, a conversa com o Zappy fica desligada para ela, também em casa. 
+
+### 2. Pagamento 
+
+No cartão, R$ 69,90 por mês, sem fidelidade 
+
+No Pix, 6 meses por R$ 399 
+
+Seu CPF, para a nota fiscal [campo: 000.000.000-00] 
+
+Inscrever a Lia e pagar 
+
+Você pode cancelar quando quiser, na área dos pais, e a Lia usa até o fim do mês pago. Nos primeiros 7 dias, devolvemos o valor inteiro. No Pix, o acesso vale pelos 6 meses pagos. 
+
+O plano da família, com o código da escola 
+
+R$ 69,90 por mês 
+
+- Todos os cursos da Jornada do Criador 
+
+- Estúdio, Pinta, Pensa e Molda livres, para criar à vontade 
+
+- O encontro semanal na escola e o uso em casa 
+
+- Os cursos para pais e a área dos pais para você 
+
+- O mesmo valor cobre até 2 filhos 
+
+**Já paga os R$ 97?** 
+Você continua nos R$ 97, com o Mural e o Clube dos Criadores, e inscreve o filho sem pagar nada a mais. Se preferir, pode trocar para o plano pelo código, em Conta, na tela Planos.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. A planilha pede nome, turma, data de nascimento e e-mail do responsável. Com o e-mail, a conta da família é criada ou encontrada na importação, pelo mesmo caminho que a compra usa hoje, e nenhum perfil precisa mudar de dono depois. Sem e-mail, o aluno fica numa conta provisória. Linhas com pendência ficam de fora, e nada é gravado antes do botão.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, com o mini checkout que já existe na área dos pais. O contraturno é opcional, e a família entra pelo plano da família com o código da escola: R$ 69,90 por mês no cartão ou 6 meses por R$ 399 no Pix, para até 2 filhos. É a Comunidade sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Quem já paga R$ 97 inscreve o filho sem pagar nada a mais.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra o que falta para a tarefa, com os objetivos que a plataforma confere. A entrega acontece quando os objetivos são cumpridos e o aluno clica em Verificar projeto, sem botão de enviar. O botão leva para a aula do curso, que é a mesma de hoje. Uma pista é conteúdo pronto da aula, e não conversa com IA.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Os conjuntos são montados pela equipe no Admin, e o professor não monta aula. A nota só existe para o que a plataforma confere sozinha: objetivos cumpridos e a melhor tentativa do quiz. Quem já fez as aulas em casa aparece como feito, sem refazer. O aluno que ainda está no posto anterior recebe a tarefa quando terminar o que falta, porque a tarefa não pula a Jornada. Quem decide usar nota é o professor, em cada tarefa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. O plano usa o mesmo motor das tarefas da escola, sem nota e sem prazo de entrega. As aulas saem dos mesmos conjuntos preparados pela equipe. O objetivo é um texto curto, lido pela família, e não existe campo de diagnóstico nem de anotação clínica.

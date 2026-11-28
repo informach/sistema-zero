@@ -1,0 +1,30 @@
+PRANCHA: D6 · Entrar · Escolher a área (arquivo Tela-EscolherArea.dc.html, página "telas")
+
+Preciso de ajuda para entrar 
+
+# Onde você quer entrar? 
+Quem é professor e também é pai usa a mesma conta nas duas áreas. Uma não mostra o que é da outra. 
+
+Sua família 
+
+## Área dos pais 
+O que os seus filhos praticam, o tempo de uso, os cursos para pais e a sua conta. 
+**Entrar na área dos pais** 
+
+Seu trabalho 
+
+## Área da escola ou da instituição 
+Para professores, gestores e profissionais. As turmas, as tarefas, os recados e a formação. 
+**Entrar na área da escola** 
+
+É a mesma conta, com o mesmo e-mail e a mesma senha. Cada área pede a senha quando você entra nela. Quem dá aula em duas escolas escolhe a escola depois de entrar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições (hoje comunidade adulta). Mostra as turmas, os bilhetes usados e o que as turmas praticaram. Os números de habilidade saem dos registros da plataforma, e os códigos da BNCC são os do ano de cada turma. A gestão não vê pagamento de família. Ela vê quem usou cada bilhete e pode desfazer um engano, e quando abre um recado fica o registro de quem abriu. Colégio Araucária e as pessoas são exemplos. A escola indica o bolsista do plano de cortesia em Pessoas. Depois da preparação, a gestão fala com a equipe pela Central do mediador, em Formação. Os recados de uma turma são abertos a partir de Turmas, com o registro de quem abriu. O ranking da escola começa desligado: hoje o ranking é um só para todas as crianças, e o da escola é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É a página do filho que já existe, com as abas de hoje. O que é novo na aba Progresso: as habilidades praticadas, a tarefa da escola e o plano combinado da instituição parceira. Os outros blocos (Esta semana, Jornada do Criador) são os atuais. A contagem de habilidades vem das partes de aula e dos objetivos marcados no arquivo de cada aula.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É a tela de recados que já existe. O que é novo: no espaço da escola, quem responde é o professor da turma, e não a equipe. O aluno sem o primeiro acesso da família também usa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na página Entrar do site. A área dos pais e a área das instituições são dois aplicativos, e hoje quem entra em um não fica dentro do outro. Por isso a escolha acontece antes de entrar, e cada área pede a senha. A entrada única fica como melhoria para depois.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. Junta o que a coordenação faz com as famílias: ver quem entrou pelo código e tirar quem não é atendido ali, acompanhar o plano de cortesia, ligar o mural da clínica, pedir o programa próprio e completar a página da clínica no site. A coordenação não vê pagamento de nenhuma família.

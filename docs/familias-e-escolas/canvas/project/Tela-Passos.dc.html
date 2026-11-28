@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Gestão: primeiros passos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap">
+<style>
+body{margin:0;background:#f5f7fb}
+*{box-sizing:border-box}
+a{color:#1343b8}a:hover{color:#0a2a7a}
+</style>
+</helmet>
+<div style="font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #0f1a33; font-size: 17px; line-height: 1.5; background: #f5f7fb">
+
+<header style="background: #0b0e1a; color: #f2f4fa">
+<div style="max-width: 1360px; margin: 0 auto; padding: 14px 40px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap">
+<img src="/_blob/b071f94b0478ee7c6b96469a94dbe0b1" alt="Sistema Zero" style="width: 170px; height: auto">
+<div style="display: flex; align-items: center; gap: 10px; background: #1a2040; border: 1px solid #2c3563; border-radius: 12px; padding: 6px 14px 6px 6px">
+<div style="width: 36px; height: 36px; border-radius: 9px; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 16px">CA</div>
+<strong>Colégio Araucária</strong>
+</div>
+<nav style="display: flex; gap: 6px; flex-wrap: wrap; flex: 1 1 420px">
+<a href="#inicio" style="color: #0b0e1a; background: #ffc02e; text-decoration: none; font-weight: 700; padding: 10px 16px; border-radius: 10px">Início</a>
+<a href="#turmas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Turmas</a>
+<a href="#pessoas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Pessoas</a>
+<a href="#tarefas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Tarefas</a>
+<a href="#relatorios" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Relatórios</a>
+<a href="#formacao" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Formação</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: #6e9bff; color: #0b0e1a; display: flex; align-items: center; justify-content: center; font-weight: 700">M</div>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><strong>Marta</strong><span style="color: #c9d1e6; font-size: 14px">Gestora</span></div>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1360px; margin: 0 auto; padding: 40px 40px 64px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<div style="flex: 999 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 40px; line-height: 1.1">Vamos preparar o Colégio Araucária</h1>
+<span style="color: #46536e">São cinco passos. Você já fez dois, e pode parar e voltar quando quiser.</span>
+</div>
+<div style="height: 14px; border-radius: 999px; background: #e2ebff"><div style="width: 40%; height: 14px; border-radius: 999px; background: #1b5cf3"></div></div>
+
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; padding: 24px; display: flex; gap: 18px; align-items: flex-start">
+<div style="width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700">1</div>
+<div style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 20px">A logo da escola</strong><span style="color: #096b4a; font-weight: 700">Feito. Ela aparece para alunos, professores e famílias.</span></div>
+</section>
+
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; padding: 24px; display: flex; gap: 18px; align-items: flex-start">
+<div style="width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700">2</div>
+<div style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 20px">As turmas</strong><span style="color: #096b4a; font-weight: 700">Feito. 4 turmas da grade, com 118 alunos, e 1 turma de contraturno.</span><a href="#importar" style="font-weight: 700">Importar outra turma</a></div>
+</section>
+
+<section style="background: #ffffff; border: 2px solid #1b5cf3; border-radius: 20px; padding: 24px; display: flex; gap: 18px; align-items: flex-start">
+<div style="width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: #1b5cf3; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700">3</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<strong style="font-size: 20px">Os professores</strong>
+<span>Você convidou 3 professores. 2 já entraram e fizeram a formação de mediador, e 1 ainda não abriu o convite.</span>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button type="button" style="min-height: 50px; padding: 0 22px; border: 0; border-radius: 12px; background: #ffc02e; color: #0b0e1a; font-family: inherit; font-size: 17px; font-weight: 700; box-shadow: 0 4px 0 #c98a00">Convidar professor</button>
+<button type="button" style="min-height: 50px; padding: 0 22px; border: 1.5px solid #74829f; border-radius: 12px; background: #ffffff; color: #0f1a33; font-family: inherit; font-size: 17px; font-weight: 700">Reenviar o convite</button>
+</div>
+</div>
+</section>
+
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; padding: 24px; display: flex; gap: 18px; align-items: flex-start">
+<div style="width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: #eff3f9; color: #46536e; display: flex; align-items: center; justify-content: center; font-weight: 700">4</div>
+<div style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 20px">Os computadores da escola</strong><span>Abra o Sistema Zero em cada computador que os alunos vão usar e autorize. Nenhum foi autorizado ainda.</span><a href="#aparelhos" style="font-weight: 700">Autorizar os computadores</a></div>
+</section>
+
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; padding: 24px; display: flex; gap: 18px; align-items: flex-start">
+<div style="width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: #eff3f9; color: #46536e; display: flex; align-items: center; justify-content: center; font-weight: 700">5</div>
+<div style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 20px">Os crachás e os bilhetes</strong><span>O crachá é o que o aluno usa para entrar nos computadores da escola. O bilhete vai para casa, e é com ele que o responsável faz o primeiro acesso.</span><a href="#bilhetes" style="font-weight: 700">Baixar os crachás e os bilhetes</a></div>
+</section>
+</div>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<section style="background: #121733; color: #f2f4fa; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Quando mandar os bilhetes</h2>
+<span style="color: #c9d1e6">Envie duas semanas antes da primeira aula. Quem ainda não tiver usado o bilhete entra na aula do mesmo jeito, porque o acesso da grade é garantido pela escola.</span>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">A turma de contraturno</h2>
+<span>As famílias se inscrevem com o código da escola.</span>
+<span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.04em">ARAUCARIA-JOGOS</span>
+<a href="#link" style="font-weight: 700">Copiar o link de inscrição</a>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px">Precisa de ajuda?</h2>
+<span>A equipe do Sistema Zero acompanha a preparação da sua escola.</span>
+<a href="#ajuda" style="font-weight: 700">Falar com a equipe</a>
+</section>
+</aside>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1155}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

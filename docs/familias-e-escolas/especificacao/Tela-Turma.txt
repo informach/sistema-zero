@@ -1,0 +1,99 @@
+PRANCHA: D2 · Professor · A turma (arquivo Tela-Turma.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Minhas turmas 
+
+Tarefas 
+
+Recados 
+
+Minha formação 
+
+R 
+
+**Renata** Professora 
+
+Minhas turmas 
+
+# 6º ano B 
+28 alunos · terças-feiras, no 3º horário 
+
+Recado para a turma 
+
+Nova tarefa 
+
+Tarefa em andamento 
+
+## Nave Contra Asteroides, aulas 1 a 3 
+Entrega até sexta, 14 de setembro. Faltam 3 dias. 
+
+Ver o resultado 
+
+**17** concluíram 
+**8** estão fazendo 
+**3** não começaram 
+
+Nesta tarefa a turma pratica: 
+Pensar em passos 
+Testar e corrigir 
+
+## Alunos 
+
+Ver os 28 
+
+Aluno 
+Posto 
+Nesta tarefa 
+Tentativas 
+Situação 
+
+**Theo M.** Construtor 2 de 3 aulas 5 Fazendo 
+
+**Sofia S.** Construtora 1 de 3 aulas 6 Parada na aula 2 
+
+**Rafael L.** Construtor 3 de 3 aulas 8 Concluiu no prazo 
+
+**Alice P.** Construtora 3 de 3 aulas 7 Já tinha feito em casa 
+
+**Pedro R.** Construtor 0 de 3 aulas 0 Ainda não começou 
+
+**Bento A.** Faísca Ainda não abriu 0 Terminando o posto Faísca antes 
+
+7 alunos desta turma ainda não tiveram o primeiro acesso da família. Eles fazem as aulas e as tarefas normalmente. 
+
+Um aluno perdeu o crachá? Gerar outro código 
+
+## Quem precisa de você agora 
+
+**Sofia S.** está parada na aula 2 desde a semana passada, depois de 6 tentativas. 
+Ver o projeto dela 
+
+**Pedro R.** ainda não começou a tarefa. 
+Mandar um recado 
+
+**Bento A.** ainda está no posto Faísca. Ele recebe esta tarefa quando terminar o que falta. Você vê o posto dele, e não as aulas que ele faz fora das tarefas. 
+
+## O Zappy nesta turma 
+No 6º ano, a conversa com o Zappy só funciona quando você liga durante a aula. Ela desliga sozinha no fim do horário. Para os 7 alunos sem o primeiro acesso da família, ela continua desligada. 
+
+Ligar o Zappy nesta aula 
+
+## Recados 
+2 recados novos de alunos desta turma. 
+
+Abrir os recados 
+Os recados ficam registrados, e a gestão da escola pode abrir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o que a gestão vê enquanto a escola não está pronta. Cada passo leva a uma tela deste roteiro (A3, A4, A5). Quando os cinco passos terminam, o Início passa a ser a tela A6. Quem não usou o bilhete entra na aula do mesmo jeito, porque na grade o acesso é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o caso de quem já assina os R$ 97: a página pergunta qual perfil é o do aluno, para a criança não ficar com dois. Nada muda na cobrança, e a tela mostra o que a escola passa a cobrir e o que só a assinatura dá. A família pode escolher o plano pelo código da escola, de R$ 69,90, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Nada é cancelado sem ela pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o Início que já existe, com quatro mudanças: nome e logo da escola no menu, a tarefa da escola no alto, o cartão O que você praticou e só o Mural da escola no menu. No computador da escola o menu é igual para todos, sem o item Criar: as ferramentas livres aparecem só em casa, para quem tem o plano. No computador da escola não aparecem Arquipélago, Clube dos Criadores, Oficinas ao vivo, ranking geral, área dos pais nem compra, e a palavra Kids não é usada. O plano combinado da clínica não aparece no computador da escola. O ranking da escola só aparece se a gestão ligar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra a tarefa em andamento e a situação de cada aluno, sem nenhuma informação de pagamento. Ela diz quantos alunos estão sem o primeiro acesso da família, para quem a conversa com o Zappy não liga. As tentativas saem do registro de verificações, que já é guardado. O botão do Zappy é o mecanismo novo que cumpre a regra do CNE do 6º ao 9º ano. "Ver o projeto dela" abre o projeto só para olhar: hoje o visualizador existe só no Admin e mostra só projeto enviado, e abrir o projeto em andamento é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. A coordenação faz o papel da gestão: vê profissionais, crianças e famílias, e não vê pagamento. Ela vê cada família que entra pelo código e pode tirar quem não é atendido ali. A cada 20 famílias pagantes, a clínica indica um bolsista, que entra pelo código sem passar pelo pagamento. O mural da clínica começa desligado. O item Aparelhos funciona como na escola. Em Aparelhos, a coordenação autoriza os aparelhos da clínica e gera o crachá de cada criança.

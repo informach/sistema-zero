@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Admin: instituições</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap">
+<style>
+body{margin:0;background:#e9eef6}
+*{box-sizing:border-box}
+a{color:#1b5cf3}a:hover{color:#164cca}
+</style>
+</helmet>
+<div style="font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #0f1a33; font-size: 16px; line-height: 1.5; background: #e9eef6; display: flex; flex-wrap: wrap; min-height: 900px">
+
+<nav style="flex: 1 1 250px; max-width: 100%; background: #121a30; color: #cbd4e8; padding: 24px 18px; display: flex; flex-direction: column; gap: 22px">
+<img src="/_blob/b071f94b0478ee7c6b96469a94dbe0b1" alt="Sistema Zero" style="width: 170px; height: auto">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">TURMA</span>
+<a href="#hoje" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Hoje</a>
+<a href="#projetos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Projetos</a>
+<a href="#recados" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Recados</a>
+<a href="#alunos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Alunos</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">CONTEÚDO</span>
+<a href="#cursos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Cursos</a>
+<a href="#jornada" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Jornada</a>
+<a href="#conjuntos" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Conjuntos</a>
+<a href="#habilidades" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Mapa de habilidades</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">INSTITUIÇÕES</span>
+<a href="#instituicoes" style="background: #1b5cf3; color: #ffffff; text-decoration: none; font-weight: 700; padding: 8px 12px; border-radius: 10px">Escolas e parceiras</a>
+<a href="#cobranca" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Vagas e cobrança</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8e9bba; padding: 0 12px">NEGÓCIO</span>
+<a href="#visao" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Visão geral</a>
+<a href="#vendas" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Vendas</a>
+<a href="#catalogo" style="color: #cbd4e8; text-decoration: none; padding: 8px 12px; border-radius: 10px">Catálogo</a>
+</div>
+</nav>
+
+<main style="flex: 999 1 640px; min-width: 0; padding: 36px 40px 56px; display: flex; flex-direction: column; gap: 24px">
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 34px; line-height: 1.1">Escolas e parceiras</h1>
+<span style="color: #46536e">Cada instituição tem um espaço próprio, que as outras não enxergam.</span>
+</div>
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #1b5cf3; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 700">Nova instituição</button>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section style="flex: 999 1 560px; min-width: 0; background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<span style="background: #0f1a33; color: #ffffff; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 14px">Todas</span>
+<span style="background: #eff3f9; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 14px">Escolas</span>
+<span style="background: #eff3f9; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 14px">Clínicas</span>
+<span style="background: #eff3f9; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 14px">Projetos educativos</span>
+</div>
+<div style="overflow-x: auto">
+<div style="min-width: 660px">
+<div style="display: grid; grid-template-columns: 1.3fr 0.9fr 1.5fr 0.7fr 0.9fr; gap: 12px; padding: 10px 0; color: #46536e; font-size: 14px; font-weight: 700; border-bottom: 1px solid #d6deea">
+<div>Instituição</div><div>Tipo</div><div>Como contrata</div><div>Crianças</div><div>Situação</div>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 0.9fr 1.5fr 0.7fr 0.9fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>Colégio Araucária</strong><span>Escola</span><span>Grade, paga pela escola, e contraturno</span><span>140</span><span><span style="background: #dcf0e4; color: #096b4a; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: 14px">Em uso</span></span>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 0.9fr 1.5fr 0.7fr 0.9fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>Clínica Girassol</strong><span>Clínica</span><span>A família paga pelo código</span><span>9</span><span><span style="background: #dcf0e4; color: #096b4a; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: 14px">Em uso</span></span>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 0.9fr 1.5fr 0.7fr 0.9fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d6deea; align-items: center">
+<strong>Colégio Ipê</strong><span>Escola</span><span>Contraturno</span><span>0</span><span><span style="background: #fff3c4; color: #5c4000; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: 14px">Preparando</span></span>
+</div>
+<div style="display: grid; grid-template-columns: 1.3fr 0.9fr 1.5fr 0.7fr 0.9fr; gap: 12px; padding: 14px 0; align-items: center">
+<strong>Ateliê Curumim</strong><span>Projeto educativo</span><span>Programa próprio, pago pela instituição</span><span>22</span><span><span style="background: #dcf0e4; color: #096b4a; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: 14px">Em uso</span></span>
+</div>
+</div>
+</div>
+</section>
+
+<form style="flex: 1 1 360px; min-width: 0; background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px">Nova instituição</h2>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="nome" style="font-weight: 700">Nome</label><input id="nome" type="text" value="Escola Jatobá" style="height: 44px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #0f1a33; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="tipo" style="font-weight: 700">Tipo</label><select id="tipo" style="height: 44px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #0f1a33; background: #ffffff; width: 100%"><option>Escola</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="contrata" style="font-weight: 700">Como contrata</label><select id="contrata" style="height: 44px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #0f1a33; background: #ffffff; width: 100%"><option>Contraturno, com a família pagando</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="cnpj" style="font-weight: 700">CNPJ</label><input id="cnpj" type="text" value="00.000.000/0001-00" style="height: 44px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #0f1a33; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="gestor" style="font-weight: 700">E-mail de quem vai cuidar do espaço</label><input id="gestor" type="email" value="direcao@exemplo.com.br" style="height: 44px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #0f1a33; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 700">Termo assinado</span><a href="#termo">termo-do-contraturno-jatoba.pdf</a></div>
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #1b5cf3; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 700">Criar o espaço e convidar</button>
+<span style="color: #46536e; font-size: 14px">A pessoa recebe um e-mail. Se já tem conta no Sistema Zero, entra com ela; se não tem, cria a senha. Depois cai nos primeiros passos.</span>
+</form>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":918}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

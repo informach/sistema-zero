@@ -1,0 +1,62 @@
+PRANCHA: B1 · Família · O bilhete da escola (arquivo Tela-Codigo.dc.html, página "telas")
+
+com 
+
+CA 
+**Colégio Araucária** 
+
+# O Theo já tem acesso pelo Colégio Araucária 
+
+Neste ano, ele vai aprender a pensar criando os próprios jogos nas aulas do 6º ano. A escola já garantiu o acesso, e não há nenhuma cobrança à parte. Faça o seu primeiro acesso para ele continuar em casa e para você acompanhar. 
+
+### 1. O bilhete 
+
+Código que veio no bilhete [campo: K7Q3-M2XP-9R] 
+
+Data de nascimento do seu filho [campo: 14/11/2017] 
+
+Tudo certo: Theo M., 6º ano B. 
+
+### 2. Seu primeiro acesso 
+
+Seu nome completo [campo: Marina Duarte] 
+
+Seu e-mail, o que a escola tem no cadastro [campo: marina@exemplo.com.br] 
+
+Seu celular [campo: (31) 90000-0000] 
+
+Já tenho senha no Sistema Zero 
+
+Sou responsável pelo Theo e quero acompanhar o que ele faz no Sistema Zero. 
+
+Confirmar e entrar 
+
+O Colégio Araucária vê o posto do Theo e o que ele fizer nas aulas das tarefas da escola, mesmo quando ele fizer em casa. O resto do que ele criar continua sendo só da família. 
+
+O que vem com a sua conta 
+
+- O Theo faz as aulas e as tarefas também em casa, nos aparelhos que você autorizar 
+
+- Você vê as habilidades que ele pratica e as tarefas da escola 
+
+- Você recebe os cursos para pais 
+
+- Você acompanha o tempo de uso e com quem ele conversa 
+
+Sem cobrança à parte 
+
+**Tem outro filho no Colégio Araucária?** 
+Use o bilhete dele em Conta, na área dos pais. Cada filho aparece depois do bilhete dele. 
+
+**Perdeu o bilhete?** 
+Peça outro na secretaria da escola. O código antigo deixa de valer.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova no Admin da equipe, num grupo novo do menu chamado Instituições. O espaço nasce aqui, depois que o contrato ou o termo é assinado fora da plataforma. É aqui também que se define como a instituição contrata: grade paga pela escola, a família pagando pelo código ou programa próprio. Criar o espaço já manda o convite a quem vai cuidar dele. Os nomes são exemplos.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, em sistemazero.com.br/codigo. É o caso da grade: a escola já paga, e a família não passa por pagamento. Como a planilha da escola traz o e-mail do responsável, a conta da família já existe: o bilhete serve para o primeiro acesso, confirmado pela data de nascimento do filho. O que a escola paga cobre as aulas e as tarefas, também em casa. Quem já assina segue pela tela B2.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, só nos computadores autorizados da escola. O aluno digita o código do crachá. Não há senha nem e-mail. A frase "Quem vai criar hoje?" é a da entrada atual. O aluno sem o primeiro acesso da família entra do mesmo jeito, no modo restrito: aulas, tarefas, mural da escola e recados com o professor.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. As trilhas são cursos gravados, no formato de aula que já existe. A trilha técnica usa os cursos de criação de jogos na versão adulta, que já estão no catálogo. Concluir a formação de mediador libera as turmas. A mesma formação serve aos profissionais das instituições parceiras, com a aula Como combinar um plano no lugar de Como passar uma tarefa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, irmã da página do bilhete da escola. A família entra pelo plano da família, com o preço do código, e autoriza o acompanhamento, que fica registrado e pode ser encerrado na área dos pais. A família paga ao Sistema Zero, e a clínica não recebe valor por inscrição. Quem já tem o plano não paga de novo. Quando a instituição paga as vagas, o passo do pagamento não aparece.

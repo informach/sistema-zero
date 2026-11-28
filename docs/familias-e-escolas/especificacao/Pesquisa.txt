@@ -1,0 +1,140 @@
+PRANCHA: 1 · O que a pesquisa mostrou (arquivo Pesquisa.dc.html, página "direcao")
+
+1 · Direção · prancha 1 
+
+# O que a pesquisa mostrou 
+
+Cinco frentes pesquisadas em 28 de novembro de 2026, em páginas públicas e fontes oficiais. Em cada uma, o que eu encontrei e o que isso muda na proposta. 
+
+## 1. O Programa Bene 
+
+- É um programa de formação ética e socioemocional, baseado em virtudes, da educação infantil ao 9º ano. Ele nasceu dentro de uma rede de colégios de Belo Horizonte e hoje é oferecido a outras escolas. 
+
+- A mensagem é "Três caminhos, um propósito". A escola recebe diagnóstico, formação contínua dos professores, materiais e indicadores. O professor recebe planos de aula, vídeos, cursos a distância e certificação. A família recebe atividades, vídeos curtos, e-books e eventos. 
+
+- É um produto só, vendido à escola. O professor e a família recebem o conteúdo por meio da escola, e não existe oferta paga separada para eles. O site não mostra preço, e a plataforma tem um login único. 
+
+**O que muda na proposta** 
+O Bene confirma a sua ideia de deixar o professor dentro da escola. Ele é referência de mensagem, não de receita. O Sistema Zero tem uma vantagem que ele não tem: a família já compra direto, e pode continuar comprando. 
+
+## 2. Quem já vende tecnologia para escolas 
+
+- **Mind Makers:** disciplina de Pensamento Computacional. "Formamos os próprios professores da escola para se tornarem facilitadores", com 40 horas de autoestudo e 16 de formação guiada. Divulga mais de 375 escolas e 134 mil alunos. 
+
+- **Nave à Vela, ZOOM e Alura Start:** o mesmo desenho. Uma disciplina pronta, aplicada pelo professor da escola, com material, plataforma, formação e assessoria. 
+
+- **O padrão no Brasil** é esse: o professor da escola dá a aula. Não encontrei ninguém vendendo aula gravada em que o aluno aprende no próprio ritmo e o professor só acompanha. 
+
+- **Lá fora** (Tynker, CodeMonkey, Kodable, Khan Academy), quem atende casa e escola mantém um conteúdo só e muda a embalagem: turmas, painel do professor e relatórios. Em vários casos a escola é barata ou gratuita, e a receita vem de casa. 
+
+**O que muda na proposta** 
+Áreas de gestão, professor, aluno e família são requisito de entrada, não diferencial. O diferencial é outro: a escola oferece criação de jogos sem contratar nem formar um professor de programação. Essa é também a principal dúvida que o piloto precisa responder. 
+
+## 3. Como a escola particular compra 
+
+- **Quem decide:** mantenedor e direção, com vários interlocutores. O ciclo de venda pode levar até um ano, e o contrato de uma solução complementar dura um ano. 
+
+- **Quando:** a decisão para o ano seguinte se concentra no segundo semestre, porque a escola precisa divulgar contrato e valores 45 dias antes do fim da matrícula. Os meses exatos (agosto a outubro) são estimativa minha. 
+
+- **Quem paga:** o padrão é um valor por aluno ao ano, muitas vezes pago pela família na loja do próprio fornecedor. Só que em agosto de 2025 o Procon de Minas multou um colégio de Belo Horizonte por exigir essa compra, e decidiu que a escola precisa garantir o acesso do aluno independentemente dela. 
+
+- **Quanto:** um programa bilíngue complementar custou R$ 556 por aluno em um colégio em 2025, comprado pelas famílias. Um curso opcional de jogos digitais com instrutor custa R$ 317 por mês em outro colégio. Não achei preço público de programação na grade. 
+
+- **Tamanho:** 41,7 mil escolas particulares e 9,2 milhões de matrículas, das quais cerca de 5,8 milhões no fundamental e no médio. Só 32% das particulares têm algum grupo de programação, robótica ou maker. 
+
+- **Riscos conhecidos:** implantação e suporte intensivos, renovação todo ano, inadimplência e concorrentes com força de vendas nacional. 
+
+**O que muda na proposta** 
+No que é opcional, a família paga pelo código, como o mercado já faz. Na grade, a escola paga R$ 478,80 por aluno ao ano. E 2027 é o ano dos pilotos: a venda da grade mira o ano letivo de 2028, entrando pelo contraturno e por escolas independentes. 
+
+## 4. As regras que puxam a demanda e as que limitam o produto 
+
+- **Computação é obrigatória.** A Resolução CNE/CEB 2/2025 vale para escola pública e privada, com "efetiva implementação obrigatória a partir do ano de 2026". A escola escolhe entre ensino transversal e disciplina, e nos anos finais o currículo inclui programação. 
+
+- **O que os cursos cobrem.** Criar jogos cobre bem o eixo de Pensamento Computacional (algoritmos, repetição, condição, variáveis, depuração e eventos) e parte de Cultura Digital (criar e publicar). Fica de fora quase todo o eixo Mundo Digital (máquinas, redes, segurança) e a parte crítica de Cultura Digital (desinformação, cyberbullying, dados pessoais). 
+
+- **IA na escola.** A Resolução CNE/CP 1/2026, de novembro, vale para escolas públicas e particulares e para os contratos com fornecedores. Ela proíbe IA de conversa do 1º ao 5º ano, mesmo com supervisão, exige o professor do 6º ao 9º e veda a exploração comercial dos dados escolares. O acesso que a escola oferece conta como uso escolar mesmo em casa. 
+
+- **Celular.** A Lei 15.100/2025 tira o aparelho pessoal da sala. A plataforma precisa rodar no equipamento da escola. 
+
+- **ECA Digital.** Está em vigor desde 17 de março de 2026, e a fiscalização começa em janeiro de 2027. Pede supervisão dos pais (tempo de uso, privacidade, com quem a criança fala), proteção por padrão e proíbe caixa de recompensa paga e recompensa por tempo de tela. O baú da plataforma é gratuito e sem sorteio, então fica fora da definição. 
+
+- **Dados.** Quando a escola contrata, ela decide sobre os dados e a plataforma opera para ela. O vínculo de uma criança com uma clínica já revela dado de saúde e pede autorização específica do responsável. 
+
+**O que muda na proposta** 
+O Mapa de habilidades mostra a cobertura da BNCC com honestidade. A ajuda do Zappy por conversa segue o ano escolar do aluno em qualquer aparelho. Os computadores da escola ganham um modo próprio. A área dos pais mostra o tempo de uso, e a sequência de dias deixa de punir quem falha um dia. 
+
+## 5. Clínicas e o que a ciência sustenta 
+
+- **A clínica que você citou.** A Equipe Laopa fica em Belo Horizonte e se apresenta como "uma equipe multidisciplinar trabalhando pelo bem-estar de pessoas neuroatípicas e suas famílias". Nada público indica que ela use jogos ou tecnologia. 
+
+- **Como o setor cobra.** Plataformas para clínicas, como a NeuronUP, cobram por clínica, com teto de profissionais e de pacientes: de R$ 490 a R$ 1.658 por mês. Não encontrei produto de criação de jogos com espaço para clínica. 
+
+- **O que a ciência diz.** Uma meta-análise de 105 estudos associa aprender programação a ganhos em outras habilidades (efeito médio moderado, de 0,47 numa escala em que 0,2 é pequeno e 0,8 é grande), maiores em criatividade, em matemática e na capacidade de pensar sobre o próprio raciocínio. O ganho não aparece em nota escolar, e os próprios autores avisam que não dá para afirmar causa. Para crianças neurodivergentes só existem pilotos pequenos. 
+
+- **O alerta.** A Lumosity pagou 2 milhões de dólares nos Estados Unidos por prometer "treino cerebral" sem prova. No Brasil, software anunciado para tratar ou reabilitar vira dispositivo médico, e os conselhos profissionais proíbem promessa de resultado e comissão por indicação. 
+
+**O que muda na proposta** 
+A plataforma fala das habilidades que a criança pratica ao criar um jogo, e nunca de treino cognitivo. A instituição segue o desenho da escola, com o mesmo preço para a família e o cadastro feito pelo responsável. A plataforma não guarda anotação clínica, e a clínica ganha pelo serviço que presta, e não por indicação. 
+
+**Fontes principais** 
+
+Programa Bene 
+
+Rede Batista de Educação 
+
+Mind Makers 
+
+Nave à Vela 
+
+ZOOM Education 
+
+Kodable 
+
+Tynker 
+
+Relatório anual da Arco 
+
+Resultados da Vasta 
+
+Valores do Edify em 2025 
+
+Lei 9.870/1999 
+
+Código de Defesa do Consumidor 
+
+Decisão do Procon de Minas, agosto de 2025 
+
+Curso opcional de jogos digitais, 2026 
+
+Código de ética do psicólogo 
+
+Decreto do ECA Digital 
+
+TIC Educação 2025 
+
+Resolução CNE/CEB 2/2025 
+
+Habilidades da BNCC Computação 
+
+Resolução CNE/CP 1/2026 (IA) 
+
+Lei 15.100/2025 
+
+ECA Digital 
+
+ANPD sobre o ECA Digital 
+
+LGPD 
+
+Equipe Laopa 
+
+NeuronUP 
+
+Scherer e colegas, 2019 
+
+Arfé e colegas, 2019 
+
+Caso Lumosity 
+
+Os números da rede privada no Censo Escolar 2025 vieram de um extrato do Inep, porque o arquivo original não abriu. As regras de 2026 foram lidas nos textos publicados, e vale uma conferência jurídica antes de fechar o contrato das escolas.

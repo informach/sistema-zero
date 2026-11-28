@@ -1,0 +1,83 @@
+PRANCHA: E1 · Família · O código da instituição parceira (arquivo Tela-CodigoInst.dc.html, página "telas")
+
+com 
+
+CG 
+**Clínica Girassol** 
+
+# A Clínica Girassol convidou a sua família para o Sistema Zero 
+
+Aqui a criança aprende a pensar criando os próprios jogos. A profissional da clínica combina um plano com vocês e acompanha o que a criança pratica. A participação é opcional. 
+
+### 1. O código da clínica 
+
+Código que a clínica passou [campo: GIRASSOL-CRIAR] 
+
+Quem atende a criança na clínica 
+Camila 
+
+Tudo certo: Clínica Girassol. 
+
+### 2. Sua conta 
+
+Seu nome completo [campo: Paula Lemos] 
+
+Seu e-mail [campo: paula@exemplo.com.br] 
+
+Seu celular [campo: (31) 90000-0000] 
+
+Já tenho conta no Sistema Zero 
+
+### 3. A criança 
+
+Como a criança é chamada [campo: Bia] 
+
+Data de nascimento [campo: 22/05/2020] 
+
+### 4. Autorização 
+
+Sou responsável pela Bia. 
+
+Autorizo a Camila, da Clínica Girassol, a ver o posto da Bia, o plano combinado com a nossa família, as aulas desse plano, com os projetos delas, e as habilidades praticadas nessas aulas. Ela não vê pagamentos, tempo de uso nem os recados da Bia com a escola, e não conversa com a Bia pela plataforma. Posso encerrar quando quiser, na área dos pais. 
+
+### 5. Pagamento 
+
+No cartão, R$ 69,90 por mês, sem fidelidade 
+
+No Pix, 6 meses por R$ 399 
+
+Seu CPF, para a nota fiscal [campo: 000.000.000-00] 
+
+Cadastrar a Bia e pagar 
+
+Você pode cancelar quando quiser, na área dos pais, e a Bia usa até o fim do mês pago. Nos primeiros 7 dias, devolvemos o valor inteiro. No Pix, o acesso vale pelos 6 meses pagos. 
+
+O plano da família, com o código da clínica 
+
+R$ 69,90 por mês 
+
+- Todos os cursos da Jornada do Criador 
+
+- Estúdio, Pinta, Pensa e Molda livres, para criar à vontade 
+
+- O acompanhamento da Camila, com o que vocês combinarem 
+
+- Os cursos para pais e a área dos pais para você 
+
+- O mesmo valor cobre até 2 filhos 
+
+**Já tem o plano da família?** 
+Entre com a sua conta. Quem já tem o plano pelo código de uma escola não paga de novo. Quem paga R$ 97 continua nos R$ 97 e não paga nada a mais. Se preferir, pode trocar para o plano pelo código, em Conta. 
+
+**Para onde vai o pagamento** 
+O pagamento é feito ao Sistema Zero. A Clínica Girassol não recebe nenhum valor pela sua inscrição.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova no Admin da equipe, num grupo novo do menu chamado Instituições. O espaço nasce aqui, depois que o contrato ou o termo é assinado fora da plataforma. É aqui também que se define como a instituição contrata: grade paga pela escola, a família pagando pelo código ou programa próprio. Criar o espaço já manda o convite a quem vai cuidar dele. Os nomes são exemplos.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, em sistemazero.com.br/codigo. É o caso da grade: a escola já paga, e a família não passa por pagamento. Como a planilha da escola traz o e-mail do responsável, a conta da família já existe: o bilhete serve para o primeiro acesso, confirmado pela data de nascimento do filho. O que a escola paga cobre as aulas e as tarefas, também em casa. Quem já assina segue pela tela B2.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, só nos computadores autorizados da escola. O aluno digita o código do crachá. Não há senha nem e-mail. A frase "Quem vai criar hoje?" é a da entrada atual. O aluno sem o primeiro acesso da família entra do mesmo jeito, no modo restrito: aulas, tarefas, mural da escola e recados com o professor.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. As trilhas são cursos gravados, no formato de aula que já existe. A trilha técnica usa os cursos de criação de jogos na versão adulta, que já estão no catálogo. Concluir a formação de mediador libera as turmas. A mesma formação serve aos profissionais das instituições parceiras, com a aula Como combinar um plano no lugar de Como passar uma tarefa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, irmã da página do bilhete da escola. A família entra pelo plano da família, com o preço do código, e autoriza o acompanhamento, que fica registrado e pode ser encerrado na área dos pais. A família paga ao Sistema Zero, e a clínica não recebe valor por inscrição. Quem já tem o plano não paga de novo. Quando a instituição paga as vagas, o passo do pagamento não aparece.

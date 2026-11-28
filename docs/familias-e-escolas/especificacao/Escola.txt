@@ -1,0 +1,177 @@
+PRANCHA: 5 · A escola, do aceite à primeira aula (arquivo Escola.dc.html, página "funciona")
+
+2 · Como funciona · prancha 5 
+
+# A escola, do aceite à primeira aula 
+
+A escola entra por dois caminhos. No contraturno, que é opcional, a família paga. Na grade, que é para a turma inteira, a escola paga. Aqui está cada caminho, com quem faz cada parte. 
+
+## Dois caminhos 
+
+O primeiro passo · a família paga 
+
+### Criação de Jogos no contraturno 
+
+É uma turma opcional, com um encontro por semana. Como cada criança avança pela Jornada no próprio ritmo, a turma pode misturar anos. 
+
+A família inscreve o filho com o código da escola e paga R$ 69,90 por mês, pelo plano da família, que vale para até 2 filhos. A escola não paga nada e não cobra pela plataforma. A cada 20 famílias pagantes, ela recebe 1 plano de cortesia para um bolsista. 
+
+Não mexe na grade e pode começar em qualquer mês. 
+
+O passo seguinte · a escola paga 
+
+### Na grade 
+
+A turma inteira participa, em um tempo de aula por semana, como aula de Computação ou como projeto. Todo aluno tem acesso desde o primeiro dia. 
+
+Com 50 alunos ou mais, a escola paga R$ 39,90 por aluno ao mês, ou R$ 478,80 no ano, e pode incluir esse valor na anuidade dela. Com menos de 50, são R$ 49,90. Esse valor cobre as aulas e as tarefas, na escola e em casa, com as ferramentas dentro das aulas. Para criar à vontade em casa, a família pode ter o plano da família por R$ 69,90, com o código da escola. 
+
+O professor usa tarefas com prazo, e a gestão recebe o relatório da BNCC. 
+
+**Por que, na grade, quem paga é a escola** 
+A escola não pode obrigar a família a comprar de um fornecedor o que é necessário para a aula. Em agosto de 2025 o Procon de Minas multou um colégio de Belo Horizonte por exigir um sistema de ensino com plataforma comprado à parte, e decidiu que a escola precisa garantir o acesso do aluno independentemente da compra. A lei também proíbe qualquer penalidade pedagógica por falta de pagamento. 
+Por isso a regra é simples: o que é para a turma inteira, a escola paga, e nenhum aluno fica sem acesso. O que é opcional, a família paga. Se a escola quiser repassar o custo da grade, ela faz isso no contrato de matrícula dela. 
+
+## Os passos, lado a lado 
+
+Passo 
+No contraturno 
+Na grade 
+
+1. Adesão 
+A direção assina o termo do contraturno, sem valor, com o acordo sobre os dados. 
+A direção assina o contrato, com o número de alunos e o acordo sobre os dados. 
+
+2. Espaço 
+A equipe do Sistema Zero cria o espaço da escola, com o nome. A gestão envia a logo nos primeiros passos. 
+O mesmo espaço serve aos dois caminhos. 
+
+3. Turmas 
+A gestão cria a turma, e as famílias usam o código da escola. 
+A gestão importa a planilha com nome, turma, data de nascimento e e-mail do responsável. 
+
+4. Professores 
+A gestão convida por e-mail, e cada professor faz a formação de mediador. 
+Igual. 
+
+5. Computadores 
+A gestão autoriza os computadores que os alunos vão usar. 
+Igual. 
+
+6. Famílias 
+A família entra pelo código da escola, cria a conta, inscreve o filho e paga. 
+Cada aluno leva um bilhete com o código dele. O responsável usa o bilhete no primeiro acesso, sem pagar. 
+
+7. Primeira aula 
+Entra com o crachá quem a família inscreveu. 
+Todos entram com o crachá, com ou sem o primeiro acesso da família. 
+
+8. O período 
+O professor acompanha e pode passar tarefas, sem nota. 
+O professor passa tarefas com prazo e, se a escola quiser, com nota. 
+
+9. Depois 
+A família cancela quando quiser, ou continua em casa pela Comunidade. 
+No fim do ano a turma encerra. O cadastro do aluno e a Jornada continuam com a família. 
+
+## O aluno da grade e a família 
+
+Na grade, o acesso não depende de a família fazer o primeiro acesso. Mas o primeiro acesso muda o que a criança pode fazer, e é ele que dá aos pais a supervisão e os cursos para pais. 
+
+### Antes do primeiro acesso da família 
+
+- O cadastro do aluno é feito pela escola, que colhe a autorização da família na matrícula. 
+
+- O aluno entra só nos computadores da escola, com o crachá. 
+
+- Ele faz as aulas e as tarefas, publica no mural da escola e troca recados com o professor. 
+
+- Não usa a ajuda do Zappy por conversa, não tem perfil público e não entra em casa. 
+
+### Depois que o responsável assume 
+
+- O filho passa a usar também em casa, nos aparelhos que o responsável autorizar. 
+
+- O responsável ganha a área dos pais, com as habilidades da semana, as tarefas, o tempo de uso e os recados. 
+
+- Os cursos para pais ficam liberados, sem custo. 
+
+- Quando o ano acaba, tudo o que é da criança continua com a família. 
+
+## O que a escola ganha 
+
+A escola não recebe comissão, e não precisa. O ganho dela aparece no currículo e na matrícula. 
+
+**Adequação à BNCC Computação** 
+A norma vale para a escola particular desde 2026. A gestão recebe o que cada turma trabalhou, com os códigos da BNCC do ano dela. 
+
+**Um diferencial na matrícula** 
+A escola passa a ser o lugar onde o aluno aprende a pensar criando os próprios jogos. A Mostra de Jogos, no fim de cada semestre, mostra isso às famílias. 
+
+**Professores formados** 
+A formação de mediador e a trilha Ensinar a pensar ficam abertas para os professores da escola, sem custo. 
+
+**Apoio para os pais** 
+Toda família que entra pela escola recebe os cursos para pais, que muitos não conseguem acompanhar nos encontros presenciais. 
+
+## O que a escola provê 
+
+- Um computador ou tablet com navegador para cada aluno. Com menos máquinas, a turma se divide em dois grupos. 
+
+- Internet na sala e fones de ouvido para os vídeos. 
+
+- Um professor mediador por turma, com a formação feita. 
+
+- Um tempo de aula por semana, ou um encontro semanal no contraturno. 
+
+- Na grade, o valor por aluno. No contraturno, nenhum valor. 
+
+## Para quais anos 
+
+Na escola, o programa atende do 3º ano do fundamental ao ensino médio. 
+
+A educação infantil, o 1º ano e o 2º ano ficam de fora da oferta escolar, porque a criança ainda está aprendendo a ler e precisa de um adulto ao lado o tempo todo. Em casa, com a família, a plataforma continua atendendo a partir dos 5 anos. 
+
+## Quem ajuda quando o aluno trava 
+
+A ordem importa, porque é ela que deixa o professor mediar sem saber programar. 
+
+1 
+**A própria aula** 
+O vídeo passo a passo, "Uma pista", "Verificar projeto", que mostra o que falta, e os tutoriais do Como fazer. 
+
+2 
+**O professor mediador** 
+Ele vê quem travou, em que aula e quantas vezes verificou, e ajuda o aluno a reler, testar e tentar de novo. 
+
+3 
+**A ajuda do Zappy por conversa** 
+Segue a regra do CNE para escolas: desligada até o 5º ano, ligada pelo professor durante a aula do 6º ao 9º, e decidida pela gestão no ensino médio. 
+
+4 
+**A central do mediador** 
+O professor escreve para a equipe do Sistema Zero e recebe a resposta em até um dia útil. Para o horário da aula, ele tem um guia rápido dos problemas mais comuns. 
+
+**Quem fala com a equipe do Sistema Zero.** A gestão, durante a preparação da escola. O professor, pela central do mediador. A família, pelo atendimento que já existe na área dos pais, para cadastro e pagamento. O aluno da escola não escreve para a equipe: os recados dele vão para o professor da turma. 
+
+## A formação do professor 
+
+Ela mora na área do professor e funciona mesmo para quem ainda não acompanha turma. São três trilhas, todas gravadas. 
+
+Para começar · 4 aulas, cerca de 2 horas 
+
+### Mediador de criação 
+
+Como a plataforma ensina, como acompanhar uma turma, como passar uma tarefa e como ajudar sem dar a resposta. Concluir esta trilha libera as turmas do professor. 
+
+Para a sala de aula · 6 aulas, cerca de 3 horas 
+
+### Ensinar a pensar 
+
+Perguntas que fazem pensar, ritmos diferentes na mesma turma, frustração e erro, inclusão e conversa com as famílias. Os temas conversam com os cursos para pais. 
+
+Para quem quer criar 
+
+### Trilha técnica 
+
+Os mesmos cursos de criação de jogos dos alunos, na versão adulta que já existe. Fica aberta enquanto o professor tiver turma ativa na escola.

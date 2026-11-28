@@ -1,0 +1,76 @@
+PRANCHA: A3 · Gestão · Importar turma (arquivo Tela-Importar.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Turmas 
+
+Pessoas 
+
+Tarefas 
+
+Relatórios 
+
+Formação 
+
+M 
+
+**Marta** Gestora 
+
+Turmas 
+
+# Importar turma 
+A planilha tem quatro colunas: nome completo, turma, data de nascimento e e-mail do responsável. Com o e-mail, a conta da família já nasce pronta. 
+
+**6-ano-B.xlsx** 28 linhas lidas 
+
+Escolher outro arquivo 
+
+26 prontos 
+1 com erro 
+1 repetido 
+
+Nome completo 
+Turma 
+Nascimento 
+Situação 
+
+Alice Lima Prado 6º ano B 02/03/2018 Pronto 
+
+Bento Reis Almeida 6º ano B Falta a data de nascimento 
+
+Pedro Nunes Rocha 6º ano B 19/07/2017 Pronto, sem e-mail do responsável 
+
+Rafael Dias Lopes 6º ano B 30/01/2018 Já está no 6º ano A. Mover para o B? 
+
+Sofia Melo Santos 6º ano B 11/05/2017 Pronto 
+
+Theo Duarte Martins 6º ano B 14/11/2017 Pronto 
+
+Ver as 28 linhas 
+
+Importar os 26 prontos 
+
+Corrigir na planilha e enviar de novo 
+
+Nada é gravado antes de você confirmar. As duas linhas com pendência ficam de fora, e você pode resolver depois. 
+
+## Ainda não tem a planilha? 
+
+Baixar o modelo 
+Você também pode cadastrar os alunos um a um, na página da turma. 
+
+## O que acontece depois 
+A conta de cada família é criada ou encontrada pelo e-mail do responsável. Cada aluno ganha um bilhete para o primeiro acesso da família e um crachá para os computadores da escola. Sem e-mail, o aluno fica numa conta provisória até o responsável usar o bilhete.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. A planilha pede nome, turma, data de nascimento e e-mail do responsável. Com o e-mail, a conta da família é criada ou encontrada na importação, pelo mesmo caminho que a compra usa hoje, e nenhum perfil precisa mudar de dono depois. Sem e-mail, o aluno fica numa conta provisória. Linhas com pendência ficam de fora, e nada é gravado antes do botão.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Página nova, com o mini checkout que já existe na área dos pais. O contraturno é opcional, e a família entra pelo plano da família com o código da escola: R$ 69,90 por mês no cartão ou 6 meses por R$ 399 no Pix, para até 2 filhos. É a Comunidade sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Quem já paga R$ 97 inscreve o filho sem pagar nada a mais.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra o que falta para a tarefa, com os objetivos que a plataforma confere. A entrega acontece quando os objetivos são cumpridos e o aluno clica em Verificar projeto, sem botão de enviar. O botão leva para a aula do curso, que é a mesma de hoje. Uma pista é conteúdo pronto da aula, e não conversa com IA.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Os conjuntos são montados pela equipe no Admin, e o professor não monta aula. A nota só existe para o que a plataforma confere sozinha: objetivos cumpridos e a melhor tentativa do quiz. Quem já fez as aulas em casa aparece como feito, sem refazer. O aluno que ainda está no posto anterior recebe a tarefa quando terminar o que falta, porque a tarefa não pula a Jornada. Quem decide usar nota é o professor, em cada tarefa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. O plano usa o mesmo motor das tarefas da escola, sem nota e sem prazo de entrega. As aulas saem dos mesmos conjuntos preparados pela equipe. O objetivo é um texto curto, lido pela família, e não existe campo de diagnóstico nem de anotação clínica.

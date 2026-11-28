@@ -45,6 +45,7 @@
       "!docs/marketing/**/instagram/producao",
       "!docs/marketing/**/instagram/historico",
       "!docs/marketing/comunidade-dos-criadores/proposta-2026-10-19",
+      "!docs/familias-e-escolas/canvas",
       "!**/.agents",
       "!**/.claude",
       "!.audits",

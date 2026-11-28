@@ -1,0 +1,105 @@
+PRANCHA: E2 · Coordenação · Início (arquivo Tela-Coordenacao.dc.html, página "telas")
+
+CG 
+**Clínica Girassol** 
+
+Início 
+
+Crianças 
+
+Profissionais 
+
+Vagas 
+
+Aparelhos 
+
+Formação 
+
+S 
+
+**Sílvia** Coordenadora 
+
+# Bom dia, Sílvia 
+Clínica Girassol · instituição parceira desde março de 2029 
+
+Convidar profissional 
+
+Copiar o link das famílias 
+
+9 
+crianças acompanhadas pela clínica 
+
+8 
+com o plano combinado em andamento 
+
+1 
+esperando o primeiro plano combinado 
+
+2 de 3 
+profissionais com a formação feita 
+
+## Profissionais 
+
+Ver todos 
+
+Profissional 
+Formação de mediador 
+Crianças 
+Planos combinados 
+
+**Camila** Concluída 3 2 em andamento 
+
+**Tânia** Concluída 6 6 em andamento 
+
+**Rodrigo** Aula 3 de 4 0 Atende quando concluir 
+
+## Crianças 
+
+Ver as 9 
+
+Criança 
+Profissional 
+Situação 
+
+**Davi P., 13 anos** Camila Ativa, entrou na segunda 
+
+**Bia L., 9 anos** Camila Ativa 
+
+**Theo M., 11 anos** Camila Ativa 
+
+Você vê os profissionais, as crianças e a situação de cada criança. Os pagamentos de cada família ficam só com ela e com o Sistema Zero. 
+
+## Precisa de você 
+
+O Rodrigo está na aula 3 de 4 da formação de mediador. Ele começa a atender quando concluir. 
+Mandar um lembrete 
+
+A página da Clínica Girassol entre as instituições parceiras está sem a foto da equipe. 
+Completar a página 
+
+O mural da Clínica Girassol está desligado. Se você ligar, cada família decide se o filho participa. 
+Ver como funciona 
+
+## Código das famílias 
+
+GIRASSOL-CRIAR 
+As famílias usam este código para cadastrar a criança e autorizar o acompanhamento. A clínica não recebe valor pelas inscrições. 
+
+Copiar o link das famílias 
+
+## Vagas 
+**Como as famílias entram:** pelo código, com o plano da família a R$ 69,90 por mês, para até 2 filhos. 
+A cada 20 famílias pagantes, a clínica recebe 1 plano de cortesia para um bolsista. Hoje são 7. 
+
+Contratar vagas pagas pela clínica 
+No programa próprio, a clínica paga R$ 49,90 por vaga ao mês, cobra da família esse mesmo valor e, à parte, o honorário pelo serviço dela. As famílias que já têm o plano pelo código continuam com ele.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o que a gestão vê enquanto a escola não está pronta. Cada passo leva a uma tela deste roteiro (A3, A4, A5). Quando os cinco passos terminam, o Início passa a ser a tela A6. Quem não usou o bilhete entra na aula do mesmo jeito, porque na grade o acesso é da escola.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. É o caso de quem já assina os R$ 97: a página pergunta qual perfil é o do aluno, para a criança não ficar com dois. Nada muda na cobrança, e a tela mostra o que a escola passa a cobrir e o que só a assinatura dá. A família pode escolher o plano pelo código da escola, de R$ 69,90, sem o Arquipélago, o ranking geral e o Mural e o Clube dos Criadores. Nada é cancelado sem ela pedir.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É o Início que já existe, com quatro mudanças: nome e logo da escola no menu, a tarefa da escola no alto, o cartão O que você praticou e só o Mural da escola no menu. No computador da escola o menu é igual para todos, sem o item Criar: as ferramentas livres aparecem só em casa, para quem tem o plano. No computador da escola não aparecem Arquipélago, Clube dos Criadores, Oficinas ao vivo, ranking geral, área dos pais nem compra, e a palavra Kids não é usada. O plano combinado da clínica não aparece no computador da escola. O ranking da escola só aparece se a gestão ligar.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova. Mostra a tarefa em andamento e a situação de cada aluno, sem nenhuma informação de pagamento. Ela diz quantos alunos estão sem o primeiro acesso da família, para quem a conversa com o Zappy não liga. As tentativas saem do registro de verificações, que já é guardado. O botão do Zappy é o mecanismo novo que cumpre a regra do CNE do 6º ao 9º ano. "Ver o projeto dela" abre o projeto só para olhar: hoje o visualizador existe só no Admin e mostra só projeto enviado, e abrir o projeto em andamento é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. A coordenação faz o papel da gestão: vê profissionais, crianças e famílias, e não vê pagamento. Ela vê cada família que entra pelo código e pode tirar quem não é atendido ali. A cada 20 famílias pagantes, a clínica indica um bolsista, que entra pelo código sem passar pelo pagamento. O mural da clínica começa desligado. O item Aparelhos funciona como na escola. Em Aparelhos, a coordenação autoriza os aparelhos da clínica e gera o crachá de cada criança.

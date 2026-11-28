@@ -1,0 +1,111 @@
+PRANCHA: A6 · Gestão · Início (arquivo Tela-Gestao.dc.html, página "telas")
+
+CA 
+**Colégio Araucária** 
+
+Início 
+
+Turmas 
+
+Pessoas 
+
+Tarefas 
+
+Relatórios 
+
+Formação 
+
+M 
+
+**Marta** Gestora 
+
+# Bom dia, Marta 
+Colégio Araucária · ano letivo de 2029 
+
+Convidar professor 
+
+Importar turma 
+
+118 
+alunos na grade, com a vaga da escola 
+
+22 
+alunos inscritos no contraturno 
+
+96 de 118 
+famílias da grade já usaram o bilhete 
+
+3 de 3 
+professores com a formação feita 
+
+## Turmas 
+
+Ver todas 
+
+Turma 
+Professor 
+Alunos 
+Tarefa em andamento 
+
+**6º ano A** Renata 29 Nave Contra Asteroides, aulas 1 a 3, até 14 de setembro 
+
+**6º ano B** Renata 28 Nave Contra Asteroides, aulas 1 a 3, até 14 de setembro 
+
+**7º ano A** Caio 31 Corre, Dino, aulas 1 a 3, até 21 de setembro 
+
+**7º ano B** Caio 30 Sem tarefa aberta 
+
+**Criação de Jogos, no contraturno** Lúcia 22 A Chave do Farol, aulas 4 a 6, sem prazo 
+
+## Inscrição no contraturno 
+
+ARAUCARIA-JOGOS 
+As famílias usam este código para inscrever o filho. A escola vê só quem está inscrito. Com 22 famílias pagantes, a escola já tem 1 plano de cortesia. Indique o bolsista em Pessoas. 
+
+Copiar o link de inscrição 
+
+## Ranking da escola 
+**Desligado.** Se você ligar, cada aluno vê os primeiros lugares do Colégio Araucária e a própria posição. A lista não vai até o último. 
+
+Ligar o ranking da escola 
+
+## Precisa de você 
+
+22 famílias da grade ainda não usaram o bilhete. Os filhos delas entram na escola normalmente. 
+Baixar os bilhetes de novo 
+Ver quem usou cada bilhete e emitir outro 
+
+2 alunos novos do 7º ano B ainda estão sem crachá. 
+Imprimir os crachás 
+
+A Mostra de Jogos do semestre é em novembro. 
+Ver os jogos do mural 
+
+## O que as turmas praticaram em agosto 
+Alunos com registro em cada habilidade, entre os 140 da escola. 
+
+Baixar o relatório da BNCC 
+
+**Pensar em passos** 127 
+
+**Testar e corrigir** 112 
+
+**Dividir o problema** 104 
+
+**Persistir** 96 
+
+**Planejar** 77 
+
+**Criar e mostrar** 51 
+
+Habilidades da BNCC Computação trabalhadas pelo 6º e pelo 7º ano em agosto: EF06CO02, EF06CO03, EF06CO04 e EF07CO02.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições (hoje comunidade adulta). Mostra as turmas, os bilhetes usados e o que as turmas praticaram. Os números de habilidade saem dos registros da plataforma, e os códigos da BNCC são os do ano de cada turma. A gestão não vê pagamento de família. Ela vê quem usou cada bilhete e pode desfazer um engano, e quando abre um recado fica o registro de quem abriu. Colégio Araucária e as pessoas são exemplos. A escola indica o bolsista do plano de cortesia em Pessoas. Depois da preparação, a gestão fala com a equipe pela Central do mediador, em Formação. Os recados de uma turma são abertos a partir de Turmas, com o registro de quem abriu. O ranking da escola começa desligado: hoje o ranking é um só para todas as crianças, e o da escola é parte nova.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É a página do filho que já existe, com as abas de hoje. O que é novo na aba Progresso: as habilidades praticadas, a tarefa da escola e o plano combinado da instituição parceira. Os outros blocos (Esta semana, Jornada do Criador) são os atuais. A contagem de habilidades vem das partes de aula e dos objetivos marcados no arquivo de cada aula.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. É a tela de recados que já existe. O que é novo: no espaço da escola, quem responde é o professor da turma, e não a equipe. O aluno sem o primeiro acesso da família também usa.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na página Entrar do site. A área dos pais e a área das instituições são dois aplicativos, e hoje quem entra em um não fica dentro do outro. Por isso a escolha acontece antes de entrar, e cada área pede a senha. A entrada única fica como melhoria para depois.
+
+[POST-IT DA EQUIPE, fora da tela] PARA A EQUIPE. Tela nova, na área das instituições. Junta o que a coordenação faz com as famílias: ver quem entrou pelo código e tirar quem não é atendido ali, acompanhar o plano de cortesia, ligar o mural da clínica, pedir o programa próprio e completar a página da clínica no site. A coordenação não vê pagamento de nenhuma família.

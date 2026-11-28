@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Professor: nova tarefa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap">
+<style>
+body{margin:0;background:#f5f7fb}
+*{box-sizing:border-box}
+a{color:#1343b8}a:hover{color:#0a2a7a}
+</style>
+</helmet>
+<div style="font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #0f1a33; font-size: 17px; line-height: 1.5; background: #f5f7fb">
+
+<header style="background: #0b0e1a; color: #f2f4fa">
+<div style="max-width: 1360px; margin: 0 auto; padding: 14px 40px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap">
+<img src="/_blob/b071f94b0478ee7c6b96469a94dbe0b1" alt="Sistema Zero" style="width: 170px; height: auto">
+<div style="display: flex; align-items: center; gap: 10px; background: #1a2040; border: 1px solid #2c3563; border-radius: 12px; padding: 6px 14px 6px 6px">
+<div style="width: 36px; height: 36px; border-radius: 9px; background: #0b7a54; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 16px">CA</div>
+<strong>Colégio Araucária</strong>
+</div>
+<nav style="display: flex; gap: 6px; flex-wrap: wrap; flex: 1 1 420px">
+<a href="#inicio" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Início</a>
+<a href="#turmas" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Minhas turmas</a>
+<a href="#tarefas" style="color: #0b0e1a; background: #ffc02e; text-decoration: none; font-weight: 700; padding: 10px 16px; border-radius: 10px">Tarefas</a>
+<a href="#recados" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Recados</a>
+<a href="#formacao" style="color: #f2f4fa; text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 10px">Minha formação</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: #6e9bff; color: #0b0e1a; display: flex; align-items: center; justify-content: center; font-weight: 700">R</div>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><strong>Renata</strong><span style="color: #c9d1e6; font-size: 14px">Professora</span></div>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1360px; margin: 0 auto; padding: 40px 40px 64px; display: flex; flex-direction: column; gap: 28px">
+
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a href="#tarefas" style="font-weight: 700">Tarefas</a>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 40px; line-height: 1.1">Nova tarefa</h1>
+<span style="color: #46536e">Você escolhe o que a turma vai fazer e até quando. As aulas gravadas ensinam, e a plataforma confere a entrega.</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<form style="flex: 999 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+
+<fieldset style="margin: 0; background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<legend style="float: left; padding: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px">1. O que a turma vai fazer</legend>
+<span style="color: #46536e">Cada conjunto já vem com as aulas, os objetivos e o que a plataforma confere.</span>
+<label style="display: flex; gap: 14px; align-items: flex-start; border: 2px solid #1b5cf3; background: #eff3f9; border-radius: 16px; padding: 16px 18px"><input type="radio" name="conjunto" checked style="width: 20px; height: 20px; min-width: 20px; margin-top: 3px"><span style="display: flex; flex-direction: column; gap: 2px"><strong>Nave Contra Asteroides, aulas 1 a 3</strong><span style="color: #46536e">3 aulas gravadas, para cerca de 2 encontros com a turma. Pratica pensar em passos e testar e corrigir.</span></span></label>
+<label style="display: flex; gap: 14px; align-items: flex-start; border: 1.5px solid #d6deea; border-radius: 16px; padding: 16px 18px"><input type="radio" name="conjunto" style="width: 20px; height: 20px; min-width: 20px; margin-top: 3px"><span style="display: flex; flex-direction: column; gap: 2px"><strong>Nave Contra Asteroides, aulas 4 a 6</strong><span style="color: #46536e">3 aulas gravadas, para cerca de 2 encontros com a turma. Pratica dividir o problema e persistir.</span></span></label>
+<label style="display: flex; gap: 14px; align-items: flex-start; border: 1.5px solid #d6deea; border-radius: 16px; padding: 16px 18px"><input type="radio" name="conjunto" style="width: 20px; height: 20px; min-width: 20px; margin-top: 3px"><span style="display: flex; flex-direction: column; gap: 2px"><strong>Corre, Dino, aulas 1 a 3</strong><span style="color: #46536e">3 aulas gravadas, para cerca de 2 encontros com a turma. Pratica planejar e pensar em passos.</span></span></label>
+</fieldset>
+
+<fieldset style="margin: 0; background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<legend style="float: left; padding: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px">2. Para quem</legend>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<label style="display: flex; align-items: center; gap: 10px; border: 2px solid #1b5cf3; background: #eff3f9; border-radius: 14px; padding: 12px 16px; font-weight: 700; min-height: 50px"><input type="checkbox" checked style="width: 20px; height: 20px">6º ano B, 28 alunos</label>
+<label style="display: flex; align-items: center; gap: 10px; border: 1.5px solid #d6deea; border-radius: 14px; padding: 12px 16px; font-weight: 700; min-height: 50px"><input type="checkbox" style="width: 20px; height: 20px">6º ano A, 29 alunos</label>
+</div>
+<a href="#alunos" style="font-weight: 700">Escolher alunos um a um</a>
+<div style="background: #fff3c4; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+<strong>5 alunos do 6º ano B já fizeram estas aulas em casa.</strong>
+<span>Para eles, a tarefa já aparece como feita. Você pode passar o conjunto seguinte só para esses cinco.</span>
+<a href="#seguinte" style="font-weight: 700">Passar as aulas 4 a 6 para eles</a>
+</div>
+<span style="color: #46536e">1 aluno ainda está no posto Faísca. Ele recebe esta tarefa assim que terminar o que falta.</span>
+</fieldset>
+
+<fieldset style="margin: 0; background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<legend style="float: left; padding: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px">3. Quando</legend>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="comeca" style="font-weight: 700">Começa em</label><input id="comeca" type="text" value="Segunda, 3 de setembro" style="height: 50px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 14px; font-family: inherit; font-size: 17px; color: #0f1a33; background: #ffffff; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="entrega" style="font-weight: 700">Entrega até</label><input id="entrega" type="text" value="Sexta, 14 de setembro" style="height: 50px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 14px; font-family: inherit; font-size: 17px; color: #0f1a33; background: #ffffff; width: 100%"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="depois" style="font-weight: 700">Depois do prazo</label><select id="depois" style="height: 50px; border: 1.5px solid #74829f; border-radius: 12px; padding: 0 14px; font-family: inherit; font-size: 17px; color: #0f1a33; background: #ffffff; width: 100%"><option>Aceitar com atraso</option></select></div>
+</div>
+<label style="display: flex; align-items: center; gap: 10px"><input type="checkbox" style="width: 20px; height: 20px">Esta tarefa não tem prazo</label>
+</fieldset>
+
+<fieldset style="margin: 0; background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<legend style="float: left; padding: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px">4. Nota</legend>
+<label style="display: flex; align-items: center; gap: 10px; font-weight: 700"><input type="checkbox" style="width: 20px; height: 20px">Usar nota nesta tarefa</label>
+<span style="color: #46536e">Sem nota, a tarefa mostra só quem concluiu e quem ainda não. Com nota, ela vale de 0 a 10 e usa só o que a plataforma confere sozinha: 7 pontos pelos objetivos cumpridos nos projetos e 3 pontos pela melhor tentativa do quiz. Você não precisa corrigir nenhum jogo.</span>
+</fieldset>
+
+</form>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<section style="background: #121733; color: #f2f4fa; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px">Resumo</h2>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #a3aecb; font-size: 15px">O quê</span><strong>Nave Contra Asteroides, aulas 1 a 3</strong></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #a3aecb; font-size: 15px">Para quem</span><strong>6º ano B, 28 alunos</strong></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #a3aecb; font-size: 15px">Quando</span><strong>De 3 a 14 de setembro</strong></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #a3aecb; font-size: 15px">Nota</span><strong>Sem nota</strong></div>
+<button type="button" style="min-height: 50px; padding: 0 22px; border: 0; border-radius: 12px; background: #ffc02e; color: #0b0e1a; font-family: inherit; font-size: 17px; font-weight: 700; box-shadow: 0 4px 0 #c98a00">Passar a tarefa</button>
+<a href="#depois" style="color: #ffc02e; font-weight: 700; text-align: center">Salvar para depois</a>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+<strong>Quem fica sabendo</strong>
+<span>Os alunos veem a tarefa no Início deles, com o prazo e o que falta. As famílias veem na área dos pais.</span>
+</section>
+<section style="background: #ffffff; border: 1px solid #d6deea; border-radius: 20px; box-shadow: 0 4px 0 #d6deea; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+<strong>O Zappy no 6º ano</strong>
+<span>A conversa com o Zappy fica desligada para os alunos, e você liga durante a aula quando quiser.</span>
+</section>
+</aside>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1665}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
