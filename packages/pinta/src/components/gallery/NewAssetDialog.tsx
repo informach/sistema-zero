@@ -289,6 +289,7 @@ export function NewAssetDialog({
   onCreate,
   onCreateFromTemplate,
   onCreateRegionMap,
+  nativeWriterVersion = 0,
 }: {
   open: boolean
   /** Tilesets existentes de QUALQUER estilo (habilitam o Mapa + seletor). */
@@ -311,7 +312,12 @@ export function NewAssetDialog({
    * Cria o "Mundo gigante" (mapa por regiões). Ausente = o armazenamento não guarda esse formato
    * (aula, persistência antiga) e o cartão não aparece.
    */
-  onCreateRegionMap?: (input: { name: string; tilesetId: string }) => void
+  onCreateRegionMap?: (input: {
+    name: string
+    tilesetId: string
+    projection?: 'isometric' | 'hexagonal'
+  }) => void
+  nativeWriterVersion?: number
 }): JSX.Element | null {
   const [step, setStep] = useState<Step>('style')
   const [style, setStyle] = useState<PintaAssetStyle>(initialStyle)
@@ -623,6 +629,29 @@ export function NewAssetDialog({
                 </span>
               </button>
             ) : null}
+            {kind === 'tilemap' && onCreateRegionMap && nativeWriterVersion >= 9
+              ? (['isometric', 'hexagonal'] as const).map((projection) => (
+                  <button
+                    key={projection}
+                    type="button"
+                    aria-pressed={sizeKey === projection}
+                    className="pin-pop flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 border-pin-border bg-pin-bg p-3 transition hover:border-pin-accent"
+                    onClick={() => {
+                      setSizeKey(projection)
+                      setStep('name')
+                    }}
+                  >
+                    <span className="text-base font-bold">
+                      {projection === 'isometric' ? 'Mapa isométrico' : 'Mapa hexagonal'}
+                    </span>
+                    <span className="text-sm text-pin-muted">
+                      {projection === 'isometric'
+                        ? 'Monte o cenário com casas em losango.'
+                        : 'Monte o cenário com casas de seis lados.'}
+                    </span>
+                  </button>
+                ))
+              : null}
             {customSpec ? (
               <button
                 type="button"
@@ -680,8 +709,18 @@ export function NewAssetDialog({
             event.preventDefault()
             if (!normalized || nameError) return
             if (templateId) onCreateFromTemplate({ templateId, name: normalized })
-            else if (kind === 'tilemap' && sizeKey === REGION_WORLD_KEY && onCreateRegionMap)
-              onCreateRegionMap({ name: normalized, tilesetId })
+            else if (
+              kind === 'tilemap' &&
+              [REGION_WORLD_KEY, 'isometric', 'hexagonal'].includes(sizeKey) &&
+              onCreateRegionMap
+            )
+              onCreateRegionMap({
+                name: normalized,
+                tilesetId,
+                ...(sizeKey === 'isometric' || sizeKey === 'hexagonal'
+                  ? { projection: sizeKey }
+                  : {}),
+              })
             else if (kind && effectiveSizeKey)
               onCreate(buildInput(kind, effectiveSizeKey, normalized, tilesetId))
           }}

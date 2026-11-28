@@ -6,7 +6,7 @@
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { isPintaMemoryAsset, type PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import {
   createGuidedBackgroundAsset,
@@ -137,7 +137,7 @@ function InitialCanvasOpener({
 
 export interface PintaCompletionControl {
   /** Salva o desenho aberto; `null` indica que a galeria está aberta. */
-  flush(): Promise<import('../core/assetMemory').PintaMemoryAsset | null>
+  flush(): Promise<import('../core/assetMemory').PintaWorkshopAsset | null>
 }
 
 export function PintaApp({
@@ -218,13 +218,13 @@ export function PintaApp({
   // deps do efeito que se anuncia, e uma função nova por render o faria
   // desanunciar e reanunciar a cada volta do `useMemo` do contexto.
   const editorRef = useRef<Pick<
-    PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset>,
+    PintaEditorStore<import('../core/assetMemory').PintaWorkshopAsset>,
     'getState'
   > | null>(null)
   const handleEditorReady = useCallback(
     (
       editor: Pick<
-        PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset>,
+        PintaEditorStore<import('../core/assetMemory').PintaWorkshopAsset>,
         'getState'
       > | null,
     ) => {
@@ -324,18 +324,13 @@ export function PintaApp({
             }
           }
           const listed = fullCatalog || card ? await store.persistence.listAllAssets() : null
-          const catalog = listed?.filter(isPintaMemoryAsset) ?? null
+          const catalog = listed ?? null
           const found = listed
             ? listed.find((item) => item.id === id)
             : await store.persistence.loadAssetById(id)
           if (generation !== openGeneration.current) return
           if (!found) {
             setOpenFailure({ message: COPY.gallery.drawingGone })
-            return
-          }
-          // A projected map stays stored as it is; no editor here opens it yet.
-          if (!isPintaMemoryAsset(found)) {
-            setOpenFailure({ message: COPY.gallery.projectedUnavailable([found.name]) })
             return
           }
           const asset = found
@@ -368,12 +363,11 @@ export function PintaApp({
    * foi levado fica em silêncio, como lá.
    */
   const resyncAfterFocal = useCallback(
-    async (id: string, listed?: readonly PintaMemoryAsset[]) => {
+    async (id: string, listed?: readonly PintaWorkshopAsset[]) => {
       const send = resyncToStudio.current
       if (!send) return
       try {
-        const catalog =
-          listed ?? (await store.persistence.listAllAssets()).filter(isPintaMemoryAsset)
+        const catalog = listed ?? (await store.persistence.listAllAssets())
         const asset = catalog.find((item) => item.id === id)
         if (!asset) return
         const result = await resyncStudioCopies({
@@ -404,7 +398,7 @@ export function PintaApp({
   const openComplete = async (focal: LocalRegionAuthorSession) => {
     const generation = openGeneration.current
     const revision = focal.store.getState().revision
-    const catalog = (await store.persistence.listAllAssets()).filter(isPintaMemoryAsset)
+    const catalog = await store.persistence.listAllAssets()
     const asset = catalog.find((item) => item.id === focal.id)
     if (generation !== openGeneration.current || focused.current !== focal) return
     if (

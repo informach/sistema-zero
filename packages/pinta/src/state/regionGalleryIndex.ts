@@ -1,4 +1,4 @@
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import type { PintaProjectRef } from '../core/project'
 
 /** No cell/layer payload. Only complete assets may enter a writer or portable encoder. */
@@ -17,9 +17,9 @@ export interface RegionalGalleryCard {
   readonly dependencies: readonly string[]
 }
 
-export type PintaGalleryEntry = PintaMemoryAsset | RegionalGalleryCard
+export type PintaGalleryEntry = PintaWorkshopAsset | RegionalGalleryCard
 export type RegionGalleryIndex = {
-  assets: PintaMemoryAsset[]
+  assets: PintaWorkshopAsset[]
   cards: RegionalGalleryCard[]
 }
 export function isRegionalGalleryCard(asset: PintaGalleryEntry): asset is RegionalGalleryCard {

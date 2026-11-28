@@ -27,7 +27,7 @@ const idSchema = z
 const captureSchema = z.strictObject({
   format: z.literal('pinta-regional-personal'),
   version: z.literal(1),
-  dataVersion: z.literal(5),
+  dataVersion: z.union([z.literal(5), z.literal(6)]),
   id: idSchema,
   name: z.string().min(1).max(PERSONAL_ASSET_LIMITS.maxNameChars),
   revision: z.uuid(),
@@ -55,7 +55,7 @@ export async function admitPersonalRegionalRecord(raw: unknown, id: string): Pro
     sourceId: id,
     width: record.width,
     height: record.height,
-    regional: { dataVersion: 5, sourceId: id, sha256: record.sha256 },
+    regional: { dataVersion: record.dataVersion, sourceId: id, sha256: record.sha256 },
   })
   return record
 }
@@ -74,7 +74,7 @@ export async function readPersonalRegionalMap(id: string, scope: Scope): Promise
       sourceId: id,
       width,
       height,
-      regional: { dataVersion: 5, sourceId: id, sha256 },
+      regional: { dataVersion: parsed.data.dataVersion, sourceId: id, sha256 },
     })
     return parsed.data
   } catch {
@@ -101,7 +101,7 @@ export async function savePersonalRegionalMap(
     const baseName = normalizeAssetName(name)
     if (!baseName) return { ok: false, error: UNSUPPORTED_PINTA_REGION }
     const {
-      regional: { sha256 },
+      regional: { sha256, dataVersion },
     } = await admitPintaRegionalMaterial(
       {
         dataUrl,
@@ -177,7 +177,7 @@ export async function savePersonalRegionalMap(
         const record: Capture = {
           format: 'pinta-regional-personal',
           version: 1,
-          dataVersion: 5,
+          dataVersion,
           id,
           width,
           height,

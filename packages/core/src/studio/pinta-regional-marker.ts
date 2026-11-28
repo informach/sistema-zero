@@ -12,7 +12,7 @@ import { PINTA_IMAGE_ID_PATTERN } from './pinta-image'
 export const PintaRegionalSourceIdSchema = z.string().min(1).max(200).regex(PINTA_IMAGE_ID_PATTERN)
 
 export const PintaRegionalMarkerSchema = z.strictObject({
-  dataVersion: z.literal(5),
+  dataVersion: z.union([z.literal(5), z.literal(6)]),
   sourceId: PintaRegionalSourceIdSchema,
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
 })

@@ -1,7 +1,7 @@
 // Gerado por `bun run --cwd packages/studio gen:pro-engine-copies`. Não editar à mão.
 // sha256 (UTF-8) de cada cópia `public/sz-ext/<id>.js` que a conversão para o Pro escreveu desde
 // 15106f159 (13/08/2026), na ordem em que apareceram. Ver o cabeçalho do script.
-import type { StudioProEngineInventory } from './pro-engine-copies'
+import type { StudioProEngineEquivalentCopies, StudioProEngineInventory } from './pro-engine-copies'
 
 export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
   'game-2d': {
@@ -59,6 +59,10 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       'b0a9f6314b0f4dc454078e1daf0c09acf73404836f8f799ca27cd3282b4f27c4',
       '1cc95094f076a5bf9ac89bfa98e6e1a3e151769bdb98bcf7a467a05dba2adf05',
       'bf283b136662d5618b6ec41a0b77619677c90fb622847b79dc4b9147d551ff18',
+      'aea63e52477195af4539e404a7b38b92ad665c549fae85afaf7bd2265388ef81',
+      '3560e8cf24748d9ccd776349438c1143fb7d6dd99f72cd2e553b0dfc7dd97f1e',
+      'e0205c39c3e5509ea2f2247efe0f411f990d65af02819f5e3bb7d0e72b40fd30',
+      '995b3fd57e489452853136d7551bdd34b97584eeac200170e77b0d23d23cd763',
     ],
     'sem-cenario-pinta': [
       'c359a40c6b02bb98a72ed8173cd3e084954f71440b76e93c1900255e175d2830',
@@ -70,6 +74,8 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       'd0884f13b554ba9c4207810e4ea49488e9c0d2f41531892dedbb327724396710',
       '5de61350cb902a91c3bf3156377c910b915fa108168e097a383d24a353a45188',
       'c0a4482a900a9d1f6ef005da91c8eddd1e4b2b0885ff307b8dc80555b900ce0d',
+      '8a9bccb260de8ffc03200e48c182cd2060c0540fcfbd0df5826d4df1e4162987',
+      '510717a6c6fce9778ec9ef3fa73168640fdb463aaf507f2c3d5decec7692fc3f',
     ],
   },
   'game-2d-advanced': {
@@ -109,6 +115,8 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       'a6265fc143d8d1551a7d00fbed4a4d5be003802ef893d42b8caafbab6fbc409f',
       '2e1f4bca8c6898f2a97712da87d17a898ec6ade1d7204ed35d5747c140a636b3',
       '0c32835c6c72d18968b90b282b40506c59e898a6b4cce3188bdae7738a086b1d',
+      '1c74b5d61c1607140ca1155888c42351809f650c42b9477399cdd6aa621f2402',
+      'd3770936f6bb10f61c42a9faafff3205e8a820109824a092bde69927b4a104e9',
     ],
     'sem-cenario-pinta': [
       '2a50090c9f289bf3f780f814042ea60bf2681ea0d0f2af76b8a53e943aec8c4d',
@@ -118,6 +126,32 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       '92aedc74ee4ab78d71682a0d472619e194f35513f1b0f7883ac4a4b538a9fa64',
       'e4f4e21fa6bfa43d5a8ac75aa16bfb4614999ebbe6f8262caf198fda5b717ce3',
       '7e1b13b1e023646b5be071dbefdeaeb6f104b095986f5a9011222386928933c7',
+      'dd02dfe2a0aca32ecb00bccb19514ca6f1549b4477d26a143e147cfe3488933d',
+    ],
+  },
+}
+
+export const STUDIO_PRO_ENGINE_EQUIVALENT_COPIES: StudioProEngineEquivalentCopies = {
+  'game-2d': {
+    aea63e52477195af4539e404a7b38b92ad665c549fae85afaf7bd2265388ef81: [
+      'e0205c39c3e5509ea2f2247efe0f411f990d65af02819f5e3bb7d0e72b40fd30',
+    ],
+    '8a9bccb260de8ffc03200e48c182cd2060c0540fcfbd0df5826d4df1e4162987': [
+      '510717a6c6fce9778ec9ef3fa73168640fdb463aaf507f2c3d5decec7692fc3f',
+    ],
+    '3560e8cf24748d9ccd776349438c1143fb7d6dd99f72cd2e553b0dfc7dd97f1e': [
+      '995b3fd57e489452853136d7551bdd34b97584eeac200170e77b0d23d23cd763',
+    ],
+  },
+  'game-2d-advanced': {
+    '8249b0975d703de4f14a8addbaa91771591e4edc242e9476291bbf21d2ca5e79': [
+      '1c74b5d61c1607140ca1155888c42351809f650c42b9477399cdd6aa621f2402',
+    ],
+    '7e1b13b1e023646b5be071dbefdeaeb6f104b095986f5a9011222386928933c7': [
+      'dd02dfe2a0aca32ecb00bccb19514ca6f1549b4477d26a143e147cfe3488933d',
+    ],
+    '0c32835c6c72d18968b90b282b40506c59e898a6b4cce3188bdae7738a086b1d': [
+      'd3770936f6bb10f61c42a9faafff3205e8a820109824a092bde69927b4a104e9',
     ],
   },
 }

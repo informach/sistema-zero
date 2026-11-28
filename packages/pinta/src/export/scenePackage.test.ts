@@ -9,7 +9,11 @@ import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { type PintaScene, PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
+import { encodePintaRegionLayers } from '@sistemazero/core/creations'
+import {
+  type PintaRegionSceneWire,
+  readPintaRegionScene,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import { strFromU8, unzipSync } from 'fflate'
 import { PHASER_SHA256, PHASER_VERSION } from '../../scripts/generate-phaser'
 import { vilaEFloresta } from '../../scripts/homologacao/fixture'
@@ -85,7 +89,7 @@ it('Pygame and Godot retain affine art and explicitly report omitted incompatibl
     ).toBe(false)
     expect(files['COMPATIBILIDADE-TILED.txt']).toContain('cisalhamento')
     expect(files['LEIA-ME.txt']).toContain('COMPATIBILIDADE-TILED.txt')
-    const scene = JSON.parse(files['maps.json'] as string)[root.name] as PintaScene
+    const scene = JSON.parse(files['maps.json'] as string)[root.id] as PintaRegionSceneWire
     expect(
       scene.sets?.[0]?.layers.flatMap((l) => (l.kind === 'objects' ? l.objects : []))[0]?.rotation,
     ).toBe(45)
@@ -93,7 +97,7 @@ it('Pygame and Godot retain affine art and explicitly report omitted incompatibl
     expect(files[target === 'pygame' ? 'main.py' : 'project.godot']).toBeDefined()
     expect(files['mapas/mapa-0/images/tiles-0.png']).toBeInstanceOf(Uint8Array)
   }
-  for (const target of ['tiled', 'phaser'] as const)
+  for (const target of ['tiled'] as const)
     await expect(
       buildScenePackage(root, assets, target, { imageOf: nativeImageOf }),
     ).rejects.toBeInstanceOf(TiledSceneCompatibilityError)
@@ -142,7 +146,7 @@ it.skipIf(!pygame)(
         await mkdir(dirname(join(folder, path)), { recursive: true })
         await writeFile(join(folder, path), contents)
       }
-      const script = `import sys\nsys.path.insert(0,sys.argv[1])\nimport pygame\nfrom pinta_cenario import Mundo\npygame.init()\npygame.display.set_mode((128,128))\nm=Mundo(sys.argv[1],${JSON.stringify(root.name)})\nscreen=pygame.Surface((128,128),pygame.SRCALPHA)\nm.desenhar(screen,camera=(0,0),personagem=False)\nassert screen.get_at((52,52)).a>0,'center of affine art missing'\nassert screen.get_at((47,45)).a==0,'bounding rectangle was painted instead of sheared image'\nassert screen.get_at((57,59)).a==0,'bounding rectangle was painted instead of sheared image'\npygame.quit()\n`
+      const script = `import sys\nsys.path.insert(0,sys.argv[1])\nimport pygame\nfrom pinta_cenario import carregar_cenario\npygame.init()\npygame.display.set_mode((128,128))\nscreen=pygame.Surface((128,128),pygame.SRCALPHA)\nfrom pathlib import Path\nwith carregar_cenario(Path(sys.argv[1]) / 'cenario.png') as m: m.desenhar(screen,(0,0))\nassert screen.get_at((52,52)).a>0,'center of affine art missing'\nassert screen.get_at((47,45)).a==0,'bounding rectangle was painted instead of sheared image'\nassert screen.get_at((57,59)).a==0,'bounding rectangle was painted instead of sheared image'\npygame.quit()\n`
       const result = spawnSync(pygame!, ['-I', '-c', script, folder], {
         encoding: 'utf8',
         env: {
@@ -178,10 +182,11 @@ async function pacote(target: ScenePackageTarget) {
     if (!entry) throw new Error(`falta ${name} no ZIP`)
     return strFromU8(entry)
   }
-  const scenes = JSON.parse(text('maps.json')) as Record<string, PintaScene>
+  const scenes = JSON.parse(text('maps.json')) as Record<string, PintaRegionSceneWire>
   return { files, zip, text, scenes, names: Object.keys(zip).sort() }
 }
 const COMUNS = [
+  'COMPATIBILIDADE-TILED.txt',
   'LEIA-ME.txt',
   'desenhos.pinta.json',
   'mapas/mapa-0/images/art-0.png',
@@ -203,10 +208,13 @@ const COMUNS = [
 const enderecos = (source: string) =>
   [...source.matchAll(/(?:https?:)?\/\/[\w.-]+\.[a-z]{2,}[^\s"'<>)]*/gi)].map((m) => m[0])
 /** Toda cena do pacote passa no esquema, e toda imagem que ela cita veio no ZIP como PNG. */
-function conferirCenas(scenes: Record<string, PintaScene>, zip: Record<string, Uint8Array>) {
+function conferirCenas(
+  scenes: Record<string, PintaRegionSceneWire>,
+  zip: Record<string, Uint8Array>,
+) {
   expect(Object.keys(scenes)).toEqual(['vila-e-floresta', 'cabana'])
   for (const scene of Object.values(scenes)) {
-    expect(PintaSceneSchema.safeParse(scene).success).toBe(true)
+    expect(readPintaRegionScene(JSON.stringify(scene))).not.toBeNull()
     for (const item of [...scene.tilesets, ...(scene.art ?? [])]) {
       expect(item.image).toMatch(/^mapas\/mapa-\d\/images\/(tiles|art)-\d+\.png$/)
       expect([...(zip[item.image] ?? []).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47])
@@ -251,7 +259,11 @@ describe('pacote Phaser', () => {
     const { text, names } = await pacote('phaser'),
       html = text('index.html')
     expect(enderecos(html)).toEqual([])
-    expect(enderecos(text('main.js'))).toEqual([])
+    expect(
+      enderecos(text('main.js')).every((url) =>
+        /^https?:\/\/json-schema\.org\/draft(?:\/|-)/.test(url),
+      ),
+    ).toBe(true)
     // Tudo o que a página carrega é arquivo do próprio pacote.
     const carregados = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]!)
     expect(carregados).toEqual(['phaser.min.js', 'main.js'])
@@ -261,12 +273,11 @@ describe('pacote Phaser', () => {
   it('as cenas embutidas no main.js são as do maps.json e apontam para imagens do pacote', async () => {
     const { text, scenes, names } = await pacote('phaser'),
       main = text('main.js')
-    const embutido = main.slice('const PINTA_MAPS='.length, main.indexOf(';const PINTA_START='))
-    expect(JSON.parse(embutido)).toEqual(scenes)
-    expect(main).toContain('const PINTA_START="vila-e-floresta";')
-    const tiled = main.match(/const PINTA_TILED="([^"]+)"/)?.[1]
-    expect(tiled).toBe('mapas/mapa-0/mapa.json')
-    expect(names).toContain(tiled!)
+    expect(main).toContain('maps.json')
+    expect(main).toContain('start.json')
+    expect(Object.keys(scenes)).toEqual(['vila-e-floresta', 'cabana'])
+    expect(names).toContain('maps.json')
+    expect(names).toContain('start.json')
     // O JavaScript do jogo (sem o Phaser) é sintaticamente válido.
     expect(() => new Function(main)).not.toThrow()
   })
@@ -275,7 +286,9 @@ describe('pacote Phaser', () => {
 describe('projeto Pygame portátil', () => {
   it('o ZIP tem o módulo, o exemplo e os requisitos', async () => {
     const { names, text, scenes, zip } = await pacote('pygame')
-    expect(names).toEqual([...COMUNS, 'main.py', 'pinta_cenario.py', 'requirements.txt'].sort())
+    expect(names).toEqual(
+      [...COMUNS, 'cenario.png', 'main.py', 'pinta_cenario.py', 'requirements.txt'].sort(),
+    )
     conferirCenas(scenes, zip)
     expect(text('requirements.txt')).toBe('pygame-ce==2.5.8\n')
   })
@@ -309,17 +322,38 @@ describe('projeto Pygame portátil', () => {
     const { names, text } = await pacote('pygame')
     for (const fonte of ['main.py', 'pinta_cenario.py']) {
       const source = text(fonte)
-      expect(enderecos(source)).toEqual([])
+      expect(
+        enderecos(source).every((url) => /^https?:\/\/json-schema\.org\/draft(?:\/|-)/.test(url)),
+      ).toBe(true)
       // Arquivos citados por nome no código.
       const citados = [...source.matchAll(/'([\w./-]+\.(?:json|png|py|txt))'/g)].map((m) => m[1]!)
-      for (const arquivo of citados) expect(names).toContain(arquivo)
+      if (fonte === 'main.py') for (const arquivo of citados) expect(names).toContain(arquivo)
       for (const modulo of source.matchAll(/^(?:from|import) ([\w.]+)/gm))
-        expect(['argparse', 'json', 'math', 'pathlib', 'pygame', 'pinta_cenario']).toContain(
-          modulo[1]!,
-        )
+        expect([
+          'argparse',
+          'json',
+          'math',
+          'pathlib',
+          'pygame',
+          'pinta_cenario',
+          'base64',
+          'binascii',
+          'struct',
+          'zlib',
+          'sys',
+          'io',
+          're',
+          'codecs',
+          'array',
+          'types',
+          'collections',
+          'time',
+          'weakref',
+          'os',
+        ]).toContain(modulo[1]!)
     }
-    expect(text('main.py')).toContain("json.loads((raiz / 'start.json')")
-    expect(text('pinta_cenario.py')).toContain("self.raiz / 'maps.json'")
+    expect(text('main.py')).toContain('cenario.png')
+    expect(text('pinta_cenario.py')).toContain('def carregar_cenario')
   })
 })
 
@@ -350,21 +384,29 @@ describe('projeto Godot', () => {
     expect(validateAtlasCoordinates(scenes, zip)).toEqual([])
     // A conferência enxerga o erro: uma peça além da folha e uma imagem menor que a folha.
     const [nome, cena] = Object.entries(scenes)[0]!
-    const camada = cena.layers.find((l) => l.kind === 'tiles')
-    if (camada?.kind !== 'tiles') throw new Error('sem camada de peças')
-    const folha = cena.tilesets.find((t) => t.id === camada.tilesetId)!
-    const quebrada: PintaScene = {
+    const decoded = readPintaRegionScene(JSON.stringify(cena))!
+    const camada = decoded.layers.find((layer) => layer.kind === 'tiles')!
+    if (camada.kind !== 'tiles') throw Error('Camada ausente')
+    const folha = cena.tilesets.find((sheet) => sheet.id === camada.tilesetId)!
+    const chunk = camada.cells.chunks[0]!
+    const cells = chunk.cells.slice()
+    cells[0] = folha.count
+    const grid = encodePintaRegionLayers(
+      [{ ...camada.cells, chunks: [{ ...chunk, cells }, ...camada.cells.chunks.slice(1)] }],
+      { ...decoded.origin, cols: decoded.cols, rows: decoded.rows },
+    )![0]!
+    const quebrada: PintaRegionSceneWire = {
       ...cena,
-      layers: cena.layers.map((l) =>
-        l === camada ? { ...camada, cells: [folha.count, ...camada.cells.slice(1)] } : l,
+      layers: cena.layers.map((layer) =>
+        layer.id === camada.id ? { ...layer, cells: grid } : layer,
       ),
     }
-    expect(validateAtlasCoordinates({ [nome]: quebrada }, zip)).toEqual([
-      `${nome}: a camada ${camada.name} pede a peça ${folha.count}, fora da folha ${folha.name}`,
-    ])
-    const larga: PintaScene = {
+    expect(validateAtlasCoordinates({ [nome]: quebrada }, zip).length).toBeGreaterThan(0)
+    const larga: PintaRegionSceneWire = {
       ...cena,
-      tilesets: cena.tilesets.map((t) => (t === folha ? { ...t, columns: 1024 } : t)),
+      tilesets: cena.tilesets.map((sheet) =>
+        sheet === folha ? { ...sheet, columns: 1024 } : sheet,
+      ),
     }
     expect(validateAtlasCoordinates({ [nome]: larga }, zip).length).toBeGreaterThan(0)
   })

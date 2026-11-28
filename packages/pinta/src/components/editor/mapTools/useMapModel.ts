@@ -3,6 +3,7 @@
  * salvos por cima) e as peças do mapa.
  */
 import { useMemo } from 'react'
+import { isPintaMemoryAsset } from '../../../core/assetMemory'
 import {
   type AnyTilesetAsset,
   isCompatibleMapTileset,
@@ -42,7 +43,7 @@ export function useMapModel(): MapModel {
   const galleryAssets = useMemo(() => {
     const byId = new Map<string, PintaAsset>()
     for (const asset of savedGalleryAssets)
-      if (!isLocalRegionAsset(asset)) byId.set(asset.id, asset)
+      if (isPintaMemoryAsset(asset) && !isLocalRegionAsset(asset)) byId.set(asset.id, asset)
     for (const a of linkedAssets ?? []) byId.set(a.id, a)
     for (const version of resources ?? []) byId.set(version.asset.id, version.asset)
     return [...byId.values()]

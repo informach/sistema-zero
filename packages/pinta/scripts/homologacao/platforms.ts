@@ -1,10 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve, sep } from 'node:path'
-import { type PintaScene, PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
+import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import type { SceneBox } from '@sistemazero/core/studio/pinta-scene-geometry'
 import { isObjectLayer, isTileLayer, pintaAssetReferenceIds } from '../../src/core/project'
+import { encodeRegionSceneWorldPng } from '../../src/export/regionSceneWorldPng'
 import { createMapObject } from '../../src/tiles/mapObjects'
 import { physicsScenario } from './physics'
+import { regionalGeometryFixture } from './regionalGeometryFixture'
 
 /** Native authoring fixture shared by editor and external runtime qualification.
  * The fractional position comes from a layer offset, as in the actual editor.
@@ -275,6 +277,21 @@ if (import.meta.main) {
       Buffer.from(image.dataUrl.split(',')[1]!, 'base64'),
     )
   }
+  const base = await exportPintaScene(
+    fixture.map,
+    (id) => fixture.assets.find((asset) => asset.id === id) ?? null,
+    nativeImageOf,
+  )
+  const geometry = platformGeometryCases(base)
+  geometry[0]!.scene.name = fixture.map.name
+  const canonical = geometry.map((item, index) => ({
+    ...item,
+    scene: regionalGeometryFixture({ ...item.scene, id: index === 0 ? fixture.map.id : item.name }),
+  }))
+  const worldPng = await encodeRegionSceneWorldPng(
+    fixture.map.id,
+    new Map(canonical.map((item) => [item.scene.id, item.scene])),
+  )
   for (const target of ['pygame', 'phaser', 'godot'] as const) {
     const files = await buildScenePackage(fixture.map, fixture.assets, target, {
         imageOf: nativeImageOf,
@@ -288,14 +305,40 @@ if (import.meta.main) {
     }
     const maps = files['maps.json']
     if (typeof maps !== 'string') throw Error('O pacote perdeu o mapa estruturado')
-    const scene = PintaSceneSchema.parse(Object.values(JSON.parse(maps))[0])
-    const cases = platformGeometryCases(scene)
-    cases[0]!.scene.name = scene.name
+    const saved = Object.values(JSON.parse(maps))[0] as {
+      tilesets: PintaScene['tilesets']
+      art?: PintaScene['art']
+    }
+    const copies: Array<{ path: string; content: string | Uint8Array }> = []
+    const cases = canonical.map((item, index) => {
+      const capture = <T extends { image: string }>(asset: T): T => {
+        const path = asset.image.replace('mapas/mapa-0/', `mapas/mapa-${index}/`)
+        const content = files[asset.image]
+        if (content === undefined) throw Error('A fixture perdeu uma imagem capturada.')
+        copies.push({ path, content })
+        return { ...asset, image: path }
+      }
+      return {
+        ...item,
+        scene: {
+          ...item.scene,
+          tilesets: saved.tilesets.map(capture),
+          ...(saved.art ? { art: saved.art.map(capture) } : {}),
+        },
+      }
+    })
+    for (const copy of copies) {
+      const path = resolve(folder, copy.path)
+      if (!path.startsWith(folder + sep)) throw Error('Imagem fora do pacote')
+      await mkdir(resolve(path, '..'), { recursive: true })
+      await writeFile(path, copy.content)
+    }
     await writeFile(
       resolve(folder, 'maps.json'),
-      JSON.stringify(Object.fromEntries(cases.map((item) => [item.scene.name, item.scene]))),
+      JSON.stringify(Object.fromEntries(cases.map((item) => [item.scene.id, item.scene]))),
     )
     await writeFile(resolve(folder, 'platform-probes.json'), JSON.stringify({ cases }))
+    if (target === 'pygame') await writeFile(resolve(folder, 'cenario.png'), worldPng.png)
     if (target === 'godot')
       await writeFile(
         resolve(folder, 'qa-platforms.gd'),

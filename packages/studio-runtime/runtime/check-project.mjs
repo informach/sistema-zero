@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
@@ -35,6 +36,30 @@ const readDirectory = (directory, extensions, excludes, includes, depth) =>
         .readDirectory(directory, extensions, excludes, includes, Math.min(depth ?? 12, 12))
         .filter(allowed)
     : []
+// Written by the Worker after its canonical-engine and material-byte admission.
+// The request cannot supply this reserved file. Recheck bytes before using its provenance.
+const validationOptions = readFile(path.join(root, 'validation-options.json'))
+const platformProofs = validationOptions ? (JSON.parse(validationOptions).platformFiles ?? {}) : {}
+if (
+  !platformProofs ||
+  typeof platformProofs !== 'object' ||
+  Array.isArray(platformProofs) ||
+  Object.keys(platformProofs).length > 3
+)
+  throw new Error('Prova de arquivos da plataforma inválida.')
+const platformFiles = new Set()
+for (const [relative, hash] of Object.entries(platformProofs)) {
+  const file = path.resolve(root, relative)
+  if (
+    !inside(file, root) ||
+    !fileExists(file) ||
+    typeof hash !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(hash) ||
+    createHash('sha256').update(fs.readFileSync(file)).digest('hex') !== hash
+  )
+    throw new Error('Os bytes da plataforma não conferem com a prova recebida.')
+  platformFiles.add(file)
+}
 const configuration = fileExists(path.join(root, 'tsconfig.json'))
   ? 'tsconfig.json'
   : fileExists(path.join(root, 'jsconfig.json'))
@@ -167,7 +192,18 @@ if (!diagnostics.length) {
     }
     visit(source)
   }
-  diagnostics.push(...ts.getPreEmitDiagnostics(program))
+  // Bundled platform JavaScript has already lost its TypeScript annotations. It is a
+  // library, identified by exact admitted bytes; keep syntax/import checks for every file.
+  diagnostics.push(
+    ...program.getOptionsDiagnostics(),
+    ...program.getGlobalDiagnostics(),
+    ...program.getSyntacticDiagnostics(),
+  )
+  for (const source of program.getSourceFiles()) {
+    if (platformFiles.has(path.resolve(source.fileName))) continue
+    diagnostics.push(...program.getSemanticDiagnostics(source))
+    if (parsed.options.declaration) diagnostics.push(...program.getDeclarationDiagnostics(source))
+  }
 }
 const failures = diagnostics.filter((item) => item.category === ts.DiagnosticCategory.Error)
 if (failures.length) {

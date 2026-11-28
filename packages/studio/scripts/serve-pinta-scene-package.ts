@@ -24,6 +24,16 @@ const platforms = Bun.spawn(
   { stdout: 'inherit', stderr: 'inherit' },
 )
 if ((await platforms.exited) !== 0) throw new Error('A geração das plataformas falhou.')
+const qa = await Bun.build({
+  entrypoints: [
+    resolve(import.meta.dirname, '../../pinta/scripts/homologacao/regionalGeometryFixture.ts'),
+  ],
+  target: 'browser',
+  format: 'esm',
+  minify: true,
+})
+if (!qa.success || qa.outputs.length !== 1)
+  throw new Error('O módulo de consultas da homologação não compilou.')
 const root = resolve(output, 'phaser')
 const resourceRoot = resolve(output, 'resources/phaser')
 const physicsRoot = resolve(output, 'physics/phaser')
@@ -33,6 +43,8 @@ const server = Bun.serve({
   port: 5293,
   async fetch(request) {
     const url = new URL(request.url)
+    if (url.pathname === '/qa-scene.js')
+      return new Response(qa.outputs[0], { headers: { 'content-type': 'text/javascript' } })
     const isResource = url.pathname.startsWith('/resources/')
     const isPhysics = url.pathname.startsWith('/physics/')
     const isPlatform = url.pathname.startsWith('/platforms/')

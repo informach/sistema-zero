@@ -1,13 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { isWorkshopProjectedMap } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import { newId } from '../../core/id'
-import {
-  type AnyTilesetAsset,
-  isTileLayer,
-  type RegionTilemapAsset,
-  type TilemapAsset,
-  type TilemapCells,
-} from '../../core/project'
+import type { AnyTilesetAsset, RegionTilemapAsset, TilemapAsset } from '../../core/project'
+import type { WorkshopProjectedMap } from '../../core/projectedDocument'
 import { triggerDownload } from '../../export/download'
 import {
   AUTOMAP_LIMITS,
@@ -18,6 +14,7 @@ import {
   readAutomapBook,
   type SheetIdentity,
 } from '../../tiles/automapping/book'
+import { type AutomapMap, isAutomapTileLayer } from '../../tiles/automapping/cells'
 import {
   type AutomapFailure,
   captureAutomapExample,
@@ -47,18 +44,22 @@ function anotherSeed(current: number): number {
   return next >= current ? next + 1 : next
 }
 const initialRect = { col: 0, row: 0, cols: 1, rows: 1 }
-type RuleMap<Grid extends import('../../tiles/mapCellEdits').AuthorMap> = Grid & {
+type RuleMap<Grid extends AutomapMap> = Grid & {
   schema: 9
   automapping: AutomapBook
 }
-type AutomapPanelProps<Grid extends import('../../tiles/mapCellEdits').AuthorMap> = {
+type AutomapPanelProps<Grid extends AutomapMap> = {
   map: RuleMap<Grid>
   selection: CellRect | null
   sheets: readonly AnyTilesetAsset[]
   showPreview: (base: Grid, shown: Grid | null) => void
-  registerStroke: (stage: import('./mapTools/tileGestures').StageBrush<Grid> | undefined) => void
+  registerStroke: (
+    stage:
+      | ((base: Grid, painted: Grid, layerId: string, shift?: { col: number; row: number }) => void)
+      | undefined,
+  ) => void
 }
-interface RuleEditor<Grid extends import('../../tiles/mapCellEdits').AuthorMap> {
+interface RuleEditor<Grid extends AutomapMap> {
   getState(): { asset: unknown; commit(next: RuleMap<Grid>): boolean }
 }
 export function MapAutomappingPanel(props: AutomapPanelProps<TilemapAsset>) {
@@ -70,7 +71,19 @@ export function RegionAutomappingPanel(
 ) {
   return <AutomappingControls<RegionTilemapAsset> {...props} />
 }
-function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').AuthorMap>({
+function hasProjectedBook(map: WorkshopProjectedMap): map is RuleMap<WorkshopProjectedMap> {
+  return map.automapping !== undefined
+}
+export function ProjectedAutomappingPanel(
+  props: Omit<AutomapPanelProps<WorkshopProjectedMap>, 'map'> & {
+    map: WorkshopProjectedMap
+    editor: RuleEditor<WorkshopProjectedMap>
+  },
+) {
+  if (!hasProjectedBook(props.map)) return null
+  return <AutomappingControls<WorkshopProjectedMap> {...props} map={props.map} />
+}
+function AutomappingControls<Grid extends AutomapMap>({
   map,
   selection,
   sheets,
@@ -79,7 +92,7 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
   editor,
 }: AutomapPanelProps<Grid> & { editor: RuleEditor<Grid> }) {
   const book = map.automapping,
-    layers = map.layers.filter(isTileLayer<TilemapCells>)
+    layers = map.layers.filter(isAutomapTileLayer)
   const [sheetIndex, setSheetIndex] = useState<Map<string, SheetIdentity> | null>(null)
   const [chosen, setChosen] = useState<string[]>([layers[0]?.id ?? ''])
   const [rect, setRect] = useState<CellRect>(initialRect)
@@ -200,7 +213,11 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
     cancel()
     const example = captureAutomapExample(map, rect, chosen, sheetIndex, ignoreEmpty)
     if (!example) {
-      setMessage(COPY.automap.captureArea)
+      setMessage(
+        isWorkshopProjectedMap(map) && map.projection.kind === 'hexagonal'
+          ? 'Escolha uma área de até 16 × 16 casas. Os exemplos de regras hexagonais usam peças sem giros ou espelhos. Seu mapa continua igual.'
+          : COPY.automap.captureArea,
+      )
       return
     }
     if (!output) {

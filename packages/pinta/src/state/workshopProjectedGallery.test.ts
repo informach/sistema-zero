@@ -1,5 +1,5 @@
 /**
- * A galeria da oficina ainda não abre mapas projetados: ela os guarda inteiros, leva no backup,
+ * A galeria da oficina apresenta mapas projetados no catálogo comum, leva no backup,
  * restaura como cópia e não deixa apagar a folha ou o desenho que eles usam.
  */
 import { beforeEach, expect, test } from 'bun:test'
@@ -37,15 +37,13 @@ async function workshopGallery(namespace: string, withProjected = true) {
   return { ...fixtures, local, store, stored }
 }
 
-test('a galeria lista o projetado como indisponível, fora dos cartões, e o leva no backup inteiro', async () => {
+test('a galeria lista todos os documentos no mesmo catálogo e os leva no backup inteiro', async () => {
   const { store, sheet, authored, hex, iso } = await workshopGallery('galeria-projetada')
   const state = store.getState()
-  expect(state.assets.map(({ id }) => id).sort()).toEqual([sheet.id, authored.id].sort())
-  expect(state.projected.map(({ id }) => id).sort()).toEqual([hex.id, iso.id].sort())
-  expect(COPY.gallery.projectedUnavailable(['praca'])).toBe(
-    'O mapa "praca" ainda não abre nesta versão do Pinta. Ele continua guardado.',
+  expect(state.assets.map(({ id }) => id).sort()).toEqual(
+    [sheet.id, authored.id, hex.id, iso.id].sort(),
   )
-  const zip = unzipSync(await zipGallery([...state.assets, ...state.projected]))
+  const zip = unzipSync(await zipGallery(state.assets))
   const backup = zip[PINTA_GALLERY_ZIP_ENTRY]
   if (!backup) throw Error('O ZIP veio sem o backup')
   const { assets, warnings } = await readPintaWorkshopBackup(strFromU8(backup))
@@ -61,13 +59,16 @@ test('restaurar o backup traz o projetado como cópia, com o livro religado à c
   const { store, stored, hex, iso } = await workshopGallery('galeria-restaura-projetado')
   const before = stored()
   const state = store.getState()
-  const zip = unzipSync(await zipGallery([...state.assets, ...state.projected]))
+  const zip = unzipSync(await zipGallery(state.assets))
   const { assets } = await readPintaWorkshopBackup(strFromU8(zip[PINTA_GALLERY_ZIP_ENTRY]!))
   expect(await store.getState().importAssets(assets, { atomic: true })).toEqual({
     added: 4,
     skipped: 0,
   })
-  const copies = store.getState().projected.filter(({ id }) => id !== hex.id && id !== iso.id)
+  const copies = store
+    .getState()
+    .assets.filter(isWorkshopProjectedMap)
+    .filter(({ id }) => id !== hex.id && id !== iso.id)
   expect(copies.map(({ name }) => name).sort()).toEqual(['colmeia-2', 'praca-2'])
   for (const copy of copies) {
     expect(pintaWorkshopAssetToJson(copy)).not.toBeNull()
@@ -87,21 +88,29 @@ test('restaurar o backup traz o projetado como cópia, com o livro religado à c
     createWorkshopPintaPersistence({ namespace: 'galeria-restaura-projetado' }),
   )
   await reopened.getState().load()
-  expect(withoutSession(reopened.getState().projected)).toEqual(
-    withoutSession(store.getState().projected).sort(
+  expect(withoutSession(reopened.getState().assets.filter(isWorkshopProjectedMap))).toEqual(
+    withoutSession(store.getState().assets.filter(isWorkshopProjectedMap)).sort(
       (a, b) =>
-        reopened.getState().projected.findIndex(({ id }) => id === a.id) -
-        reopened.getState().projected.findIndex(({ id }) => id === b.id),
+        reopened
+          .getState()
+          .assets.filter(isWorkshopProjectedMap)
+          .findIndex(({ id }) => id === a.id) -
+        reopened
+          .getState()
+          .assets.filter(isWorkshopProjectedMap)
+          .findIndex(({ id }) => id === b.id),
     ),
   )
-  expect(reopened.getState().projected.every(isWorkshopProjectedMap)).toBe(true)
+  expect(
+    reopened.getState().assets.filter(isWorkshopProjectedMap).every(isWorkshopProjectedMap),
+  ).toBe(true)
 })
 
 test('apagar a folha ou o desenho que um projetado usa é recusado; sem projetado segue como antes', async () => {
   const { store, stored, sheet } = await workshopGallery('galeria-apaga-folha')
   const before = stored()
   expect(await store.getState().remove(sheet.id)).toBe(false)
-  expect(store.getState().mutateError).toBe(COPY.gallery.tilesetUsedByProjected)
+  expect(store.getState().mutateError).toBe(COPY.gallery.tilesetInUse)
   expect(store.getState().assets.some(({ id }) => id === sheet.id)).toBe(true)
   const after = stored()
   for (const [index, record] of before.entries()) expect(after[index]).toBe(record)

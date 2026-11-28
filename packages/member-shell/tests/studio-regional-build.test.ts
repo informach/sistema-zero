@@ -1,29 +1,79 @@
-import { expect, test } from 'bun:test'
+import { afterAll, beforeAll, expect, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { createRequire } from 'node:module'
 import { buildProRuntimeBridgeScript, STUDIO_PRO_ARTIFACT_LIMITS } from '@sistemazero/core/studio'
-import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
-import { gameTwoDManifest } from '../../studio/src/official-extensions/game-2d/manifest'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
+import publishedBrowser from '../../studio/scripts/fixtures/project-run-context-browser-2026-11-28.json'
+import { registerExtensionBlocks } from '../../studio/src/blockly/blocks'
+import { ensureBlocklyInitialized } from '../../studio/src/blockly/setup'
+import portableFactorySource from '../../studio/src/extensions/projectRunContextFactory.generated.json'
+import { gameTwoDBlocks } from '../../studio/src/official-extensions/game-2d/blocks'
+import { buildTilemapGameProject } from '../../studio/src/projects/tilemapGame'
 import { convertClassicToProTree } from '../../studio/src/state/convertToPro'
-import { regionalSceneMaterial } from '../../studio/src/testing/pintaRegionalMaterialFixture'
+import { prepareEditableStudioProject } from '../../studio/src/state/editableProjectValidation'
+import {
+  installPngImageBitmap,
+  projectedSceneMaterial,
+  regionalSceneMaterial,
+} from '../../studio/src/testing/pintaRegionalMaterialFixture'
 import validationProfile from '../../studio-runtime/runtime/validation-profile.json'
 import {
   readBuildRequest,
   trustedPackageJson,
   trustedViteConfig,
+  verifiedValidationPlatformFiles,
   verifyBuildBinaries,
 } from '../../studio-runtime/src/contracts'
+import { createFreeProRuntime } from '../src/lib/free-pro-runtime'
+import { createFreeProRuntimeBuild } from '../src/server/free-pro-toolchain'
 import { projectStudioRegionalBuild } from '../src/server/studio-regional-build'
 
-async function fixture() {
-  const asset = await regionalSceneMaterial()
-  const original = {
-    ...createBlankProjectSnapshot('regional-build', 'Vila'),
-    installedExtensions: [
-      { id: gameTwoDManifest.id, version: gameTwoDManifest.version, installedAt: 1 },
-    ],
+const storageDescriptors = ['indexedDB', 'IDBKeyRange'].map(
+  (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,
+)
+let restoreBitmap: () => void
+beforeAll(async () => {
+  const studioRequire = createRequire(new URL('../../studio/package.json', import.meta.url))
+  await import(studioRequire.resolve('blockly/blocks'))
+  Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: IDBKeyRange, configurable: true })
+  restoreBitmap = installPngImageBitmap()
+  ensureBlocklyInitialized()
+  registerExtensionBlocks(gameTwoDBlocks)
+})
+afterAll(() => {
+  restoreBitmap()
+  for (const [name, descriptor] of storageDescriptors) {
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor)
+    else Reflect.deleteProperty(globalThis, name)
   }
+})
+
+async function fixture(projection?: 'isometric' | 'hexagonal', browserPublishedEngine = false) {
+  const asset = projection
+    ? await projectedSceneMaterial(projection)
+    : await regionalSceneMaterial()
+  const original = await buildTilemapGameProject(
+    { ...asset, id: asset.regional.sourceId },
+    { namespace: 'lg05-pro-build-' + crypto.randomUUID() },
+  )
+  if (!original) throw new Error('O botão Jogar não montou o projeto regional.')
   const tree = await convertClassicToProTree(original)
+  if (browserPublishedEngine) {
+    const path = 'public/sz-ext/game-2d.js'
+    const node = tree[path]
+    if (node?.kind !== 'file') throw new Error('O projeto não contém o motor esperado.')
+    const canonicalSha = createHash('sha256').update(node.content).digest('hex')
+    const copy = publishedBrowser.copies.find(
+      (item) => item.extensionId === 'game-2d' && item.canonicalSha256 === canonicalSha,
+    )
+    if (!copy) throw new Error('A origem da cópia publicada não foi reconhecida.')
+    const content = node.content.replace(portableFactorySource, publishedBrowser.factorySource)
+    if (createHash('sha256').update(content).digest('hex') !== copy.browserSha256)
+      throw new Error('A cópia do navegador não corresponde ao motor publicado.')
+    tree[path] = { ...node, content }
+  }
   const pro = {
     ...original,
     kind: 'pro' as const,
@@ -59,21 +109,23 @@ async function fixture() {
   }
   return { input, pro, asset }
 }
-test('o mesmo pacote regional passa pela projeção do BFF e pelo contrato real do compilador sem alterar a árvore autoral', async () => {
-  const { input, pro, asset } = await fixture()
-  const before = JSON.stringify(pro),
-    filesBefore = JSON.stringify(input.files)
-  const files = await projectStudioRegionalBuild(input)
-  expect(files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
-  expect(files['public/sz-ext/game-2d.js']).toContain('__SZ_PINTA_REGIONAL_WORLDS__')
-  expect(files['public/sz-ext/game-2d.js']).not.toContain(asset.dataUrl)
-  const accepted = await readBuildRequest({ ...input, files })
-  await verifyBuildBinaries(accepted.binaries)
-  expect(accepted.files['public/sz-ext/game-2d.js']).toBe(files['public/sz-ext/game-2d.js'])
-  expect(JSON.stringify(pro)).toBe(before)
-  expect(JSON.stringify(input.files)).toBe(filesBefore)
-  expect(await projectStudioRegionalBuild({ ...input, files })).toEqual(files)
-})
+for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
+  test(`o pacote ${projection ?? 'ortogonal'} passa pelo BFF e pelo compilador sem alterar a árvore autoral`, async () => {
+    // The isometric case reopens a copy already emitted by the deployed browser build.
+    const { input, pro, asset } = await fixture(projection, projection === 'isometric')
+    const before = JSON.stringify(pro),
+      filesBefore = JSON.stringify(input.files)
+    const files = await projectStudioRegionalBuild(input)
+    expect(files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
+    expect(files['public/sz-ext/game-2d.js']).toContain('__SZ_PINTA_REGIONAL_WORLDS__')
+    expect(files['public/sz-ext/game-2d.js']).not.toContain(asset.dataUrl)
+    const accepted = await readBuildRequest({ ...input, files })
+    await verifyBuildBinaries(accepted.binaries)
+    expect(accepted.files['public/sz-ext/game-2d.js']).toBe(files['public/sz-ext/game-2d.js'])
+    expect(JSON.stringify(pro)).toBe(before)
+    expect(JSON.stringify(input.files)).toBe(filesBefore)
+    expect(await projectStudioRegionalBuild({ ...input, files })).toEqual(files)
+  })
 test('PNG ou motor trocado é recusado sem adotar a projeção', async () => {
   const { input } = await fixture()
   await expect(
@@ -102,15 +154,17 @@ test('PNG ou motor trocado é recusado sem adotar a projeção', async () => {
 })
 
 const image = process.env.STUDIO_REGIONAL_TEST_IMAGE
-test.skipIf(!image)(
-  'o Pro regional compila na imagem real sem rede e conserva o PNG original',
-  async () => {
-    if (!image) throw new Error('Informe a imagem qualificada da LG04.')
-    const { input } = await fixture()
-    const files = await projectStudioRegionalBuild(input)
-    const accepted = await readBuildRequest({ ...input, files })
-    await verifyBuildBinaries(accepted.binaries)
-    const script = `
+for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
+  test.skipIf(!image)(
+    `o Pro ${projection ?? 'ortogonal'} compila na imagem real sem rede e conserva o PNG original`,
+    async () => {
+      if (!image) throw new Error('Informe a imagem qualificada da LG04.')
+      const { input } = await fixture(projection, projection === 'isometric')
+      const files = await projectStudioRegionalBuild(input)
+      const accepted = await readBuildRequest({ ...input, files })
+      await verifyBuildBinaries(accepted.binaries)
+      const platformFiles = await verifiedValidationPlatformFiles(accepted)
+      const script = `
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
 const root = '/workspace/builds/lg04-' + require('node:crypto').randomUUID();
 if (process.getuid() === 0) throw new Error('The build must not run as root.');
@@ -129,11 +183,23 @@ try {
   }
   fs.writeFileSync(root + '/package.json', ${JSON.stringify(trustedPackageJson(accepted.templateId, accepted.dependencies))});
   fs.writeFileSync(root + '/vite.config.mjs', ${JSON.stringify(trustedViteConfig(accepted.templateId, accepted.dependencies))});
+  fs.writeFileSync(root + '/validation-options.json', ${JSON.stringify(JSON.stringify({ templateId: accepted.templateId, platformFiles }))});
   fs.writeFileSync(root + '/artifact-options.json', ${JSON.stringify(JSON.stringify({ consoleBridge: buildProRuntimeBridgeScript('https://kids.test') }))});
   fs.symlinkSync('/opt/sz-runtime/node_modules', root + '/node_modules');
   const run = (args) => cp.execFileSync('node', args, { cwd: root, stdio: 'inherit', timeout: 120000 });
+  run(['/opt/sz-runtime/check-project.mjs']);
+  const types = JSON.parse(fs.readFileSync(root + '/typecheck-result.json', 'utf8'));
+  if (types.status !== 'passed' || types.checkJs !== true || types.validation.runtimeFingerprint !== profile.runtimeFingerprint) throw new Error('The regional project lacks exact type evidence.');
+  const authoredPath = root + '/public/script.js', authored = fs.readFileSync(authoredPath, 'utf8');
+  fs.writeFileSync(authoredPath, authored + '\\n/** @type {number} */ const __lg05Wrong = "wrong";');
+  const broken = cp.spawnSync('node', ['/opt/sz-runtime/check-project.mjs'], { cwd: root, encoding: 'utf8', timeout: 30000 });
+  if (broken.status !== 1 || !broken.stderr.includes('TS2322') || !broken.stderr.includes('public/script.js')) throw new Error('Authored errors were not diagnosed.');
+  fs.writeFileSync(authoredPath, authored);
   run(['/opt/sz-runtime/node_modules/vite/bin/vite.js', 'build', '--config', './vite.config.mjs', '--configLoader', 'native']);
   run(['/opt/sz-runtime/pack-artifact.mjs', '${STUDIO_PRO_ARTIFACT_LIMITS.maxBytes}', '${STUDIO_PRO_ARTIFACT_LIMITS.maxFiles}']);
+  run(['/opt/sz-runtime/playtest.mjs']);
+  const playtest = JSON.parse(fs.readFileSync(root + '/playtest-result.json', 'utf8'));
+  if (playtest.evidence.length !== 2 || playtest.evidence.some(item => item.status !== 'passed')) throw new Error('The regional game lacks browser evidence.');
   let pngCount = 0;
   for (const [name, entry] of Object.entries(binaries)) {
     if (!name.startsWith('public/') || !name.endsWith('.png')) continue;
@@ -145,42 +211,105 @@ try {
   console.log(JSON.stringify({ lg04RegionalBuild: true, uid: process.getuid(), pngCount, fingerprint: profile.runtimeFingerprint }));
 } finally { fs.rmSync(root, { recursive: true, force: true }); }
 `
-    const child = Bun.spawn(
-      [
-        'docker',
-        'run',
-        '--rm',
-        '--network',
-        'none',
-        '--memory',
-        '1g',
-        '--cpus',
-        '1',
-        '--pids-limit',
-        '256',
-        '--entrypoint',
-        'node',
-        '-i',
-        image,
-      ],
-      {
-        stdin: new TextEncoder().encode(script),
-        stdout: 'pipe',
-        stderr: 'pipe',
-        windowsHide: true,
-      },
-    )
-    const [code, stdout, stderr] = await Promise.all([
-      child.exited,
-      new Response(child.stdout).text(),
-      new Response(child.stderr).text(),
-    ])
-    if (code !== 0)
-      throw new Error(
-        `Regional image build failed (${code}): ${stdout.slice(-4000)}\n${stderr.slice(-4000)}`,
+      const child = Bun.spawn(
+        [
+          'docker',
+          'run',
+          '--rm',
+          '--network',
+          'none',
+          '--memory',
+          '1g',
+          '--cpus',
+          '1',
+          '--pids-limit',
+          '256',
+          '--entrypoint',
+          'node',
+          '-i',
+          image,
+        ],
+        {
+          stdin: new TextEncoder().encode(script),
+          stdout: 'pipe',
+          stderr: 'pipe',
+          windowsHide: true,
+        },
       )
-    expect(stdout).toContain('"lg04RegionalBuild":true')
-    console.info(stdout.split('\n').find((line) => line.includes('"lg04RegionalBuild":true')))
-  },
-  150_000,
-)
+      const [code, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      if (code !== 0)
+        throw new Error(
+          `Regional image build failed (${code}): ${stdout.slice(-4000)}\n${stderr.slice(-4000)}`,
+        )
+      expect(stdout).toContain('"lg04RegionalBuild":true')
+      console.info(stdout.split('\n').find((line) => line.includes('"lg04RegionalBuild":true')))
+    },
+    150_000,
+  )
+
+test('o Pro público envia a identidade do motor e preserva os PNGs no fallback hospedado real do BFF', async () => {
+  const { pro } = await fixture('isometric', true)
+  const packageNode = pro.tree['package.json']
+  if (packageNode?.kind !== 'file') throw Error('Manifesto ausente')
+  const manifest = JSON.parse(packageNode.content)
+  packageNode.content = JSON.stringify({
+    ...manifest,
+    dependencies: { ...manifest.dependencies, three: '0.184.0' },
+  })
+  const before = JSON.stringify(pro)
+  const oldUrl = process.env.STUDIO_PRO_RUNTIME_URL,
+    oldToken = process.env.STUDIO_PRO_RUNTIME_TOKEN,
+    oldPublicUrl = process.env.APP_PUBLIC_URL
+  process.env.APP_PUBLIC_URL = 'https://adult.test'
+  process.env.STUDIO_PRO_RUNTIME_URL = 'https://runtime.test'
+  process.env.STUDIO_PRO_RUNTIME_TOKEN = 'test-runtime-token'
+  let captured: Awaited<ReturnType<typeof readBuildRequest>> | undefined
+  const upstream = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        expect(String(url)).toBe('https://runtime.test/v1/build')
+        captured = await readBuildRequest(JSON.parse(String(init?.body)))
+        await verifyBuildBinaries(captured.binaries)
+        return Response.json({
+          ok: true,
+          artifact: {
+            id: 'a'.repeat(64),
+            sha256: 'b'.repeat(64),
+            url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+            expiresAt: Date.now() + 60000,
+          },
+        })
+      },
+      { preconnect: fetch.preconnect },
+    ),
+  )
+  try {
+    const handler = createFreeProRuntimeBuild(async () => ({ id: 'owner-regional' }))
+    const adapter = createFreeProRuntime(async (url, init) =>
+      handler(new Request(`https://adult.test${String(url)}`, init)),
+    )
+    // Match StudioCore's opening boundary before preview selection. Compiler quotas apply
+    // to the admitted projection, never to the retained browser engine copy.
+    const opened = await prepareEditableStudioProject(pro, { proBuildLimits: adapter.limits })
+    expect(opened?.tree).toEqual(pro.tree)
+    expect(opened?.assets).toEqual(pro.assets)
+    const result = await adapter.build({ project: pro, signal: new AbortController().signal })
+    expect(result.artifact?.id).toBe('a'.repeat(64))
+    expect(captured?.files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
+    expect(Object.keys(captured?.binaries ?? {}).length).toBeGreaterThan(0)
+    expect(JSON.stringify(pro)).toBe(before)
+    expect(upstream).toHaveBeenCalledTimes(1)
+  } finally {
+    upstream.mockRestore()
+    if (oldPublicUrl === undefined) delete process.env.APP_PUBLIC_URL
+    else process.env.APP_PUBLIC_URL = oldPublicUrl
+    if (oldUrl === undefined) delete process.env.STUDIO_PRO_RUNTIME_URL
+    else process.env.STUDIO_PRO_RUNTIME_URL = oldUrl
+    if (oldToken === undefined) delete process.env.STUDIO_PRO_RUNTIME_TOKEN
+    else process.env.STUDIO_PRO_RUNTIME_TOKEN = oldToken
+  }
+})
