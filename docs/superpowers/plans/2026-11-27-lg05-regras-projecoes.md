@@ -1,5 +1,21 @@
 # LG05 — regras e projeções do Pinta
 
+**Correção do motor concluída localmente; requalificação — 2026-11-28T09:10:19.458Z**
+
+A factory portátil agora é gerada a partir da única implementação de origem antes da minificação. As cópias publicadas pelo navegador foram verificadas contra o motor oficial e permanecem reconhecidas sem reescrever os projetos da conta. O projeto reproduzido passou de 1.983 diagnósticos internos para zero; erros autorais e motores alterados continuam sendo diagnosticados ou recusados. A assinatura variável foi reproduzida antes da correção em teste de bundle minificado.
+
+Verificações: 45 testes focados/324 expectativas, 21 contratos Core/195 expectativas e quatro integrações BFF/23 expectativas aprovados. Tipos de Studio, Core e Member Shell aprovados; formato e gerados conferidos nas três fontes isoladas. O gerador agora verifica também a integridade completa das equivalências e emite o formato canônico. Perfil novo do executor: `7c1ad83a48825f00a779bb09cb790fd9fcb91abe40c9c60d52654ab2e2994e3a`. A imagem anterior continua ativa em staging até a nova qualificação.
+
+- Leitores PR 299: `09e97e23e`; CI [46129082704](https://github.com/informach/sistema-zero/actions/runs/46129082704) em andamento. Escrita pública 7/teto 8 até terminar a primeira onda.
+- Gravador único PR 301: `45a89176d`; CI [46129085372](https://github.com/informach/sistema-zero/actions/runs/46129085372) em andamento. Escrita 8/teto 9 e espaçamento novo entram depois dos leitores. A união das duas árvores foi conferida e equivale exatamente à candidata final.
+- Staging: `05ec5d862`, preserva integralmente os cursos concorrentes de `de0efffd0`; corrigido o texto vazio que reprovava o teste de copy desses cursos, três testes/9 expectativas aprovados. Onda [46129092309](https://github.com/informach/sistema-zero/actions/runs/46129092309) e imagem oficial [46129084968](https://github.com/informach/sistema-zero/actions/runs/46129084968) em andamento.
+- Campanhas de `5400ea1d1`: 121 arquivos idênticos nas duas candidatas de produção. Na staging, 120 idênticos; o DTO restante só acrescenta as opções dos novos cursos, sem alterar as campanhas.
+
+Falta qualificar a nova imagem, concluir a onda staging e repetir pela conta a edição, salvamento, reabertura sem dados locais e execução hospedada do Pro, além de reconferir nativo 9 e layout. Só após esse aceite: leitores → executor e sete aplicativos em produção → gravador único e segunda onda. Produção LG05 ainda não promovida. A sessão foi restabelecida; a pendência atual é a requalificação e o aceite da correção, não nova entrada.
+
+<details>
+<summary>Estado da rodada anterior, antes do diagnóstico do motor</summary>
+
 **Estado vigente — 2026-11-28T04:30:27.698Z**
 
 - Leitores/oficina: [PR 299](https://github.com/informach/sistema-zero/pull/299), fonte `ad778a644`, CI `46100622145` aprovada 13/13 na tentativa 1; plano `46100622171` e Classic `46100622208` aprovados. Mantém escrita pública 7/teto nativo 8 nesta primeira onda.
@@ -13,6 +29,8 @@
 - Produção permanece na fonte comercial `5400ea1d1`, com os 121 arquivos das campanhas idênticos nas duas candidatas. A liberação completa LG05 ainda não foi promovida. Os nove serviços estavam online sem pendências na leitura operacional. Executor de produção reconferido às 04:28 UTC: versão anterior a 100%, cinco saudáveis em cada pool, configurações preservadas. Main permanece em `5400ea1d1`; nenhum merge/deploy LG05 de produção foi iniciado.
 
 Executor e onda staging completos; três jogos reais no compilador hospedado e aquecimento 3D aprovados na fonte A59/perfil final. Resta o aceite pela conta após a nova entrada. Só então integrar leitores, atualizar o executor de produção e executar a onda canônica de sete serviços. Após suas provas, integrar e implantar o gravador único em segunda onda. Catálogo Python, cursos publicados, compras e faixas da Jornada mantêm seu escopo atual.
+
+</details>
 
 <details>
 <summary>Histórico de qualificação e coordenação; estados anteriores</summary>
