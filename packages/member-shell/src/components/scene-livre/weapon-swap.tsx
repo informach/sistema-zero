@@ -122,7 +122,7 @@ export function LivreWeaponSwap() {
           itens={[
             ['Arma', w.weapon],
             ['Plasma', w.unlocked ? 'liberado' : 'trancado'],
-            ['Último tiro', w.shot ? `${w.shot.frames} quadros` : '—'],
+            ['Último tiro', w.shot ? `${w.shot.frames} quadros` : 'nenhum'],
           ]}
         />
       }
