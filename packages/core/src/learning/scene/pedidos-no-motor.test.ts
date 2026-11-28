@@ -21,6 +21,8 @@ import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 import { SCENE_QUESTIONS } from './questions'
 import { drawLoopOnScreen, sceneSituation } from './readout'
 import {
+  bossHealthCanAdvance,
+  bossHealthDown,
   DELTA_RACE,
   enemyFireOver,
   LIGHTHOUSE_NOT_GOALS,
@@ -2713,6 +2715,92 @@ const CENAS: Record<SceneId, Cena> = {
         new Set(doMeio.map((shot) => shot.from)).size >= 2
       )
     },
+  },
+  // O chefão com resistência (28/11/2026): os botões da tela livre. "Disparar" é um laser que acerta;
+  // a vida e o placar só voltam com "Recomeçar a partida" (ou trocando a guarda, que recomeça).
+  'boss-health': {
+    pedidos: {
+      'one-not-enough': {
+        texto: 'Com a vida do chefão em 5, clique em Disparar uma vez e olhe a vida e o chefão.',
+        faz: (m) => {
+          if (m.estado.bossHealth.life !== 5) m.faz({ type: 'boss-restart' })
+          m.faz({ type: 'boss-fire' })
+        },
+      },
+      'count-down': {
+        texto: 'Na mesma partida, clique em Disparar mais duas vezes e olhe a vida a cada laser.',
+        faz: (m) => {
+          if (bossHealthDown(m.estado.bossHealth)) m.faz({ type: 'boss-restart' })
+          // A partida nova pede o primeiro laser antes dos dois a mais.
+          if (m.estado.bossHealth.life === 5) m.faz({ type: 'boss-fire' })
+          m.faz({ type: 'boss-fire' })
+          m.faz({ type: 'boss-fire' })
+        },
+      },
+      'falls-at-zero': {
+        texto: 'Clique em Disparar até a vida chegar a 0 e olhe o chefão e o placar.',
+        faz: (m) => {
+          if (bossHealthDown(m.estado.bossHealth)) m.faz({ type: 'boss-restart' })
+          while (!bossHealthDown(m.estado.bossHealth)) m.faz({ type: 'boss-fire' })
+        },
+      },
+      'falls-once': {
+        texto:
+          'Derrote o chefão com a Guarda do prêmio Ligada e com a Guarda Desligada e, depois de cada vez, clique em Avançar um quadro.',
+        faz: (m) => {
+          for (const on of [!m.estado.bossHealth.guard, m.estado.bossHealth.guard]) {
+            if (m.viu('falls-once')) return
+            m.faz({ type: 'boss-guard', on })
+            while (!bossHealthDown(m.estado.bossHealth)) m.faz({ type: 'boss-fire' })
+            if (bossHealthCanAdvance(m.estado.bossHealth)) m.faz({ type: 'boss-frame' })
+          }
+        },
+      },
+    },
+    // A resposta da previsão: depois de um laser, a vida está em 4 e o chefão continua lá.
+    mostra: (s) =>
+      s.bossHealth.last === 'hit' && s.bossHealth.life === 4 && s.bossHealth.score === 0,
+  },
+  // A troca de arma (28/11/2026): os botões da tela livre. O E sem o item só cabe com o plasma
+  // trancado; quem já pegou o item recomeça com "Nova partida".
+  'weapon-swap': {
+    pedidos: {
+      locked: {
+        texto: 'Sem pegar o item de plasma, clique em Apertar E e olhe a Arma.',
+        faz: (m) => {
+          if (m.estado.weaponSwap.unlocked) m.faz({ type: 'weapon-new-match' })
+          m.faz({ type: 'weapon-key-e' })
+        },
+      },
+      'unlocked-swap': {
+        texto: 'Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma.',
+        faz: (m) => {
+          if (m.estado.weaponSwap.weapon === 'plasma') m.faz({ type: 'weapon-new-match' })
+          m.faz({ type: 'weapon-pickup' })
+          m.faz({ type: 'weapon-key-e' })
+        },
+      },
+      'shot-follows': {
+        texto: 'Clique em Apertar Espaço com o laser e com o plasma e compare os dois tiros.',
+        faz: (m) => {
+          m.faz({ type: 'weapon-fire' })
+          m.faz({ type: 'weapon-pickup' })
+          m.faz({ type: 'weapon-key-e' })
+          m.faz({ type: 'weapon-fire' })
+        },
+      },
+      'new-match-laser': {
+        texto: 'Com o plasma escolhido, clique em Nova partida e olhe a Arma.',
+        faz: (m) => {
+          m.faz({ type: 'weapon-pickup' })
+          if (m.estado.weaponSwap.weapon !== 'plasma') m.faz({ type: 'weapon-key-e' })
+          m.faz({ type: 'weapon-new-match' })
+        },
+      },
+    },
+    // A resposta da previsão: sem o item, o E não trocou nada, e a arma continua laser.
+    mostra: (s) =>
+      s.weaponSwap.last === 'locked' && s.weaponSwap.weapon === 'laser' && !s.weaponSwap.unlocked,
   },
 }
 

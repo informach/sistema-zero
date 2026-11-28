@@ -3153,6 +3153,94 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Com a origem No meio, clique em Avançar até o próximo tiro duas vezes. Depois escolha Na inimiga e clique em Avançar até o próximo tiro mais duas vezes. Deixe um tiro chegar até a nave e, com tiros no ar, clique em Recomeçar a partida.',
     ],
   },
+  /**
+   * ⭐ O chefão com resistência (Poder "Chefão com resistência" do Construtor, Nave contra
+   * Asteroides, 28/11/2026): o chefão tem a vida própria, 5. Cada laser que acerta tira 1, no 0 o
+   * chefão cai e o placar ganha 10, e a guarda faz o prêmio valer uma vez só. Só a ideia, em
+   * exploração livre: o tempo anda um quadro de cada vez.
+   */
+  'boss-health': {
+    id: 'boss-health',
+    group: 'events',
+    title: 'A resistência do chefão',
+    instruction:
+      'Dispare no chefão e olhe a vida, a barra e o placar a cada laser. Depois que o chefão cair, avance um quadro e compare o placar com a Guarda do prêmio ligada e desligada.',
+    manipulates: 'O disparo, a Guarda do prêmio, a passagem dos quadros e o recomeço da partida',
+    success:
+      'O chefão tem uma vida própria, guardada numa variável: cada laser que acerta tira 1, e um laser só não derrota o chefão. Quando a vida chega a 0, o chefão cai e o placar ganha o prêmio. Sem a guarda, a regra roda a cada quadro e o prêmio soma de novo; com a guarda, o prêmio vale uma vez só.',
+    extra: 'E se a vida do chefão começasse em 10? Quantos lasers seriam precisos?',
+    goals: [
+      {
+        id: 'one-not-enough',
+        label: 'Um laser só não derrota o chefão',
+        pedido: 'Com a vida do chefão em 5, clique em Disparar uma vez e olhe a vida e o chefão.',
+      },
+      {
+        id: 'count-down',
+        label: 'Cada laser tira 1 da vida do chefão',
+        pedido: 'Na mesma partida, clique em Disparar mais duas vezes e olhe a vida a cada laser.',
+      },
+      {
+        id: 'falls-at-zero',
+        label: 'No 0, o chefão cai e o placar ganha o prêmio',
+        pedido: 'Clique em Disparar até a vida chegar a 0 e olhe o chefão e o placar.',
+      },
+      {
+        id: 'falls-once',
+        label: 'Com a guarda, o prêmio vale uma vez só',
+        pedido:
+          'Derrote o chefão com a Guarda do prêmio Ligada e com a Guarda Desligada e, depois de cada vez, clique em Avançar um quadro.',
+      },
+    ],
+    hints: [
+      'Olhe a vida do chefão antes e depois de cada laser. O que acontece quando a vida chega a 0?',
+      'Derrote o chefão e olhe o placar quadro a quadro. Compare com a Guarda do prêmio Ligada e Desligada.',
+      'Clique em Disparar uma vez e depois mais duas vezes. Continue até a vida chegar a 0 e clique em Avançar um quadro. Depois troque a Guarda do prêmio, derrote o chefão de novo e clique em Avançar um quadro.',
+    ],
+  },
+  /**
+   * ⭐ A troca de arma (Poder "Troca de arma" do Construtor, Nave contra Asteroides, 28/11/2026): a
+   * arma guardada (laser ou plasma) muda o tiro, a tecla E só troca depois de pegar o item de plasma,
+   * e a partida nova volta ao laser. Só a ideia, em exploração livre: uma pedra parada no alto.
+   */
+  'weapon-swap': {
+    id: 'weapon-swap',
+    group: 'events',
+    title: 'A troca de arma',
+    instruction:
+      'Aperte E antes e depois de pegar o item de plasma e olhe a Arma. Dispare com cada arma e compare os tiros. Por fim, comece uma Nova partida com o plasma escolhido.',
+    manipulates: 'O item de plasma, a tecla E, o Espaço e a nova partida',
+    success:
+      'A arma de agora fica guardada numa variável, e o Espaço dispara o tiro dessa arma: o laser é fino e rápido, o plasma é grande e lento. O E só troca a arma depois de a nave pegar o item de plasma. Uma partida nova volta ao laser e tranca o plasma de novo.',
+    extra: 'E se houvesse uma terceira arma? O que o E precisaria fazer?',
+    goals: [
+      {
+        id: 'locked',
+        label: 'Sem o item, o E não troca a arma',
+        pedido: 'Sem pegar o item de plasma, clique em Apertar E e olhe a Arma.',
+      },
+      {
+        id: 'unlocked-swap',
+        label: 'Com o item, o E troca a arma',
+        pedido: 'Clique em Pegar o item de plasma e depois em Apertar E. Olhe a Arma.',
+      },
+      {
+        id: 'shot-follows',
+        label: 'O tiro segue a arma escolhida',
+        pedido: 'Clique em Apertar Espaço com o laser e com o plasma e compare os dois tiros.',
+      },
+      {
+        id: 'new-match-laser',
+        label: 'A partida nova começa com o laser',
+        pedido: 'Com o plasma escolhido, clique em Nova partida e olhe a Arma.',
+      },
+    ],
+    hints: [
+      'Olhe a Arma antes e depois de cada tecla. O que muda depois de pegar o item de plasma?',
+      'Compare um tiro de laser com um tiro de plasma. Depois, com o plasma escolhido, comece uma partida nova.',
+      'Clique em Apertar E sem pegar o item. Depois clique em Pegar o item de plasma e em Apertar E. Clique em Apertar Espaço com o laser e com o plasma e, com o plasma escolhido, clique em Nova partida.',
+    ],
+  },
 }
 
 const PREVIA_INICIAL: ScenePredictionPreview = { initial: true, conceal: [] }
@@ -3233,6 +3321,8 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'timed-shield': PREVIA_INICIAL,
   'spread-shot': PREVIA_INICIAL,
   'enemy-fire': PREVIA_INICIAL,
+  'boss-health': PREVIA_INICIAL,
+  'weapon-swap': PREVIA_INICIAL,
 }
 
 export const SCENE_MODELS: Record<SceneId, SceneModel> = Object.fromEntries(

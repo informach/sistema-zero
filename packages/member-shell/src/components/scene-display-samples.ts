@@ -1470,6 +1470,32 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'A partida recomeçou: os tiros no ar saíram, as vidas voltaram a 3 e a inimiga voltou ao começo.',
     ],
   },
+  'boss-health': {
+    readouts: [
+      { label: 'vida do chefão', value: '5', tone: 'a' },
+      { label: 'placar', value: '210', tone: 'b' },
+      { label: 'guarda do prêmio', value: 'Desligada', tone: 'plain' },
+    ],
+    situations: [
+      'O chefão está no alto da tela, com 5 de vida, e o placar está em 0. A Guarda do prêmio está desligada.',
+      'O laser acertou o chefão e a vida chegou a 0. O chefão caiu, e o placar ganhou 10.',
+      'A partida recomeçou: a vida do chefão voltou a 5, o chefão voltou ao lugar e o placar voltou a 0.',
+      'O chefão saiu da tela, e o placar está em 210. A Guarda do prêmio está desligada. A partida acabou.',
+    ],
+  },
+  'weapon-swap': {
+    readouts: [
+      { label: 'arma', value: 'plasma', tone: 'a' },
+      { label: 'plasma', value: 'liberado', tone: 'b' },
+      { label: 'quadros até a pedra', value: '10', tone: 'plain' },
+    ],
+    situations: [
+      'Arma: laser. O plasma está trancado. A pedra espera no alto da tela.',
+      'Arma: plasma. O plasma está liberado. O último tiro, de plasma, chegou à pedra em 10 quadros.',
+      'A nave disparou o plasma: um tiro grande, que chegou à pedra em 10 quadros.',
+      'Nova partida: a arma voltou para laser, e o plasma ficou trancado de novo.',
+    ],
+  },
 }
 
 export function sceneDisplaySamples(scene: SceneId, cast?: SceneCast) {

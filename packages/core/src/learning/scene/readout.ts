@@ -20,6 +20,8 @@ import {
 import { CONTACT_HEARTS, cameraWindow, contactTouching, rechargeWords } from './nucleo'
 import { emCamadas, type ScenePilha } from './pilha'
 import {
+  bossHealthCanAdvance,
+  bossHealthDown,
   DELTA_RACE,
   enemyFireOver,
   enemyFirePlace,
@@ -327,6 +329,29 @@ function leituras(
         { label: 'tiros no ar', value: String(f.shots.length), tone: 'a' },
         { label: 'vidas', value: String(f.lives), tone: 'b' },
         { label: 'origem', value: f.origin === 'middle' ? 'no meio' : 'na inimiga', tone: 'plain' },
+      ]
+    }
+    case 'boss-health': {
+      // ⚠️ Só os números e a escolha: o que o zero faz e quantas vezes o prêmio soma são a descoberta.
+      const b = state.bossHealth
+      return [
+        { label: 'vida do chefão', value: String(b.life), tone: 'a' },
+        { label: 'placar', value: String(b.score), tone: 'b' },
+        // A escolha com o nome do botão da tela ("Ligada", "Desligada"), como na bancada.
+        { label: 'guarda do prêmio', value: b.guard ? 'Ligada' : 'Desligada', tone: 'plain' },
+      ]
+    }
+    case 'weapon-swap': {
+      // ⚠️ Só a arma, o plasma e o último tiro: o que o E faz e como cada tiro anda são a descoberta.
+      const w = state.weaponSwap
+      return [
+        { label: 'arma', value: w.weapon, tone: 'a' },
+        { label: 'plasma', value: w.unlocked ? 'liberado' : 'trancado', tone: 'b' },
+        {
+          label: 'quadros até a pedra',
+          value: w.shot ? String(w.shot.frames) : '—',
+          tone: 'plain',
+        },
       ]
     }
     case 'published-copy':
@@ -1194,6 +1219,22 @@ function situacao(scene: SceneId, state: SceneState): string {
           : quantos(f.shots.length, 'tiro está no ar', 'tiros estão no ar')
       const fim = enemyFireOver(f) ? ' A partida acabou.' : ''
       return `A inimiga está ${enemyFirePlace(enemyFireX(f.tick))}, e a nave está ${nave}. A origem do tiro está ${origem}. ${tiros}, e a nave tem ${quantos(f.lives, 'vida', 'vidas')}.${fim}`
+    }
+    case 'boss-health': {
+      const b = state.bossHealth
+      const guarda = `A Guarda do prêmio está ${b.guard ? 'ligada' : 'desligada'}.`
+      if (!bossHealthDown(b))
+        return `O chefão está no alto da tela, com ${b.life} de vida, e o placar está em ${b.score}. ${guarda}`
+      const fim = bossHealthCanAdvance(b) ? '' : ' A partida acabou.'
+      return `O chefão saiu da tela, e o placar está em ${b.score}. ${guarda}${fim}`
+    }
+    case 'weapon-swap': {
+      const w = state.weaponSwap
+      const plasma = w.unlocked ? 'O plasma está liberado.' : 'O plasma está trancado.'
+      const tiro = w.shot
+        ? ` O último tiro, de ${w.shot.weapon}, chegou à pedra em ${w.shot.frames} quadros.`
+        : ' A pedra espera no alto da tela.'
+      return `Arma: ${w.weapon}. ${plasma}${tiro}`
     }
     case 'published-copy':
       return `Seu projeto está ${state.copies.projectColor}. O Mural tem ${state.copies.posts.length} ${state.copies.posts.length === 1 ? 'publicação' : 'publicações'}; ${state.copies.posts.length ? `a mais recente está ${state.copies.posts.at(-1)?.color}.` : 'a tela está vazia.'}`

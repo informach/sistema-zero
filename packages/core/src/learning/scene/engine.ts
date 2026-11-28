@@ -1,4 +1,5 @@
 import {
+  BOSS_HEALTH,
   COIN_COUNTER,
   ENEMY_FIRE,
   isSceneAction,
@@ -81,6 +82,11 @@ import {
 // ⚠️ Só o TIPO: a sessão importa o motor, e um valor daqui fecharia um ciclo de módulos.
 import type { SceneCommand } from './session'
 import {
+  bossHealthCanAdvance,
+  bossHealthDown,
+  bossHealthHits,
+  bossHealthScore,
+  bossHealthStart,
   cloneScene,
   DELTA_RACE,
   DRAW_LOOP_LANE,
@@ -127,6 +133,9 @@ import {
   timedShieldRock,
   uniqueNamesWarning,
   VELOCITY_TRAIL_MAX,
+  weaponSwapFrames,
+  weaponSwapFresh,
+  weaponSwapStart,
 } from './state'
 
 /**
@@ -1303,6 +1312,131 @@ export function stepScene(
             ? `A partida recomeçou: as vidas voltaram a ${ENEMY_FIRE.lives} e a inimiga voltou ao começo.`
             : 'A partida recomeçou: a inimiga voltou ao começo.'
       if (limpou) observe(s, 'restart-clears', 'Recomeçar a partida limpa os tiros')
+      break
+    }
+    case 'boss-fire': {
+      // ⭐ O chefão com resistência (28/11/2026). Um laser sobe, acerta, sai e tira 1 da vida. Cada
+      // meta cai no acerto, com a vida, a barra e o placar à vista:
+      // - `one-not-enough`: o primeiro acerto da partida (a vida em 4, o chefão ainda lá);
+      // - `count-down`: o terceiro acerto da MESMA partida (a vida desceu mais duas vezes);
+      // - `falls-at-zero`: o acerto que leva a vida a 0 (o chefão cai e o placar ganha o prêmio).
+      const b = s.bossHealth
+      if (bossHealthDown(b)) return previous
+      b.life--
+      if (b.life > 0) {
+        b.last = 'hit'
+        s.caption = `O laser acertou o chefão e saiu. A vida do chefão foi para ${b.life}.`
+      } else {
+        b.last = 'defeat'
+        b.framesAfter = 0
+        // A regra do jogo roda no mesmo quadro do acerto: o prêmio sai uma vez, com ou sem a guarda.
+        b.defeated = b.guard
+        b.score = bossHealthScore(b)
+        s.caption = `O laser acertou o chefão e a vida chegou a 0. O chefão caiu, e o placar ganhou ${BOSS_HEALTH.prize}.`
+      }
+      if (b.life === BOSS_HEALTH.life - 1)
+        observe(s, 'one-not-enough', 'Um laser só não derrota o chefão')
+      if (bossHealthHits(b) >= 3) observe(s, 'count-down', 'Cada laser tira 1 da vida do chefão')
+      if (b.life === 0) observe(s, 'falls-at-zero', 'No 0, o chefão cai e o placar ganha o prêmio')
+      break
+    }
+    case 'boss-guard': {
+      // A guarda é a escolha: trocar recomeça a partida, para o prêmio de uma partida nunca ser
+      // decidido pelas duas regras. A memória da comparação e as descobertas ficam.
+      const b = s.bossHealth
+      if (b.guard === action.on) return previous
+      const limpa = b.life === BOSS_HEALTH.life
+      s.bossHealth = bossHealthStart({ ...b, guard: action.on }, 'guard')
+      s.caption = `Guarda do prêmio ${action.on ? 'ligada' : 'desligada'}.${
+        limpa ? '' : ' A partida recomeçou: a vida do chefão voltou a 5 e o placar a 0.'
+      }`
+      break
+    }
+    case 'boss-frame': {
+      // Um quadro do jogo: a regra do prêmio roda de novo. Com a vida no 0, sem a guarda o placar
+      // ganha o prêmio outra vez; com a guarda, fica. `falls-once` cai com as DUAS vistas, em
+      // qualquer ordem (a memória atravessa os recomeços).
+      const b = s.bossHealth
+      if (!bossHealthCanAdvance(b)) return previous
+      b.last = 'frame'
+      if (!bossHealthDown(b)) {
+        s.caption = `Passou um quadro. A vida do chefão continua em ${b.life}.`
+        break
+      }
+      const antes = b.score
+      b.framesAfter++
+      b.score = bossHealthScore(b)
+      if (b.guard) b.seenGuarded = true
+      else b.seenUnguarded = true
+      s.caption =
+        b.score === antes
+          ? `Passou um quadro. O placar continua em ${b.score}.`
+          : `Passou um quadro. O placar foi de ${antes} para ${b.score}.`
+      if (b.seenGuarded && b.seenUnguarded)
+        observe(s, 'falls-once', 'Com a guarda, o prêmio vale uma vez só')
+      break
+    }
+    case 'boss-restart': {
+      // Recomeçar a partida: a vida volta a 5, o chefão volta e o placar volta a 0. A guarda é a
+      // escolha da criança e fica; as descobertas e a memória da comparação também.
+      const b = s.bossHealth
+      if (b.life === BOSS_HEALTH.life) return previous
+      s.bossHealth = bossHealthStart(b, 'restart')
+      s.caption =
+        'A partida recomeçou: a vida do chefão voltou a 5, o chefão voltou ao lugar e o placar voltou a 0.'
+      break
+    }
+    case 'weapon-pickup': {
+      // ⭐ A troca de arma (28/11/2026). O item libera o plasma; a arma continua a de agora.
+      const w = s.weaponSwap
+      if (w.unlocked) return previous
+      w.unlocked = true
+      w.last = 'pickup'
+      s.caption = 'A nave pegou o item de plasma. O plasma está liberado.'
+      break
+    }
+    case 'weapon-key-e': {
+      // O E troca laser ⇄ plasma só com o plasma liberado. Cada meta cai na tecla, com a arma à vista:
+      // - `locked`: o E antes do item (a arma continua laser);
+      // - `unlocked-swap`: o E depois do item, que leva a arma ao plasma.
+      const w = s.weaponSwap
+      if (!w.unlocked) {
+        w.last = 'locked'
+        s.caption = `Apertou E. A arma continua ${w.weapon}.`
+        observe(s, 'locked', 'Sem o item, o E não troca a arma')
+        break
+      }
+      w.weapon = w.weapon === 'laser' ? 'plasma' : 'laser'
+      w.last = 'swap'
+      s.caption = `Apertou E. A arma foi para ${w.weapon}.`
+      if (w.weapon === 'plasma') observe(s, 'unlocked-swap', 'Com o item, o E troca a arma')
+      break
+    }
+    case 'weapon-fire': {
+      // O Espaço dispara a arma de agora, e o tiro chega à pedra. `shot-follows` cai no disparo que
+      // completa a comparação (um tiro de cada arma visto).
+      const w = s.weaponSwap
+      const frames = weaponSwapFrames(w.weapon)
+      w.shot = { weapon: w.weapon, frames }
+      if (!w.fired.includes(w.weapon)) w.fired.push(w.weapon)
+      w.last = 'fire'
+      s.caption =
+        w.weapon === 'laser'
+          ? `A nave disparou o laser: um tiro fino, que chegou à pedra em ${frames} quadros.`
+          : `A nave disparou o plasma: um tiro grande, que chegou à pedra em ${frames} quadros.`
+      if (w.fired.includes('laser') && w.fired.includes('plasma'))
+        observe(s, 'shot-follows', 'O tiro segue a arma escolhida')
+      break
+    }
+    case 'weapon-new-match': {
+      // Nova partida: a arma volta ao laser, o plasma volta a trancado e o tiro sai. `new-match-laser`
+      // só com o plasma escolhido antes (a arma MUDOU de volta à vista).
+      const w = s.weaponSwap
+      if (weaponSwapFresh(w)) return previous
+      const eraPlasma = w.weapon === 'plasma'
+      s.weaponSwap = weaponSwapStart(w.fired, eraPlasma ? 'back-to-laser' : 'new-match')
+      s.caption = 'Nova partida: a arma voltou para laser, e o plasma ficou trancado de novo.'
+      if (eraPlasma) observe(s, 'new-match-laser', 'A partida nova começa com o laser')
       break
     }
     case 'try-lighthouse-door':

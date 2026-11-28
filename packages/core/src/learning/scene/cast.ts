@@ -146,9 +146,27 @@ export function sceneNativeCast(scene: SceneId, cast?: SceneCast): SceneCast | u
     scene === 'invincibility' ||
     scene === 'timed-shield' ||
     scene === 'spread-shot' ||
-    scene === 'enemy-fire'
+    scene === 'enemy-fire' ||
+    scene === 'weapon-swap'
   )
     return { hero: TIROS_E_PEDRAS_CAST.hero, obstacle: TIROS_E_PEDRAS_CAST.obstacle, ...cast }
+  // O chefão com resistência (28/11/2026): o obstáculo é o CHEFÃO, desenhado como um asteroide
+  // gigante. Um nome que não diz figura ("chefão", "chefona") fica com o asteroide, e não com o
+  // cacto de fábrica do papel; o nome que diz figura, ou a figura declarada, continua valendo.
+  if (scene === 'boss-health') {
+    const chefao = cast?.obstacle
+    const semFigura =
+      chefao &&
+      !chefao.figure &&
+      !figureFromName(chefao.name) &&
+      !(chefao.plural && figureFromName(chefao.plural))
+    return {
+      hero: TIROS_E_PEDRAS_CAST.hero,
+      obstacle: TIROS_E_PEDRAS_CAST.obstacle,
+      ...cast,
+      ...(semFigura ? { obstacle: { ...chefao, figure: 'asteroide' as const } } : {}),
+    }
+  }
   if (scene === 'motion-amount')
     return { hero: { name: 'pedra', gender: 'f', figure: 'pedra' }, ...cast }
   if (scene === 'two-clocks')
@@ -395,6 +413,11 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   // O inimigo que atira (28/11/2026): a nave e as pedras que passam ao longe; a nave inimiga e os
   // tiros dela são enfeite do palco (nenhuma figura nova).
   'enemy-fire': ['hero', 'obstacle'],
+  // O chefão com resistência (28/11/2026): a nave e o chefão (o obstáculo, um asteroide gigante); a
+  // barra de vida e os lasers são enfeite do palco.
+  'boss-health': ['hero', 'obstacle'],
+  // A troca de arma (28/11/2026): a nave e a pedra do alto; o item e os tiros são enfeite do palco.
+  'weapon-swap': ['hero', 'obstacle'],
 }
 
 /** Cenas que representam um jogo específico, sem papéis intercambiáveis do elenco. */

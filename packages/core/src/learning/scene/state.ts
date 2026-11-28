@@ -1,4 +1,5 @@
 import {
+  BOSS_HEALTH,
   BRIDGE_TIMER_PLACES,
   type BridgeTimerPlace,
   CABIN_PIECES,
@@ -36,6 +37,9 @@ import {
   type SpreadShotDeviation,
   TIMED_BRIDGE,
   TIMED_SHIELD,
+  WEAPON_SWAP,
+  WEAPON_SWAP_WEAPONS,
+  type WeaponSwapWeapon,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
 import type { SceneCenarioId } from './cenario'
@@ -1668,6 +1672,180 @@ function isSceneEnemyFire(value: unknown): value is SceneEnemyFire {
   return false
 }
 
+/**
+ * O chefão com resistência (`boss-health`, Poder "Chefão com resistência" do Construtor, 28/11/2026).
+ * O chefão tem a vida própria (`vidaDoChefao`, de `BOSS_HEALTH.life` a 0): cada "Disparar" é um
+ * laser que sobe, acerta, sai e tira 1. No 0 o chefão cai e o placar ganha o prêmio. Depois, cada
+ * "Avançar um quadro" roda a regra do jogo de novo: sem a guarda, a vida no 0 soma o prêmio outra
+ * vez; com a guarda (`chefaoDerrotado`), o prêmio já saiu e não soma mais.
+ *
+ * A Guarda do prêmio é a ESCOLHA: trocar recomeça a partida (o prêmio de uma partida nunca é decidido
+ * por duas regras). `seenGuarded` e `seenUnguarded` são a memória da comparação da última meta:
+ * um quadro depois da queda com a guarda ligada (o placar ficou) e com ela desligada (o placar
+ * subiu), em qualquer ordem e em partidas diferentes.
+ */
+export interface SceneBossHealth {
+  life: number
+  score: number
+  guard: boolean
+  /** `chefaoDerrotado`: o prêmio já saiu com a guarda ligada. Sem a guarda, nada o liga. */
+  defeated: boolean
+  /** Os quadros que passaram nesta partida depois da queda do chefão. */
+  framesAfter: number
+  /** Já viu, num quadro depois da queda com a guarda ligada, o placar ficar no prêmio. */
+  seenGuarded: boolean
+  /** Já viu, num quadro depois da queda com a guarda desligada, o placar subir de novo. */
+  seenUnguarded: boolean
+  /** O último gesto, para a tela e o Zappy (`null` na partida que abriu). */
+  last: 'hit' | 'defeat' | 'frame' | 'restart' | 'guard' | null
+}
+const BOSS_HEALTH_PADRAO: SceneBossHealth = {
+  life: BOSS_HEALTH.life,
+  score: 0,
+  guard: false,
+  defeated: false,
+  framesAfter: 0,
+  seenGuarded: false,
+  seenUnguarded: false,
+  last: null,
+}
+/** A partida nova: a vida cheia e o placar em 0, com a guarda e a memória da criança. */
+export function bossHealthStart(
+  b: Pick<SceneBossHealth, 'guard' | 'seenGuarded' | 'seenUnguarded'>,
+  last: SceneBossHealth['last'],
+): SceneBossHealth {
+  return {
+    ...BOSS_HEALTH_PADRAO,
+    guard: b.guard,
+    seenGuarded: b.seenGuarded,
+    seenUnguarded: b.seenUnguarded,
+    last,
+  }
+}
+/** Quantos lasers acertaram o chefão nesta partida. */
+export function bossHealthHits(b: Pick<SceneBossHealth, 'life'>): number {
+  return BOSS_HEALTH.life - b.life
+}
+/** O chefão caiu: a vida chegou a 0 e ele saiu da tela. */
+export function bossHealthDown(b: Pick<SceneBossHealth, 'life'>): boolean {
+  return b.life <= 0
+}
+/** Ainda dá para avançar um quadro nesta partida (depois da queda, até `BOSS_HEALTH.maxFrames`). */
+export function bossHealthCanAdvance(b: Pick<SceneBossHealth, 'life' | 'framesAfter'>): boolean {
+  return !bossHealthDown(b) || b.framesAfter < BOSS_HEALTH.maxFrames
+}
+/** O placar que a regra dá, com o chefão caído há `framesAfter` quadros. */
+export function bossHealthScore(
+  b: Pick<SceneBossHealth, 'life' | 'guard' | 'framesAfter'>,
+): number {
+  if (!bossHealthDown(b)) return 0
+  return b.guard ? BOSS_HEALTH.prize : BOSS_HEALTH.prize * (1 + b.framesAfter)
+}
+function isSceneBossHealth(value: unknown): value is SceneBossHealth {
+  if (!isRecord(value)) return false
+  const { life, score, guard, defeated, framesAfter, seenGuarded, seenUnguarded, last } = value
+  const inteiro = (v: unknown, max: number): v is number =>
+    typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max
+  if (!inteiro(life, BOSS_HEALTH.life) || !inteiro(framesAfter, BOSS_HEALTH.maxFrames)) return false
+  if (typeof guard !== 'boolean' || typeof defeated !== 'boolean') return false
+  if (typeof seenGuarded !== 'boolean' || typeof seenUnguarded !== 'boolean') return false
+  if (!['hit', 'defeat', 'frame', 'restart', 'guard', null].includes(last as string | null))
+    return false
+  if (life > 0 && (framesAfter !== 0 || defeated)) return false
+  if (life === 0 && defeated !== guard) return false
+  if (score !== bossHealthScore({ life, guard, framesAfter })) return false
+  if (last === 'hit') return life > 0 && life < BOSS_HEALTH.life
+  if (last === 'defeat') return life === 0 && framesAfter === 0
+  if (last === 'restart' || last === 'guard' || last === null) return life === BOSS_HEALTH.life
+  return true
+}
+
+/**
+ * A troca de arma (`weapon-swap`, Poder "Troca de arma" do Construtor, 28/11/2026). A arma de agora
+ * (`arma`) é o laser ou o plasma; o plasma começa trancado (`plasmaLiberado` falso) e o item o libera.
+ * A tecla E troca laser ⇄ plasma só com o plasma liberado; sem ele, nada muda. O Espaço dispara a
+ * arma de agora: o tiro sobe da nave até a pedra, e `shot` guarda o último (a arma e em quantos
+ * quadros chegou). `fired` é a memória da comparação dos tiros: as armas já disparadas, que ficam na
+ * Nova partida (como as descobertas).
+ */
+export interface SceneWeaponSwapShot {
+  weapon: WeaponSwapWeapon
+  /** Em quantos quadros o tiro foi da ponta da nave até a pedra. */
+  frames: number
+}
+export interface SceneWeaponSwap {
+  weapon: WeaponSwapWeapon
+  unlocked: boolean
+  /** O último tiro desta partida, que já chegou à pedra; `null` antes do primeiro Espaço. */
+  shot: SceneWeaponSwapShot | null
+  /** As armas já disparadas, na ordem do primeiro disparo de cada uma. */
+  fired: WeaponSwapWeapon[]
+  /**
+   * O último gesto, para a tela e o Zappy (`null` na partida que abriu). `back-to-laser` é a Nova
+   * partida que saiu do plasma (a arma MUDOU de volta à vista); `new-match`, a que saiu do laser.
+   */
+  last: 'pickup' | 'locked' | 'swap' | 'fire' | 'new-match' | 'back-to-laser' | null
+}
+const WEAPON_SWAP_PADRAO: SceneWeaponSwap = {
+  weapon: 'laser',
+  unlocked: false,
+  shot: null,
+  fired: [],
+  last: null,
+}
+/** Em quantos quadros o tiro desta arma vai da ponta da nave até a pedra. */
+export function weaponSwapFrames(weapon: WeaponSwapWeapon): number {
+  return Math.ceil((WEAPON_SWAP.ship.y - WEAPON_SWAP.rockY) / WEAPON_SWAP.shots[weapon].speed)
+}
+/** A partida nova: o laser, o plasma trancado e nenhum tiro; a memória dos tiros fica. */
+export function weaponSwapStart(
+  fired: readonly WeaponSwapWeapon[],
+  last: SceneWeaponSwap['last'],
+): SceneWeaponSwap {
+  return { ...WEAPON_SWAP_PADRAO, fired: [...fired], last }
+}
+/** A partida está como abriu: nada a recomeçar. */
+export function weaponSwapFresh(w: Pick<SceneWeaponSwap, 'weapon' | 'unlocked' | 'shot'>): boolean {
+  return w.weapon === 'laser' && !w.unlocked && w.shot === null
+}
+function isSceneWeaponSwap(value: unknown): value is SceneWeaponSwap {
+  if (!isRecord(value)) return false
+  const { weapon, unlocked, shot, fired, last } = value
+  const arma = (v: unknown): v is WeaponSwapWeapon => WEAPON_SWAP_WEAPONS.some((w) => w === v)
+  if (!arma(weapon) || typeof unlocked !== 'boolean') return false
+  // O plasma só é a arma com o plasma liberado.
+  if (weapon === 'plasma' && !unlocked) return false
+  if (
+    !Array.isArray(fired) ||
+    fired.length > WEAPON_SWAP_WEAPONS.length ||
+    !fired.every(arma) ||
+    new Set(fired).size !== fired.length
+  )
+    return false
+  if (shot !== null) {
+    if (!isRecord(shot) || !arma(shot.weapon) || shot.frames !== weaponSwapFrames(shot.weapon))
+      return false
+    if (!fired.includes(shot.weapon)) return false
+  }
+  const fresh = weapon === 'laser' && !unlocked && shot === null
+  switch (last) {
+    case null:
+      return fresh && fired.length === 0
+    case 'new-match':
+    case 'back-to-laser':
+      return fresh
+    case 'locked':
+      return weapon === 'laser' && !unlocked
+    case 'pickup':
+    case 'swap':
+      return unlocked
+    case 'fire':
+      return shot !== null && shot.weapon === weapon
+    default:
+      return false
+  }
+}
+
 export interface SceneTwoClockRock {
   id: number
   bornAt: number
@@ -1921,6 +2099,8 @@ export interface SceneState {
   timedShield: SceneTimedShield
   spreadShot: SceneSpreadShot
   enemyFire: SceneEnemyFire
+  bossHealth: SceneBossHealth
+  weaponSwap: SceneWeaponSwap
   world: SceneWorld
   flight: SceneFlight
   sound: SceneSound
@@ -2323,6 +2503,8 @@ function gruposComPadrao() {
     ['timedShield', TIMED_SHIELD_PADRAO],
     ['spreadShot', SPREAD_SHOT_PADRAO],
     ['enemyFire', ENEMY_FIRE_PADRAO],
+    ['bossHealth', BOSS_HEALTH_PADRAO],
+    ['weaponSwap', WEAPON_SWAP_PADRAO],
     ['place', PLACE_PADRAO],
     ['description', DESCRIPTION_PADRAO],
     ['stage', STAGE_PADRAO],
@@ -2499,6 +2681,8 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     timedShield: { ...TIMED_SHIELD_PADRAO, damaged: [] },
     spreadShot: { ...SPREAD_SHOT_PADRAO, rocks: [...SPREAD_SHOT_PADRAO.rocks], lasers: [] },
     enemyFire: enemyFireStart(ENEMY_FIRE_PADRAO.origin, ENEMY_FIRE_PADRAO.shipX),
+    bossHealth: { ...BOSS_HEALTH_PADRAO },
+    weaponSwap: { ...WEAPON_SWAP_PADRAO, fired: [] },
     // ⚠️ Duas cenas começam DESMONTADAS de propósito: em `world` a criança cria o Dino, e em
     // `gravity` ela liga a gravidade. Nas outras, isso já vem pronto para não roubar o foco.
     world: { created: scene !== 'world', drawn: scene !== 'world', front: false },
@@ -2719,6 +2903,12 @@ export function cloneScene(state: SceneState): SceneState {
       shots: state.enemyFire.shots.map((shot) => ({ ...shot })),
       middleFrom: [...state.enemyFire.middleFrom],
       enemyFrom: [...state.enemyFire.enemyFrom],
+    },
+    bossHealth: { ...state.bossHealth },
+    weaponSwap: {
+      ...state.weaponSwap,
+      shot: state.weaponSwap.shot && { ...state.weaponSwap.shot },
+      fired: [...state.weaponSwap.fired],
     },
     world: { ...state.world },
     flight: { ...state.flight },
@@ -3082,6 +3272,8 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!isSceneTimedShield(value.timedShield)) return false
   if (!isSceneSpreadShot(value.spreadShot)) return false
   if (!isSceneEnemyFire(value.enemyFire)) return false
+  if (!isSceneBossHealth(value.bossHealth)) return false
+  if (!isSceneWeaponSwap(value.weaponSwap)) return false
   const { evidence, world, flight, sound, crowd, match, contact, speed, place, description } = value
   const { stage, render, animation, mirror, pixels, sheet, lifeline } = value
   const { drive, input, box, hunt, blueprint, view, hit, weapon, sight, walkPad, grid } = value

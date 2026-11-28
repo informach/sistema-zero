@@ -22,6 +22,7 @@ import {
   SheetStage,
   SymmetryStage,
 } from './scene-atelie-stages'
+import { BossHealthStage } from './scene-boss-health'
 import { SceneCenarioProvider } from './scene-cenario-context'
 import { CoinCounterStage } from './scene-coin-counter'
 import { CollectionMemoryStage } from './scene-collect-and-remember'
@@ -81,6 +82,7 @@ import { TouchResponseStage } from './scene-touch-response'
 import { TwoClocksStage } from './scene-two-clocks'
 import { TwoPiecesStage } from './scene-two-pieces'
 import { UniqueNamesStage } from './scene-unique-names'
+import { WeaponSwapStage } from './scene-weapon-swap'
 import { WorldStage } from './scene-world-stage'
 
 // ⚠️⚠️ O Dino, o cacto e a árvore moravam AQUI e eram exportados (Raio-X, lote 3, 16/09/2026):
@@ -410,6 +412,10 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
   if (m === 'spread-shot') return <SpreadShotStage state={state} cast={cast} />
   // O inimigo que atira (Construtor, 28/11/2026).
   if (m === 'enemy-fire') return <EnemyFireStage state={state} cast={cast} />
+  // O chefão com resistência (Construtor, 28/11/2026).
+  if (m === 'boss-health') return <BossHealthStage state={state} cast={cast} />
+  // A troca de arma (Construtor, 28/11/2026).
+  if (m === 'weapon-swap') return <WeaponSwapStage state={state} cast={cast} />
   return semPalco(m)
 }
 

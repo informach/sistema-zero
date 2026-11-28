@@ -125,6 +125,16 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('enemy-tick') }),
   t.Object({ type: t.Literal('enemy-next-shot') }),
   t.Object({ type: t.Literal('enemy-restart') }),
+  // O chefão com resistência (Poder "Chefão com resistência" do Construtor, 28/11/2026).
+  t.Object({ type: t.Literal('boss-fire') }),
+  t.Object({ type: t.Literal('boss-guard'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('boss-frame') }),
+  t.Object({ type: t.Literal('boss-restart') }),
+  // A troca de arma (Poder "Troca de arma" do Construtor, 28/11/2026).
+  t.Object({ type: t.Literal('weapon-pickup') }),
+  t.Object({ type: t.Literal('weapon-key-e') }),
+  t.Object({ type: t.Literal('weapon-fire') }),
+  t.Object({ type: t.Literal('weapon-new-match') }),
   t.Object({ type: t.Literal('remember-collection'), enabled: t.Boolean() }),
   t.Object({ type: t.Literal('collect-key') }),
   t.Object({ type: t.Literal('leave-key') }),

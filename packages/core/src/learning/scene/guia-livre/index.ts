@@ -1,5 +1,6 @@
 import type { SceneId } from '../actions'
 import { guia as acceleration } from './acceleration'
+import { guia as bossHealth } from './boss-health'
 import { guia as cleanup } from './cleanup'
 import { guia as collisionPair } from './collision-pair'
 import { guia as controls } from './controls'
@@ -42,6 +43,7 @@ import { guia as twoClocks } from './two-clocks'
 import { guia as uniqueNames } from './unique-names'
 import { guia as variable } from './variable'
 import { guia as velocity } from './velocity'
+import { guia as weaponSwap } from './weapon-swap'
 import { guia as world } from './world'
 
 export type { GuiaLivre } from './tipos'
@@ -102,6 +104,10 @@ export const GUIAS_LIVRES: Partial<Record<SceneId, GuiaLivre>> = {
   'spread-shot': spreadShot,
   // O Poder "Inimigo que atira" do Construtor (Nave, 28/11/2026).
   'enemy-fire': enemyFire,
+  // O Poder "Chefão com resistência" do Construtor (Nave, 28/11/2026).
+  'boss-health': bossHealth,
+  // O Poder "Troca de arma" do Construtor (Nave, 28/11/2026).
+  'weapon-swap': weaponSwap,
 }
 
 // O Corre Dino, frente A (02/11/2026): as cenas que a Nave já usava em exploração livre ganham a

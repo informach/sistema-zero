@@ -439,6 +439,16 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, a nave inimiga anda de um lado para o outro no alto da tela e atira a cada um segundo e meio. Você escolhe a origem do tiro e avança o tempo.',
   },
+  'boss-health': {
+    label: 'Um chefão que aguenta vários lasers',
+    explanation:
+      'Nesta experiência, o chefão começa com 5 de vida no alto da tela. Você dispara, liga ou desliga a Guarda do prêmio e avança um quadro de cada vez.',
+  },
+  'weapon-swap': {
+    label: 'Uma arma que muda o tiro',
+    explanation:
+      'Nesta experiência, a nave começa com o laser, e o plasma está trancado. Você pega o item de plasma, aperta E para trocar a arma e Espaço para disparar.',
+  },
 }
 
 /**
@@ -2429,6 +2439,61 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       correctChoiceId: 'onde-esta',
       explanation:
         'Com a origem No meio, o tiro é criado sempre no mesmo lugar fixo, e todos saem do meio da tela. Com a origem Na inimiga, o tiro é criado na posição da inimiga naquele momento: a origem acompanha a inimiga, e cada tiro sai de onde a inimiga estava. Um relógio decide o ritmo: a inimiga atira a cada um segundo e meio. O tiro que encosta na nave sai e tira uma vida, e Recomeçar a partida limpa os tiros.',
+    },
+  },
+  // O chefão com resistência (28/11/2026): o erro típico é achar que um acerto derrota o chefão (e,
+  // na pergunta final, que o placar sobe porque o chefão volta, e não porque a regra roda de novo).
+  'boss-health': {
+    prediction: {
+      prompt: 'O chefão tem 5 de vida, e um laser acerta. O que acontece?',
+      choices: [
+        {
+          id: 'cai',
+          label: 'O chefão cai na hora',
+          shows: 'A vida do chefão foi para 4, e o chefão continuou no alto da tela.',
+        },
+        { id: 'quatro', label: 'A vida fica em 4 e o chefão continua lá' },
+      ],
+      correctChoiceId: 'quatro',
+      revealOn: 'one-not-enough',
+    },
+    explain: {
+      prompt:
+        'Com a Guarda do prêmio desligada, o chefão caiu e passou mais um quadro. Por que o placar subiu de novo?',
+      choices: [
+        { id: 'regra', label: 'A regra do prêmio rodou de novo, com a vida ainda em 0.' },
+        { id: 'voltou', label: 'O chefão voltou e caiu outra vez.' },
+      ],
+      correctChoiceId: 'regra',
+      explanation:
+        'A vida do chefão fica guardada numa variável: cada laser tira 1, e no 0 o chefão cai e o placar ganha 10. Mas a regra do prêmio roda a cada quadro: sem a guarda, a vida continua em 0 e o prêmio soma de novo. Com a guarda, o jogo lembra que o chefão já foi derrotado, e o prêmio vale uma vez só.',
+    },
+  },
+  // A troca de arma (28/11/2026): o erro típico é achar que o E troca a arma sempre (e, na pergunta
+  // final, que o tiro é o mesmo e só a tecla muda).
+  'weapon-swap': {
+    prediction: {
+      prompt: 'A nave ainda não pegou o item de plasma e aperta E. Qual é a arma agora?',
+      choices: [
+        { id: 'laser', label: 'Laser, como antes' },
+        {
+          id: 'plasma',
+          label: 'Plasma: o E troca a arma',
+          shows: 'Sem o item de plasma, a Arma continuou laser.',
+        },
+      ],
+      correctChoiceId: 'laser',
+      revealOn: 'locked',
+    },
+    explain: {
+      prompt: 'Com o plasma escolhido, por que o tiro do Espaço ficou grande e lento?',
+      choices: [
+        { id: 'sorte', label: 'Cada tiro sai de um jeito, por sorte.' },
+        { id: 'arma', label: 'O Espaço dispara a arma guardada, e a arma agora é o plasma.' },
+      ],
+      correctChoiceId: 'arma',
+      explanation:
+        'A arma de agora fica guardada numa variável. O Espaço lê essa arma e cria o tiro dela: o laser é fino e rápido, o plasma é grande e lento. O E só troca a arma depois de a nave pegar o item de plasma, e uma partida nova volta ao laser e tranca o plasma de novo.',
     },
   },
 }

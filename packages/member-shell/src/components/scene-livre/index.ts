@@ -1,6 +1,7 @@
 import type { SceneId } from '@sistemazero/core/learning/scene'
 import type { ComponentType } from 'react'
 import { LivreAcceleration } from './acceleration'
+import { LivreBossHealth } from './boss-health'
 import { LivreCleanup } from './cleanup'
 import { LivreCollisionPair } from './collision-pair'
 import { LivreControls } from './controls'
@@ -42,6 +43,7 @@ import { LivreTwoClocks } from './two-clocks'
 import { LivreUniqueNames } from './unique-names'
 import { LivreVariable } from './variable'
 import { LivreVelocity } from './velocity'
+import { LivreWeaponSwap } from './weapon-swap'
 import { LivreWorld } from './world'
 
 /**
@@ -97,6 +99,10 @@ export const TELAS_LIVRES: Partial<Record<SceneId, ComponentType>> = {
   'spread-shot': LivreSpreadShot,
   // O Poder "Inimigo que atira" do Construtor (Nave, 28/11/2026).
   'enemy-fire': LivreEnemyFire,
+  // O Poder "Chefão com resistência" do Construtor (Nave, 28/11/2026).
+  'boss-health': LivreBossHealth,
+  // O Poder "Troca de arma" do Construtor (Nave, 28/11/2026).
+  'weapon-swap': LivreWeaponSwap,
 }
 
 // O Corre Dino, frente A (02/11/2026): as cenas que a Nave já usava em exploração livre ganham a

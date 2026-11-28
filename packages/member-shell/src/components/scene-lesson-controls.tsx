@@ -13,6 +13,7 @@ import { Ear } from 'lucide-react'
 import { SceneButton } from './exploration-stage'
 import { AtelieSceneControls } from './scene-atelie-controls'
 import { Escolha, Medida } from './scene-bench'
+import { BossHealthControls } from './scene-boss-health'
 import { CoinCounterControls } from './scene-coin-counter'
 import { CollectionMemoryControls } from './scene-collect-and-remember'
 import { CollisionPairControls } from './scene-collision-pair'
@@ -40,6 +41,7 @@ import { TimedShieldControls } from './scene-timed-shield'
 import { TwoClocksControls } from './scene-two-clocks'
 import { TwoPiecesControls } from './scene-two-pieces'
 import { UniqueNamesControls } from './scene-unique-names'
+import { WeaponSwapControls } from './scene-weapon-swap'
 
 /**
  * A BANCADA das cenas de aula: os controles de cada cena, fora do player.
@@ -148,6 +150,8 @@ export function LessonSceneControls({
       {m === 'timed-shield' && <TimedShieldControls state={state} dispatch={dispatch} />}
       {m === 'spread-shot' && <SpreadShotControls state={state} dispatch={dispatch} />}
       {m === 'enemy-fire' && <EnemyFireControls state={state} dispatch={dispatch} />}
+      {m === 'boss-health' && <BossHealthControls state={state} dispatch={dispatch} />}
+      {m === 'weapon-swap' && <WeaponSwapControls state={state} dispatch={dispatch} />}
       {m === 'same-rules-new-skin' && (
         <SameRulesControls state={state} dispatch={dispatch} onRunning={onRunning} />
       )}
