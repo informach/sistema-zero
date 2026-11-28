@@ -789,9 +789,13 @@ export function paginaDe(doc: Document): PaginaDoPalco {
 
     rolagem(bloco) {
       const block = blocosCom(doc, bloco)[0]
+      if (!block) return null
       // Para trabalhar nele: o bloco vem para o meio da área, mesmo já à vista (antes, o cabeçalho
-      // da área em que ele está).
-      return block ? rolagemNaArea(doc, block, block, false, true) : null
+      // da área em que ele está). O bloco de dentro conta só pelo próprio desenho: no Blockly, a
+      // caixa dele leva junto todos os blocos encaixados abaixo, e o "Desenhar o cenário" parecia
+      // do tamanho da área inteira, subia até o alto e tirava o cabeçalho (Farol A1P4, 28/11/2026).
+      const alvo = areaDe(block) === block ? block : caixaPropria(block)
+      return rolagemNaArea(doc, block, alvo, false, true)
     },
 
     rolagemDoCampo(valor, bloco) {
