@@ -3083,22 +3083,26 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'single-one',
         label: 'Com o tiro simples, sai um laser só',
-        pedido: 'Com o tiro triplo desligado, dispare e veja quantos lasers saem.',
+        pedido:
+          'Com o Tiro triplo desligado, clique em Disparar e em Ver os lasers chegarem. Conte quantos lasers saem.',
       },
       {
         id: 'triple-stacked',
         label: 'Com desvio 0, os três lasers seguem juntos',
-        pedido: 'Ligue o tiro triplo com desvio 0 e dispare.',
+        pedido:
+          'Com o Tiro triplo ligado e o Desvio 0, clique em Disparar e em Ver os lasers chegarem.',
       },
       {
         id: 'triple-spread',
         label: 'Com desvio 2, cada laser segue o seu caminho',
-        pedido: 'Com o tiro triplo e desvio 2, dispare e veja onde cada laser chega.',
+        pedido:
+          'Com o Tiro triplo ligado e o Desvio 2, clique em Disparar e em Ver os lasers chegarem. Olhe onde cada laser chega.',
       },
       {
         id: 'deviation-matters',
         label: 'Com desvio 1, os lasers dos lados passam entre as pedras',
-        pedido: 'Troque o desvio para 1 e dispare de novo: os lasers dos lados chegam às pedras?',
+        pedido:
+          'Com o Tiro triplo ligado, troque para o Desvio 1, clique em Disparar de novo e em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?',
       },
     ],
     hints: [
@@ -3110,7 +3114,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
   /**
    * ⭐ O inimigo que atira (Poder "Inimigo que atira" do Construtor, Nave contra Asteroides,
    * 28/11/2026): a inimiga patrulha o alto e atira a cada um segundo e meio. O tiro criado num lugar
-   * fixo sai sempre dali; o criado na inimiga sai de onde ela está. O tiro que encosta na nave sai e
+   * fixo sai sempre dali; o criado na inimiga sai de onde a inimiga está. O tiro que encosta na nave sai e
    * tira uma vida, e recomeçar a partida limpa os tiros. Só a ideia, em exploração livre.
    */
   'enemy-fire': {
@@ -3133,7 +3137,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
       {
         id: 'enemy-origin',
-        label: 'Na inimiga, o tiro sai de onde ela está',
+        label: 'Na inimiga, o tiro sai de onde a inimiga está',
         pedido: 'Troque a origem para Na inimiga e avance até a inimiga atirar duas vezes.',
       },
       {
@@ -3168,7 +3172,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     manipulates: 'O disparo, a Guarda do prêmio, a passagem dos quadros e o recomeço da partida',
     success:
       'O chefão tem uma vida própria, guardada numa variável: cada laser que acerta tira 1, e um laser só não derrota o chefão. Quando a vida chega a 0, o chefão cai e o placar ganha o prêmio. Sem a guarda, a regra roda a cada quadro e o prêmio soma de novo; com a guarda, o prêmio vale uma vez só.',
-    extra: 'E se a vida do chefão começasse em 10? Quantos lasers seriam precisos?',
+    extra: 'E se a vida do chefão começasse em 10? Quantos lasers seriam necessários?',
     goals: [
       {
         id: 'one-not-enough',

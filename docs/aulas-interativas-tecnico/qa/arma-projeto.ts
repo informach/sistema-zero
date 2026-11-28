@@ -54,7 +54,8 @@ export const ARMA_REGRAS = {
     tamanhoItem: PODERES_TAMANHO['item-plasma'],
     tamanhoPlasma: PODERES_TAMANHO.plasma,
     faixa: -4,
-    nasceZ: -20,
+    // perto da nave: o item chega em ~1,4 s, e a nave fica menos tempo exposta às pedras esperando
+    nasceZ: -10,
     velocidadePlasma: -11,
   },
 } as const
@@ -237,7 +238,8 @@ ${trocaDeArma(tem('placar') ? [placar] : []).replace(/^/gm, '    ')}
 });`,
     ],
     limpezas: [
-      'SZGame3D.pruneArea(itensPlasma, "z", -36, 6);',
+      // o item vive mais que o intervalo de 4 s (de z −10 até 24 a 7 por segundo): sempre há um no grupo
+      'SZGame3D.pruneArea(itensPlasma, "z", -36, 24);',
       'SZGame3D.pruneArea(tirosPlasma, "z", -36, 3);',
     ],
     relogios: tem('item')

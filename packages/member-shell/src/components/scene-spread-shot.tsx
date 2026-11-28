@@ -2,6 +2,7 @@
 
 import {
   actorFigure,
+  quantos,
   type SceneAction,
   type SceneCast,
   type SceneState,
@@ -77,8 +78,10 @@ export function SpreadShotStage({ state, cast }: { state: SceneState; cast?: Sce
       cast={actors}
       mundo={mundo}
       titulo="O leque de tiros"
-      descricao={`${tiro}. ${sp.lasers.length} lasers no ar. ${noLugar} pedras no lugar.${
-        chegou ? ` No último disparo, ${acertos.length} pedras acertadas.` : ''
+      descricao={`${tiro}. ${quantos(sp.lasers.length, 'laser', 'lasers')} no ar. ${quantos(noLugar, 'pedra', 'pedras')} no lugar.${
+        chegou
+          ? ` No último disparo, ${quantos(acertos.length, 'pedra acertada', 'pedras acertadas')}.`
+          : ''
       }`}
     >
       {(palco) => (

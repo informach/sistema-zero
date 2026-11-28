@@ -79,7 +79,7 @@ Antes e depois de cada tecla, observe a placa da arma e o tiro que sai. O Zappy 
 2. Dentro de o relógio A cada 4 segundos, deixe visível o espaço fazer. Em Programação → Lógica & Se, pegue Se e encaixe nesse espaço.
 3. Na pergunta x > 0, escolha estado no lugar de x e = no lugar de >. Use o sinal = sem a palavra solto.
 4. Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá.
-5. No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −20.
+5. No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −10.
 6. Em Quando acontecer, logo abaixo do encontro com os asteroides: Quando nave encostar em algum do grupo itensPlasma, chamando de itemPego, com a guarda da partida.
 7. No então: Tirar o objeto itemPego do grupo itensPlasma e Alterar variável plasmaLiberado para verdadeiro.
 

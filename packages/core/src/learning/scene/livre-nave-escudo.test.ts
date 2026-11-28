@@ -243,6 +243,20 @@ describe('o escudo temporário: a fala acompanha a ordem escolhida', () => {
     expect(fala(tarde)).toBe('timed-shield-renews-then-restart')
     expect(fala([...tarde, SEGUNDO])).toBe('timed-shield-restart')
   })
+  test('a pegada de novo pede um segundo antes do fim: no segundo 13 com o Escudo em 0, voltar ao começo', () => {
+    // As três primeiras metas, e o item pego no 8 protege a pedra do 11: o Escudo chega a 0 no 13.
+    const ate13 = [PEDRA, PEGAR, PEDRA, SEGUNDO, SEGUNDO, PEDRA, PEGAR, ...segundos(5)]
+    const s = jogar(ate13).timedShield
+    expect([s.second, s.shield, timedShieldOver(s)]).toEqual([13, 0, false])
+    // Pegar, Avançar 1 segundo e pegar de novo passaria do segundo 14, onde o item não é mais pego.
+    const no14 = jogar([...ate13, PEGAR, SEGUNDO])
+    expect(stepScene(start, no14, PEGAR)).toBe(no14)
+    expect(fala(ate13)).toBe('timed-shield-restart')
+    expect(fala([...ate13, PEGAR])).toBe('timed-shield-restart')
+    // Um segundo antes, com o Escudo em 1, ainda cabe: basta pegar.
+    expect(fala(ate13.slice(0, -1))).toBe('timed-shield-renew-ready')
+    expect(fala([...ate13, VOLTAR])).toBe('timed-shield-ask-renew')
+  })
 })
 
 describe('o escudo temporário: o caminho livre', () => {

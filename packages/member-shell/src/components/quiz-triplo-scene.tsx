@@ -17,7 +17,17 @@ import { Note } from './scene-discovery-frame'
 import { ActorFigure } from './scene-figures'
 import { SpreadShotStage } from './scene-spread-shot'
 
-type TriploScene = 'triplo-juntos' | 'triplo-leque' | 'triplo-um' | 'triplo-grupos'
+/**
+ * As cenas de previsão que este componente desenha. Fora da lista, ele cai no caso de fábrica em
+ * silêncio: `tests/quiz-cenas-do-manifesto.test.ts` confere a lista com o `manifest-quiz.ts` do core.
+ */
+export const TRIPLO_QUIZ_SCENES = [
+  'triplo-juntos',
+  'triplo-leque',
+  'triplo-um',
+  'triplo-grupos',
+] as const
+type TriploScene = (typeof TRIPLO_QUIZ_SCENES)[number]
 
 const START = { scene: 'spread-shot' } as const
 const run = (actions: SceneAction[]) =>

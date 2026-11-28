@@ -14,6 +14,17 @@ import { Note } from './scene-discovery-frame'
 import { ActorFigure } from './scene-figures'
 import { TimedShieldStage } from './scene-timed-shield'
 
+/**
+ * As cenas de previsão que este componente desenha. Fora da lista, ele cai no caso de fábrica em
+ * silêncio: `tests/quiz-cenas-do-manifesto.test.ts` confere a lista com o `manifest-quiz.ts` do core.
+ */
+export const ESCUDO_QUIZ_SCENES = [
+  'escudo-protege',
+  'escudo-acabou',
+  'escudo-renova',
+  'escudo-sem-guarda',
+] as const
+
 const START = { scene: 'timed-shield' } as const
 const run = (actions: SceneAction[]) =>
   actions.reduce<SceneState>((s, a) => stepScene(START, s, a), openScene(START))

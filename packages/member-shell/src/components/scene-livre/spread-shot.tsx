@@ -23,10 +23,14 @@ import { DicaLivre, LinhaDaIdeia, Numeros, useDescobertas } from './nave-b-comum
  */
 
 const O_QUE_COMPARAR: Record<string, string> = {
-  'single-one': 'Com o Tiro triplo desligado, dispare e veja quantos lasers saem.',
-  'triple-stacked': 'Com o Tiro triplo e o Desvio 0, dispare e veja os caminhos dos lasers.',
-  'triple-spread': 'Com o Tiro triplo e o Desvio 2, dispare e veja onde cada laser chega.',
-  'deviation-matters': 'Troque para o Desvio 1, dispare de novo e olhe os lasers dos lados.',
+  'single-one':
+    'Com o Tiro triplo desligado, clique em Disparar e em Ver os lasers chegarem. Conte quantos lasers saem.',
+  'triple-stacked':
+    'Com o Tiro triplo ligado e o Desvio 0, clique em Disparar e em Ver os lasers chegarem.',
+  'triple-spread':
+    'Com o Tiro triplo ligado e o Desvio 2, clique em Disparar e em Ver os lasers chegarem. Olhe onde cada laser chega.',
+  'deviation-matters':
+    'Com o Tiro triplo ligado, troque para o Desvio 1, clique em Disparar de novo e em Ver os lasers chegarem. Olhe os lasers dos lados.',
 }
 
 type Tiro = Pick<SceneState['spreadShot'], 'triple' | 'deviation' | 'lasers'>

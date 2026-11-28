@@ -1464,7 +1464,7 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
     ],
     situations: [
       'A inimiga está à esquerda, e a nave está no meio. A origem do tiro está no meio. Nenhum tiro está no ar, e a nave tem 3 vidas.',
-      'A inimiga está na ponta esquerda, e a nave está à esquerda. A origem do tiro está na inimiga. 2 tiros estão no ar, e a nave tem 3 vidas. A partida acabou.',
+      'A inimiga está na ponta esquerda, e a nave está na ponta esquerda. A origem do tiro está na inimiga. 2 tiros estão no ar, e a nave tem 3 vidas. A partida acabou.',
       'A inimiga estava na ponta direita e atirou. O tiro nasceu embaixo da inimiga.',
       'Um tiro encostou na nave e saiu. A nave perdeu a última vida, e a partida acabou.',
       'A partida recomeçou: os tiros no ar saíram, as vidas voltaram a 3 e a inimiga voltou ao começo.',

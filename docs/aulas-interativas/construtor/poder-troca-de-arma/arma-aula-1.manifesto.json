@@ -25192,6 +25192,15 @@
                 },
                 {
                   "action": "wait",
+                  "ms": 150
+                },
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 40
+                },
+                {
+                  "action": "wait",
                   "ms": 50
                 }
               ],
@@ -25224,6 +25233,17 @@
                     },
                     "compare": "equals",
                     "value": 0
+                  }
+                },
+                {
+                  "afterStep": 7,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "arma"
+                    },
+                    "compare": "equals",
+                    "value": "plasma"
                   }
                 }
               ]

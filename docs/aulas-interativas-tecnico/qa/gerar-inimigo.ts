@@ -74,7 +74,7 @@ await gerarPoder({
               'Com a origem No meio, clique em Avançar até o próximo tiro duas vezes. Veja de onde os tiros saem.',
           },
           'enemy-origin': {
-            label: 'Na inimiga, o tiro sai de onde ela está',
+            label: 'Na inimiga, o tiro sai de onde a inimiga está',
             pedido:
               'Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. Compare de onde os tiros saem.',
           },

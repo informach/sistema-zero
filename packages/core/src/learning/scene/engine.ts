@@ -341,7 +341,7 @@ function meioSegundoDaInimiga(s: SceneState, legendas: string[]): void {
   if (f.origin === 'middle' && f.middleFrom.length >= 2)
     observe(s, 'fixed-origin', 'Com a origem no meio, todo tiro sai do mesmo lugar')
   if (f.origin === 'enemy' && f.enemyFrom.length >= 2)
-    observe(s, 'enemy-origin', 'Na inimiga, o tiro sai de onde ela está')
+    observe(s, 'enemy-origin', 'Na inimiga, o tiro sai de onde a inimiga está')
 }
 
 /** Um gesto de tempo da inimiga: `tiques` meios segundos, ou até o próximo tiro sair. */
@@ -1430,12 +1430,18 @@ export function stepScene(
     }
     case 'weapon-new-match': {
       // Nova partida: a arma volta ao laser, o plasma volta a trancado e o tiro sai. `new-match-laser`
-      // só com o plasma escolhido antes (a arma MUDOU de volta à vista).
+      // só com o plasma escolhido antes (a arma MUDOU de volta à vista). A legenda diz só o que
+      // mudou: o plasma nunca liberado continua trancado, e a arma que já era laser continua laser.
       const w = s.weaponSwap
       if (weaponSwapFresh(w)) return previous
       const eraPlasma = w.weapon === 'plasma'
+      const estavaLiberado = w.unlocked
       s.weaponSwap = weaponSwapStart(w.fired, eraPlasma ? 'back-to-laser' : 'new-match')
-      s.caption = 'Nova partida: a arma voltou para laser, e o plasma ficou trancado de novo.'
+      s.caption = eraPlasma
+        ? 'Nova partida: a arma voltou para laser, e o plasma ficou trancado de novo.'
+        : estavaLiberado
+          ? 'Nova partida: a arma continua laser, e o plasma ficou trancado de novo.'
+          : 'Nova partida: a arma continua laser, e o plasma continua trancado.'
       if (eraPlasma) observe(s, 'new-match-laser', 'A partida nova começa com o laser')
       break
     }

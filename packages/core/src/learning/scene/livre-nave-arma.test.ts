@@ -109,6 +109,19 @@ describe('a troca de arma: o motor', () => {
     })
   })
 
+  test('a legenda da Nova partida diz só o que mudou', () => {
+    expect(jogar([...PLASMA, novaPartida]).caption).toBe(
+      'Nova partida: a arma voltou para laser, e o plasma ficou trancado de novo.',
+    )
+    expect(jogar([pegarPlasma, novaPartida]).caption).toBe(
+      'Nova partida: a arma continua laser, e o plasma ficou trancado de novo.',
+    )
+    // Só um tiro de laser, sem o item: nem a arma nem o plasma mudam.
+    expect(jogar([apertarEspaco, novaPartida]).caption).toBe(
+      'Nova partida: a arma continua laser, e o plasma continua trancado.',
+    )
+  })
+
   test('as ações valem só nesta cena, e o caso não aceita nenhuma', () => {
     for (const a of [pegarPlasma, apertarE, apertarEspaco, novaPartida]) {
       expect(isSceneAction(a, 'weapon-swap')).toBe(true)

@@ -16,8 +16,18 @@ import { Note } from './scene-discovery-frame'
 import { ActorFigure } from './scene-figures'
 import { WeaponSwapStage } from './scene-weapon-swap'
 
-type ArmaScene2d = 'arma-trancada' | 'arma-plasma' | 'arma-reinicio'
-type ArmaScene = ArmaScene2d | 'arma-placar'
+/**
+ * As cenas de previsão que este componente desenha. Fora da lista, ele cai no caso de fábrica em
+ * silêncio: `tests/quiz-cenas-do-manifesto.test.ts` confere a lista com o `manifest-quiz.ts` do core.
+ */
+export const ARMA_QUIZ_SCENES = [
+  'arma-trancada',
+  'arma-plasma',
+  'arma-reinicio',
+  'arma-placar',
+] as const
+type ArmaScene = (typeof ARMA_QUIZ_SCENES)[number]
+type ArmaScene2d = Exclude<ArmaScene, 'arma-placar'>
 
 /** O elenco da aula: a nave e o asteroide (a pedra parada no alto). */
 export const ARMA_CAST: SceneCast = {

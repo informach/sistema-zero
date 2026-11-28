@@ -1211,7 +1211,9 @@ function situacao(scene: SceneId, state: SceneState): string {
     }
     case 'enemy-fire': {
       const f = state.enemyFire
-      const nave = f.shipX === 400 ? 'no meio' : f.shipX < 400 ? 'à esquerda' : 'à direita'
+      // A nave só para em 200, 400 e 600, e cada x tem o MESMO nome que o da inimiga: a nave embaixo
+      // da inimiga é dita no mesmo lugar ("na ponta esquerda" com as duas em 200).
+      const nave = enemyFirePlace(f.shipX)
       const origem = f.origin === 'middle' ? 'no meio' : 'na inimiga'
       const tiros =
         f.shots.length === 0

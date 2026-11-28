@@ -16,8 +16,18 @@ import { SceneCenarioProvider, useSceneCenario } from './scene-cenario-context'
 import { Note } from './scene-discovery-frame'
 import { ActorFigure } from './scene-figures'
 
-type ChefaoScene2d = 'chefao-um-tiro' | 'chefao-sem-guarda'
-type ChefaoScene = ChefaoScene2d | 'chefao-sem-retirada' | 'chefao-guarda'
+/**
+ * As cenas de previsão que este componente desenha. Fora da lista, ele cai no caso de fábrica em
+ * silêncio: `tests/quiz-cenas-do-manifesto.test.ts` confere a lista com o `manifest-quiz.ts` do core.
+ */
+export const CHEFAO_QUIZ_SCENES = [
+  'chefao-um-tiro',
+  'chefao-sem-retirada',
+  'chefao-sem-guarda',
+  'chefao-guarda',
+] as const
+type ChefaoScene = (typeof CHEFAO_QUIZ_SCENES)[number]
+type ChefaoScene2d = Exclude<ChefaoScene, 'chefao-sem-retirada' | 'chefao-guarda'>
 
 /** O elenco da aula: a nave e o chefão (um nome que não diz figura: o palco desenha o asteroide). */
 export const CHEFAO_CAST: SceneCast = {

@@ -44,7 +44,7 @@
 
 [confident, clear, unhurried voice] No então, encaixe Criar uma cópia, de Jogo 3D e Grupos. Escolha moldePlasmaItem e o grupo itensPlasma.
 
-[confident, clear, unhurried voice] Na posição, coloque menos 4 no x, 1 no y e menos 20 no z. O menos 4 é a faixa da esquerda.
+[confident, clear, unhurried voice] Na posição, coloque menos 4 no x, 1 no y e menos 10 no z. O menos 4 é a faixa da esquerda, e o menos 10 faz o item nascer perto da nave.
 
 [confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 

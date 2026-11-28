@@ -60,7 +60,7 @@ export const inimigoQuiz2d: ManifestQuiz = {
       ],
       correctChoiceIds: ['b'],
       explanation:
-        'A inimiga tem três regras: o tiro sai de onde ela está, o tiro machuca e uma partida nova começa sem tiros. Cada teste confere uma.',
+        'A inimiga tem três regras: o tiro sai de onde a inimiga está, o tiro machuca e uma partida nova começa sem tiros. Cada teste confere uma.',
     },
   ],
 }

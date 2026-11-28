@@ -85,7 +85,7 @@ await gerarPoder({
           'deviation-matters': {
             label: 'Com desvio 1, os lasers dos lados passam entre as pedras',
             pedido:
-              'Escolha Desvio 1, clique em Disparar de novo e em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?',
+              'Com o Tiro triplo ligado, escolha Desvio 1, clique em Disparar de novo e em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?',
           },
         },
       },

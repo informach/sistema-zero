@@ -435,7 +435,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
           objective:
             'Criar o relógio que cria uma cópia do item à esquerda, só na partida, e o encontro que libera o plasma.',
           ponte:
-            'Crie o item: a cada 4 segundos, só na partida, uma cópia de moldePlasmaItem em x −4, y 1, z −20; quando a nave encosta nela, o item sai e plasmaLiberado vira verdadeiro.',
+            'Crie o item: a cada 4 segundos, só na partida, uma cópia de moldePlasmaItem em x −4, y 1, z −10; quando a nave encosta nela, o item sai e plasmaLiberado vira verdadeiro.',
           falas: [
             [
               'conversa',
@@ -456,8 +456,8 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
             ],
             [
               'instrucao',
-              'Na posição, coloque menos 4 no x, 1 no y e menos 20 no z. O menos 4 é a faixa da esquerda.',
-              '[trocar "0" por "-4" em "Criar uma cópia de moldePlasmaItem"] [trocar "0" por "1" em "Criar uma cópia de moldePlasmaItem"] [trocar "0" por "-20" em "Criar uma cópia de moldePlasmaItem"]',
+              'Na posição, coloque menos 4 no x, 1 no y e menos 10 no z. O menos 4 é a faixa da esquerda, e o menos 10 faz o item nascer perto da nave.',
+              '[trocar "0" por "-4" em "Criar uma cópia de moldePlasmaItem"] [trocar "0" por "1" em "Criar uma cópia de moldePlasmaItem"] [trocar "0" por "-10" em "Criar uma cópia de moldePlasmaItem"]',
             ],
             encontrar('Quando acontecer'),
             [
@@ -480,7 +480,7 @@ export function armaAulas(): PoderAula<ArmaEtapa>[] {
           steps: [
             'Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos: A cada 4 segundos (Jogo 3D → Tempo e sorteio → Tempo).',
             ...passosGuardaPatrulha('o relógio A cada 4 segundos'),
-            'No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −20.',
+            'No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −10.',
             'Em Quando acontecer, logo abaixo do encontro com os asteroides: Quando nave encostar em algum do grupo itensPlasma, chamando de itemPego, com a guarda da partida.',
             'No então: Tirar o objeto itemPego do grupo itensPlasma e Alterar variável plasmaLiberado para verdadeiro.',
           ],

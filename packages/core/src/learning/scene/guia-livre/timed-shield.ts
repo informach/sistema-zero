@@ -140,7 +140,11 @@ export function testeDoEscudoCabe(meta: MetaDoEscudo, t: Escudo): boolean {
       return TIMED_SHIELD.rocks.some((rock) => rock > t.second && rock >= t.second + falta)
     }
     case 'shield-renews':
-      return true
+      // Com o Escudo entre 1 e 4, basta pegar o item. Senão o convite pede pegar (se precisar),
+      // Avançar 1 segundo e pegar de novo: o segundo a mais precisa cair ANTES do fim da partida,
+      // porque no último segundo o item não é mais pego.
+      if (t.shield > 0 && t.shield < TIMED_SHIELD.shield) return true
+      return t.second + 1 < TIMED_SHIELD.lastSecond
   }
 }
 

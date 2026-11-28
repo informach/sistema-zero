@@ -7,6 +7,7 @@ import {
   type EnemyFireShipX,
   enemyFireOver,
   enemyFireX,
+  quantos,
   type SceneAction,
   type SceneCast,
   type SceneState,
@@ -75,7 +76,7 @@ export function EnemyFireStage({ state, cast }: { state: SceneState; cast?: Scen
       cast={actors}
       mundo={mundo}
       titulo="A inimiga que atira"
-      descricao={`Origem do tiro ${origem}. ${f.shots.length} tiros no ar. ${f.lives} vidas.${
+      descricao={`Origem do tiro ${origem}. ${quantos(f.shots.length, 'tiro', 'tiros')} no ar. ${quantos(f.lives, 'vida', 'vidas')}.${
         acabou ? ' A partida acabou.' : ''
       }`}
     >
