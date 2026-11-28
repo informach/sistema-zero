@@ -1618,7 +1618,10 @@ export function enemyFireTicksToShot(tick: number): number {
 export function enemyFireOver(f: Pick<SceneEnemyFire, 'tick' | 'lives'>): boolean {
   return f.lives === 0 || f.tick >= ENEMY_FIRE.lastTick
 }
-/** Onde fica um x do alto da tela, como a criança diz ("na ponta esquerda", "no meio"...). */
+/**
+ * Onde fica um x da tela, como a criança diz ("na ponta esquerda", "no meio"...): o da inimiga no alto
+ * e o da nave embaixo, com o mesmo nome para o mesmo x.
+ */
 export function enemyFirePlace(x: number): string {
   if (x <= 200) return 'na ponta esquerda'
   if (x < ENEMY_FIRE.middle) return 'à esquerda'

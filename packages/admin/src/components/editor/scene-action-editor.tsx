@@ -70,8 +70,9 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Avançar 1 segundo', value: { type: 'tick-second' } },
   { label: 'Avançar até a próxima pedra', value: { type: 'next-rock' } },
   // O tiro triplo (28/11/2026): os nomes são os da tela da criança. O caso não aceita nenhum.
-  { label: 'Ligar o Tiro triplo', value: { type: 'spread-triple', on: true } },
-  { label: 'Desligar o Tiro triplo', value: { type: 'spread-triple', on: false } },
+  // ⚠️ Na tela da criança é UM botão, "Tiro triplo", que liga e desliga (como "Guardar a coleta").
+  { label: 'Ligar Tiro triplo', value: { type: 'spread-triple', on: true } },
+  { label: 'Desligar Tiro triplo', value: { type: 'spread-triple', on: false } },
   { label: 'Desvio 0', value: { type: 'spread-deviation', deviation: 0 } },
   { label: 'Desvio 1', value: { type: 'spread-deviation', deviation: 1 } },
   { label: 'Desvio 2', value: { type: 'spread-deviation', deviation: 2 } },
@@ -87,11 +88,11 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Avançar até o próximo tiro', value: { type: 'enemy-next-shot' } },
   { label: 'Recomeçar a partida', value: { type: 'enemy-restart' } },
   // O chefão com resistência (28/11/2026): os nomes são os da tela da criança. O caso não aceita nenhum.
-  { label: 'Disparar no chefão', value: { type: 'boss-fire' } },
+  { label: 'Disparar', value: { type: 'boss-fire' } },
   { label: 'Guarda do prêmio: Ligada', value: { type: 'boss-guard', on: true } },
   { label: 'Guarda do prêmio: Desligada', value: { type: 'boss-guard', on: false } },
   { label: 'Avançar um quadro', value: { type: 'boss-frame' } },
-  { label: 'Recomeçar a partida do chefão', value: { type: 'boss-restart' } },
+  { label: 'Recomeçar a partida', value: { type: 'boss-restart' } },
   // A troca de arma (28/11/2026): os nomes são os da tela da criança. O caso não aceita nenhum.
   { label: 'Pegar o item de plasma', value: { type: 'weapon-pickup' } },
   { label: 'Apertar E', value: { type: 'weapon-key-e' } },
@@ -430,6 +431,13 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   'see-points': ['level'],
   'brain-scope': ['shared'],
   shade: ['on'],
+  // Os Poderes do Construtor (28/11/2026): sem estas, "Desvio 0", "Desvio 1" e "Desvio 2" eram uma
+  // opção só, e o mesmo com as duas origens, as três naves e as duas guardas.
+  'spread-triple': ['on'],
+  'spread-deviation': ['deviation'],
+  'enemy-origin': ['origin'],
+  'enemy-ship': ['x'],
+  'boss-guard': ['on'],
 }
 
 /**

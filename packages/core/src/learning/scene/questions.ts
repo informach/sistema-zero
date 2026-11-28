@@ -2493,7 +2493,7 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       ],
       correctChoiceId: 'arma',
       explanation:
-        'A arma de agora fica guardada numa variável. O Espaço lê essa arma e cria o tiro dela: o laser é fino e rápido, o plasma é grande e lento. O E só troca a arma depois de a nave pegar o item de plasma, e uma partida nova volta ao laser e tranca o plasma de novo.',
+        'A arma de agora fica guardada numa variável. O Espaço lê a arma guardada e cria o tiro dessa arma: o laser é fino e rápido, o plasma é grande e lento. O E só troca a arma depois de a nave pegar o item de plasma, e uma partida nova volta ao laser e tranca o plasma de novo.',
     },
   },
 }

@@ -3341,7 +3341,7 @@
                 "pedido": "Com a origem No meio, clique em Avançar até o próximo tiro duas vezes. Veja de onde os tiros saem."
               },
               "enemy-origin": {
-                "label": "Na inimiga, o tiro sai de onde ela está",
+                "label": "Na inimiga, o tiro sai de onde a inimiga está",
                 "pedido": "Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. Compare de onde os tiros saem."
               },
               "shot-hurts": {
@@ -3508,7 +3508,7 @@
             "correctChoiceIds": [
               "b"
             ],
-            "explanation": "A inimiga tem três regras: o tiro sai de onde ela está, o tiro machuca e uma partida nova começa sem tiros. Cada teste confere uma."
+            "explanation": "A inimiga tem três regras: o tiro sai de onde a inimiga está, o tiro machuca e uma partida nova começa sem tiros. Cada teste confere uma."
           }
         ]
       }

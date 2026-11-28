@@ -2,6 +2,7 @@
 
 import {
   actorFigure,
+  quantos,
   type SceneAction,
   type SceneCast,
   type SceneState,
@@ -65,7 +66,7 @@ export function TimedShieldStage({ state, cast }: { state: SceneState; cast?: Sc
       cast={actors}
       mundo={mundo}
       titulo="O escudo que acaba"
-      descricao={`Segundo ${t.second}. ${t.lives} vidas. Escudo em ${t.shield}. ${
+      descricao={`Segundo ${t.second}. ${quantos(t.lives, 'vida', 'vidas')}. Escudo em ${t.shield}. ${
         proxima === null ? 'Não vem mais pedra.' : `A próxima pedra bate no segundo ${proxima}.`
       } Pedras que bateram: ${batidas.join(', ') || 'nenhuma'}.`}
     >

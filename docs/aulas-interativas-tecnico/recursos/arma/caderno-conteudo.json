@@ -305,7 +305,7 @@
       {
         "kind": "step",
         "number": 5,
-        "text": "No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −20."
+        "text": "No então: Criar uma cópia de moldePlasmaItem no grupo itensPlasma, em x −4, y 1, z −10."
       },
       {
         "kind": "step",

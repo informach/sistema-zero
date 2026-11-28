@@ -2618,7 +2618,8 @@ const CENAS: Record<SceneId, Cena> = {
   'spread-shot': {
     pedidos: {
       'single-one': {
-        texto: 'Com o tiro triplo desligado, dispare e veja quantos lasers saem.',
+        texto:
+          'Com o Tiro triplo desligado, clique em Disparar e em Ver os lasers chegarem. Conte quantos lasers saem.',
         faz: (m) => {
           if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
           m.faz({ type: 'spread-triple', on: false })
@@ -2627,7 +2628,8 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'triple-stacked': {
-        texto: 'Ligue o tiro triplo com desvio 0 e dispare.',
+        texto:
+          'Com o Tiro triplo ligado e o Desvio 0, clique em Disparar e em Ver os lasers chegarem.',
         faz: (m) => {
           if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
           m.faz({ type: 'spread-triple', on: true })
@@ -2637,7 +2639,8 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'triple-spread': {
-        texto: 'Com o tiro triplo e desvio 2, dispare e veja onde cada laser chega.',
+        texto:
+          'Com o Tiro triplo ligado e o Desvio 2, clique em Disparar e em Ver os lasers chegarem. Olhe onde cada laser chega.',
         faz: (m) => {
           if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })
           m.faz({ type: 'spread-triple', on: true })
@@ -2648,7 +2651,8 @@ const CENAS: Record<SceneId, Cena> = {
       },
       // ⚠️ "Troque" e "de novo": a comparação pede o leque do desvio 2 visto antes.
       'deviation-matters': {
-        texto: 'Troque o desvio para 1 e dispare de novo: os lasers dos lados chegam às pedras?',
+        texto:
+          'Com o Tiro triplo ligado, troque para o Desvio 1, clique em Disparar de novo e em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?',
         abreDepois: 'triple-spread',
         faz: (m) => {
           if (m.estado.spreadShot.lasers.length) m.faz({ type: 'spread-arrive' })

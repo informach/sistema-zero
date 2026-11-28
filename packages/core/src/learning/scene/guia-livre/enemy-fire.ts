@@ -52,7 +52,9 @@ const CONVIDA: Record<MetaDoInimigo | 'over', string> = {
   'enemy-origin':
     'E com a origem Na inimiga? Escolha Na inimiga e clique em Avançar até o próximo tiro duas vezes. De onde você acha que cada tiro vai sair?',
   'shot-hurts':
-    'E quando um tiro chega até a nave? Escolha Nave à esquerda, Nave no meio ou Nave à direita para ficar embaixo de um tiro que está descendo. Depois clique em Avançar meio segundo e olhe as Vidas.',
+    // ⚠️ A nave só para em 200, 400 e 600: o tiro que nasce na inimiga em 300 ou em 500 desce longe
+    // de todo lugar da nave. O convite sugere o arranjo que alcança.
+    'E quando um tiro chega até a nave? O jeito mais fácil: escolha No meio e Nave no meio, clique em Avançar até o próximo tiro e depois em Avançar meio segundo até o tiro chegar à nave. Com a origem Na inimiga, só o tiro que nasceu na ponta esquerda, no meio ou na ponta direita passa por um lugar da nave. Olhe as Vidas.',
   'restart-clears':
     'E o que acontece ao recomeçar? Com tiros no ar, clique em Recomeçar a partida. Olhe os tiros e as Vidas.',
   over: 'A partida acabou. Para o próximo teste, clique em Recomeçar a partida.',

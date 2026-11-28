@@ -14,8 +14,18 @@ import { Note } from './scene-discovery-frame'
 import { EnemyFireStage } from './scene-enemy-fire'
 import { ActorFigure } from './scene-figures'
 
-type InimigoScene2d = 'inimigo-meio' | 'inimigo-segue' | 'inimigo-acerta'
-type InimigoScene = InimigoScene2d | 'inimigo-limpeza'
+/**
+ * As cenas de previsão que este componente desenha. Fora da lista, ele cai no caso de fábrica em
+ * silêncio: `tests/quiz-cenas-do-manifesto.test.ts` confere a lista com o `manifest-quiz.ts` do core.
+ */
+export const INIMIGO_QUIZ_SCENES = [
+  'inimigo-meio',
+  'inimigo-segue',
+  'inimigo-acerta',
+  'inimigo-limpeza',
+] as const
+type InimigoScene = (typeof INIMIGO_QUIZ_SCENES)[number]
+type InimigoScene2d = Exclude<InimigoScene, 'inimigo-limpeza'>
 
 const START = { scene: 'enemy-fire' } as const
 const run = (actions: SceneAction[]) =>

@@ -42,7 +42,7 @@ const EXPLICA: Record<MetaDoChefao, string> = {
     'A cada laser, a vida do chefão desceu 1, e a barra encolheu junto. O chefão aguenta vários lasers.',
   'falls-at-zero': 'Quando a vida chegou a 0, o chefão caiu da tela, e o placar ganhou 10 pontos.',
   'falls-once':
-    'Com a Guarda do prêmio Desligada, a cada quadro com a vida em 0 o placar ganhou 10 de novo e não parou de subir. Com a guarda Ligada, o placar ficou em 10: o prêmio valeu uma vez só.',
+    'Com a Guarda do prêmio Desligada, o placar ganhou 10 de novo a cada quadro com a vida em 0, enquanto a partida durou. Com a guarda Ligada, o placar ficou em 10: o prêmio valeu uma vez só.',
 }
 
 /** O convite ao próximo teste: a pergunta e o que olhar, sem o resultado. */

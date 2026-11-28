@@ -51,8 +51,8 @@ for (const audience of ['kids', 'adult'] as const)
         const ids = draft.document.blocks.map((b) => b.id)
         if (round === 0) firstIds = ids
         else expect(ids).toEqual(firstIds)
-        // A inimiga (o relógio, o dano e a limpeza dos tiros), a cena da experiência e a cena 3D do quiz
-        // chegam ao rascunho.
+        // O chefão (a vida, o acerto, o fim no zero e a guarda do prêmio), a cena da experiência e a
+        // cena 3D do quiz chegam ao rascunho.
         expect(JSON.stringify(draft)).toContain(n === 1 ? 'boss-health' : 'chefao-guarda')
         expect(JSON.stringify(draft)).toContain('tiroNoChefao')
         expect(JSON.stringify(draft)).toContain('chefaoDerrotado')

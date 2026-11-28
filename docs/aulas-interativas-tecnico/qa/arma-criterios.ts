@@ -31,7 +31,8 @@ export const ESPERAS_ARMA = {
   antes: 4500,
   sair: 800,
   item: 6000,
-  liga: 10000,
+  /** Até a nave pegar o item: 2D, até ~8 s; 3D, o item nasce perto (até 4 s + 1,4 s). */
+  liga: { '2d': 10000, '3d': 6500 },
   tiro: { '2d': 50, '3d': 100 },
 } as const
 
@@ -80,7 +81,7 @@ export function armaChecks(d: PoderDimensaoConstrutor, etapa: ArmaEtapa): Sectio
           'pegar-libera-o-plasma',
           'Quando a nave pega o item, o item sai e o plasma fica liberado.',
           'No encontro da nave com o grupo itensPlasma: tire o item do grupo e mude plasmaLiberado para verdadeiro.',
-          [comecar, ...irParaAFaixa(d), esperar(e.liga)],
+          [comecar, ...irParaAFaixa(d), esperar(e.liga[d])],
           valor('plasmaLiberado', 'truthy'),
         ),
       )
@@ -114,7 +115,7 @@ export function armaChecks(d: PoderDimensaoConstrutor, etapa: ArmaEtapa): Sectio
           ...irParaAFaixa(d),
           trocar,
           esperar(300),
-          esperar(e.liga - 400),
+          esperar(e.liga[d] - 400),
           trocar,
           esperar(200),
           trocar,
@@ -200,9 +201,12 @@ export function armaChecks(d: PoderDimensaoConstrutor, etapa: ArmaEtapa): Sectio
           esperar(300),
           disparar,
           esperar(e.tiro[d]),
-          esperar(e.liga - 450),
+          esperar(e.liga[d] - 450),
           trocar,
           esperar(200),
+          // dois plasmas: uma pedra bem na frente da nave pode engolir um deles na hora
+          disparar,
+          esperar(150),
           disparar,
           esperar(e.tiro[d]),
         ],
@@ -210,6 +214,8 @@ export function armaChecks(d: PoderDimensaoConstrutor, etapa: ArmaEtapa): Sectio
         [
           { afterStep: 4 + k, expect: valor(tiros, 'equals', 1) },
           { afterStep: 4 + k, expect: valor(plasmas, 'equals', 0) },
+          // a troca já aconteceu antes do disparo do plasma
+          { afterStep: 7 + k, expect: valor('arma', 'equals', 'plasma') },
         ],
       ),
     )
