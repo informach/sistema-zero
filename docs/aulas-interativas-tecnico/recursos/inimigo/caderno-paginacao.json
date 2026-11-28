@@ -1,17 +1,7 @@
 {
-  "aula-1-dano": [
-    3
-  ],
-  "aula-1-limpeza": [
-    4
-  ],
-  "aula-2-tiro": [
-    7
-  ],
-  "aula-2-dano": [
-    6
-  ],
-  "aula-2-limpeza": [
-    4
-  ]
+  "aula-1-dano": [3],
+  "aula-1-limpeza": [4],
+  "aula-2-tiro": [7],
+  "aula-2-dano": [6],
+  "aula-2-limpeza": [4]
 }
