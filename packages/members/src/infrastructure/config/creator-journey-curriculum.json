@@ -326,7 +326,13 @@
           "prerequisite": "Contadores, estados e colisões.",
           "application": "Criar um chefão que exige mais de um acerto.",
           "check": "Um tiro não derrota o chefão; a quantidade necessária derrota uma única vez.",
-          "lessons": 2
+          "lessons": 2,
+          "authoredSource": {
+            "courseSlug": "jornada-construtor-poder-4",
+            "directory": "docs/aulas-interativas/construtor/poder-chefao-com-resistencia",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). Importar nas duas aulas reservadas, preservando IDs. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "Troca de arma",
@@ -334,7 +340,13 @@
           "prerequisite": "Memória, condição e tiros.",
           "application": "Recolher uma arma e alternar entre dois comportamentos.",
           "check": "Trocar a arma muda o tiro; o estado inicial volta em uma nova partida.",
-          "lessons": 2
+          "lessons": 2,
+          "authoredSource": {
+            "courseSlug": "jornada-construtor-poder-5",
+            "directory": "docs/aulas-interativas/construtor/poder-troca-de-arma",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). Importar nas duas aulas reservadas, preservando IDs. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         }
       ],
       "extras": [

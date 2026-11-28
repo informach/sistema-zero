@@ -1,0 +1,99 @@
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou o chefão no jogo 2D. Agora ele chegou à Patrulha Espacial, em três dimensões!
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a patrulha.
+
+[interested, animated voice] Olha lá na frente: o chefão espera no meio, e o texto Chefão, no alto à esquerda, mostra a vida dele.
+
+[curious] No espaço em três dimensões, ele aguenta os mesmos lasers?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: derrote o chefão. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na patrulha, a vida do chefão também é uma variável, e não a vida do motor: a vida do motor é da nave.
+
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo de Dar 3 de vida a nave, crie a variável vidaDoChefao com 5.
+
+[confident, clear, unhurried voice] Logo abaixo do placar dos acertos, Escrever na tela, em cima, à esquerda, com Chefão, dois-pontos e um espaço, mais o valor de vidaDoChefao.
+
+[upbeat, encouraging voice] Clique em Rodar de novo. O texto Chefão 5 aparece no alto à esquerda.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Ao iniciar estão vidaDoChefao com 5 e o texto Chefão em cima, à esquerda.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O laser encostando no chefão é um encontro, como a pedra batendo na nave. Só que agora quem encosta é o chefão.
+
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, Encostar e Encostar. Pegue Quando heroi encostar em algum do grupo e encaixe logo abaixo do encontro da nave com os asteroides.
+
+[confident, clear, unhurried voice] Troque heroi por chefao, o grupo por tiros e chame o laser de tiroNoChefao.
+
+[confident, clear, unhurried voice] Dentro: Tirar o objeto tiroNoChefao do grupo tiros, Somar menos 1 em vidaDoChefao e escrever o texto Chefão de novo.
+
+[interested, animated voice] O texto da tela só muda quando é escrito de novo. Sem ele, a vida desce, mas o texto continua mostrando 5.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e dispare: o texto Chefão desce de um em um.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro do chefão com os tiros tira o laser do grupo e soma menos 1 em vidaDoChefao.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] No zero, como no jogo 2D: o chefão sai e dá dez pontos.
+
+[confident, clear, unhurried voice] No quadro, logo abaixo de Mover os objetos do grupo asteroides, um Se com vidaDoChefao menor ou igual a 0.
+
+[confident, clear, unhurried voice] No então: Colocar o objeto chefao em x 0, y 1 e z menos 200, Somar 10 em pontos e escrever o placar dos acertos de novo.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some... e o placar dispara!
+
+[curious] É o mesmo problema do jogo 2D?
+
+[engaging, energetic, conversational voice] É, sim: o quadro roda sem parar e a vida continua em zero. A guarda é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no quadro, o Se vidaDoChefao menor ou igual a 0 leva o chefão para longe e soma 10 em pontos.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A mesma guarda do jogo 2D: o jogo lembra se o chefão já foi derrotado.
+
+[confident, clear, unhurried voice] Em Ao iniciar, logo abaixo de vidaDoChefao, crie chefaoDerrotado com o valor falso.
+
+[confident, clear, unhurried voice] Dentro do Se do zero, um Se chefaoDerrotado igual a falso com os blocos do prêmio dentro, e no começo dele Alterar chefaoDerrotado para verdadeiro.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e derrote o chefão. O placar ganha dez e para.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o prêmio fica no Se chefaoDerrotado igual a falso, que começa mudando chefaoDerrotado para verdadeiro.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a patrulha também tem chefão: ele aguenta cinco lasers e o prêmio vale uma vez só!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem duas perguntas para você pensar no chefão. Quando aparecer Projeto enviado!, clique em Próxima parte.

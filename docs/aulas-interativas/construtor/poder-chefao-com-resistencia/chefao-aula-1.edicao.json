@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-material",
+    "video-experiencia",
+    "video-vida",
+    "video-acerto",
+    "video-fim",
+    "video-uma-vez"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o chefão fica no meio do céu, com uma barra de vida embaixo dele. Cada laser que acerta faz a barra diminuir um pouco.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: derrote o chefão e veja o prêmio no placar. Quando terminar,",
+      "falaPrincipal": "Quantos lasers será que ele aguenta?",
+      "falaPersonagem": "Quantos lasers será que ele aguenta?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "seu jogo, o chefão é o castelo, e cada laser é um balde. Quando a vida chega a zero, ele cai e dá um prêmio no placar.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos lasers o chefão aguenta e o que",
+      "falaPrincipal": "E se o prêmio somar a cada quadro?",
+      "falaPersonagem": "E se o prêmio somar a cada quadro?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-acerto-K1",
+      "clipe": "video-acerto",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "a vida. Clique no jogo, aperte Enter e dispare uma vez: a barra perde um pedaço. Dispare mais: ela continua descendo.",
+      "ancoraDepois": "Ainda não: a vida pode até ficar negativa. O que acontece no zero é a próxima parte. Se algo não funcionou no seu jogo,",
+      "falaPrincipal": "E quando a barra acabar, o chefão some?",
+      "falaPersonagem": "E quando a barra acabar, o chefão some?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-fim-K1",
+      "clipe": "video-fim",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "10 em pontos. Clique no jogo, aperte Enter e acerte o chefão cinco vezes. Ele explode e some... e o placar dispara!",
+      "ancoraDepois": "Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada",
+      "falaPrincipal": "Por que o placar disparou?",
+      "falaPersonagem": "Por que o placar disparou?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

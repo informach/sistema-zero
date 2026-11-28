@@ -41,9 +41,9 @@ const arquivos = listarArquivosAulas(DIR)
   .filter((f) => f.endsWith('.manifesto.json') && f.includes(filtro))
   .sort()
 
-if (arquivos.length === 0 || (!filtro && arquivos.length !== 62)) {
+if (arquivos.length === 0 || (!filtro && arquivos.length !== 66)) {
   console.error(
-    `Esperados ${filtro ? 'manifestos com o filtro' : '62 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
+    `Esperados ${filtro ? 'manifestos com o filtro' : '66 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
   )
   process.exit(1)
 }

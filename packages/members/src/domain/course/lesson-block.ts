@@ -169,6 +169,14 @@ export interface QuizQuestion {
     | 'inimigo-segue'
     | 'inimigo-acerta'
     | 'inimigo-limpeza'
+    | 'chefao-um-tiro'
+    | 'chefao-sem-retirada'
+    | 'chefao-sem-guarda'
+    | 'chefao-guarda'
+    | 'arma-trancada'
+    | 'arma-plasma'
+    | 'arma-reinicio'
+    | 'arma-placar'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]

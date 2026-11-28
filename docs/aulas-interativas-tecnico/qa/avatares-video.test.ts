@@ -64,9 +64,9 @@ test('âncora ausente, repetida ou fora de ordem impede uma substituição incor
   expect(() => avatarDaAula(-1)).toThrow()
 })
 
-test('as 62 aulas têm master copiável, tabela rastreável e derivados atualizados', () => {
+test('as 66 aulas têm master copiável, tabela rastreável e derivados atualizados', () => {
   const arquivos = listarArquivosAulas().filter((n) => n.endsWith('.roteiro.md'))
-  expect(arquivos).toHaveLength(62)
+  expect(arquivos).toHaveLength(66)
   let substituicoes = 0
   for (const arquivo of arquivos) {
     const nome = arquivo.replace('.roteiro.md', '')

@@ -15,7 +15,9 @@ import { DialogueBlockView } from './dialogue-block'
 import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { ArmaQuizScene } from './quiz-arma-scene'
 import { CabanaQuizScene } from './quiz-cabana-scene'
+import { ChefaoQuizScene } from './quiz-chefao-scene'
 import { EscudoQuizScene } from './quiz-escudo-scene'
 import { GardenQuizScene } from './quiz-garden-scene'
 import { InimigoQuizScene } from './quiz-inimigo-scene'
@@ -345,6 +347,10 @@ function PredictionQuizSession({
             <TriploQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('inimigo-') ? (
             <InimigoQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('chefao-') ? (
+            <ChefaoQuizScene key={question.id} scene={question.predictionScene} result={checked} />
+          ) : question.predictionScene.startsWith('arma-') ? (
+            <ArmaQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('jardim-') ? (
             <JardimQuizScene key={question.id} scene={question.predictionScene} result={checked} />
           ) : question.predictionScene.startsWith('island-') ? (

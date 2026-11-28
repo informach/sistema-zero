@@ -201,6 +201,14 @@ test.each([
   'inimigo-segue',
   'inimigo-acerta',
   'inimigo-limpeza',
+  'chefao-um-tiro',
+  'chefao-sem-retirada',
+  'chefao-sem-guarda',
+  'chefao-guarda',
+  'arma-trancada',
+  'arma-plasma',
+  'arma-reinicio',
+  'arma-placar',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

@@ -12,8 +12,10 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { armaAulas } from './arma-conteudo'
 import { avatarDaAula } from './avatares-video'
 import { cabanaAulas } from './cabana-conteudo'
+import { chefaoAulas } from './chefao-conteudo'
 import { escudoAulas } from './escudo-conteudo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
 import { inimigoAulas } from './inimigo-conteudo'
@@ -96,6 +98,20 @@ const CURSOS: Curso[] = [
     pasta: 'poder-inimigo-que-atira',
     arquivo: (s) => `inimigo-${s}`,
     aulas: inimigoAulas(),
+  },
+  {
+    nome: 'Chefão com resistência',
+    posto: 'construtor',
+    pasta: 'poder-chefao-com-resistencia',
+    arquivo: (s) => `chefao-${s}`,
+    aulas: chefaoAulas(),
+  },
+  {
+    nome: 'Troca de arma',
+    posto: 'construtor',
+    pasta: 'poder-troca-de-arma',
+    arquivo: (s) => `arma-${s}`,
+    aulas: armaAulas(),
   },
 ]
 
