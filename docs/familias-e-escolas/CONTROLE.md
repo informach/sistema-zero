@@ -6,9 +6,9 @@
 ## Como retomar
 
 - **Lote atual:** 1, papéis em um lugar só.
-- **Situação:** a fazer. O Lote 0 terminou (commit `de893bf4a`, push em 28/11/2026).
-- **Próximo passo exato:** começar o Lote 1 lendo `PLANO.md`, seção 6, "Lote 1", e o `CLAUDE.md` de `packages/core` e de `packages/api-gateway`.
-- **Trabalho sem commit:** nenhum desta frente.
+- **Situação:** revisado; falta só commit e push. O Lote 0 terminou (commit `de893bf4a`, push em 28/11/2026).
+- **Próximo passo exato:** commit e push do Lote 1. Depois, o Lote 2 (chaves dos pais e interruptor da IA), seguindo o desenho anotado em "Decisões".
+- **Trabalho sem commit:** o Lote 1 (`packages/core/src/identity`, `packages/core/src/staff`, `packages/auth/src/domain/user/user.role.ts`, a config da borda e os testes novos). Se esta máquina parar antes do push, recomece o lote no outro computador.
 - **Última atualização:** 28/11/2026.
 
 ## Legenda
@@ -20,7 +20,7 @@
 | Lote | Nome | Estado | Commit | CI | Ressalvas |
 |---|---|---|---|---|---|
 | 0 | Preparação e registro | push | `de893bf4a` | acompanhar | Só documentos; o push levou junto 18 commits de outras sessões (docs da LG05 e `palco-gravacao`, testes do pacote verdes). |
-| 1 | Papéis em um lugar só | a fazer | | | |
+| 1 | Papéis em um lugar só | revisado | | | Typecheck de core, auth e api-gateway fica com o CI. Cerca de 90 arquivos ainda têm cópia da lista e migram quando o pacote for mexido. |
 | 2 | Chaves dos pais e interruptor da IA | a fazer | | | |
 | 3 | Sequência sem perda, conversas e aviso | a fazer | | | |
 | 4 | Tempo de uso com limite (B12) | a fazer | | | |
@@ -71,11 +71,16 @@ Marque `[x]` ao concluir. Toda tarefa de código inclui os testes dela. Todo lot
 - [x] Commit (`de893bf4a`) e push
 
 ### Lote 1: papéis em um lugar só
-- [ ] Lista e grupos (`equipe`, `admins`) exportados de `packages/core/src/identity/index.ts`
-- [ ] `packages/core/src/staff/index.ts` passa a importar dali
-- [ ] `gateway.config.ts` e módulos de rota usam as constantes
-- [ ] Teste que barra lista literal nova na borda
-- [ ] Prova de que nenhuma rota mudou de regra (comparar a config resolvida antes e depois)
+- [x] Lista e grupos exportados de `packages/core/src/identity/index.ts` (`USER_ROLES`, `TEAM_ROLES`, `TEAM_ADMIN_ROLES`, `SUPERADMIN_ONLY`, `isUserRole`, `isTeamRole`), com teste
+- [x] `packages/core/src/staff/index.ts` passa a importar dali
+- [x] `packages/auth/src/domain/user/user.role.ts` reexporta do core; teste de que o enum do banco segue igual à lista
+- [x] `gateway.config.ts`, `arquipelago-routes.ts` e `subscription-recovery-routes.ts` usam as constantes (153 trocas)
+- [x] Teste da borda: nenhuma lista literal nos arquivos de rotas e todo papel citado existe (`tests/unit/role-lists.test.ts`)
+- [x] Prova de que nenhuma rota mudou de regra: as 591 rotas resolvidas (com o Arquipélago) têm os mesmos papéis e situações antes e depois
+- [x] Testes: core 3.669, auth 310 (88 de banco pulados), api-gateway 338, sem falha
+- [x] `bun run ci` (sem erro)
+- [x] `code-review` em `high`: 1 importante (o tipo de retorno do `staffRoles` ficou estreito e quebraria o typecheck do auth; corrigido com `string[]`) e 2 menores (comentário que dizia "lista única" cedo demais; teste ampliado para a pasta inteira e para lista guardada em variável), todos corrigidos e testados de novo
+- [ ] Commit e push
 
 ### Lote 2: chaves dos pais e interruptor da IA
 - [ ] Tabela `parent_controls` no members (migration conferida)
@@ -271,6 +276,7 @@ Marque `[x]` ao concluir. Toda tarefa de código inclui os testes dela. Todo lot
 ## Ressalvas
 
 Abertas:
+- **Lote 1:** cerca de 90 arquivos (admin 26, members 19, member-shell 15, community 8...) ainda têm a lista de papéis escrita à mão; a borda já usa o core e o teste `role-lists.test.ts` impede lista nova na borda. Cada pacote migra quando um lote mexer nele.
 - **Typecheck:** não roda na máquina original; fica com o CI depois do push. Anotar aqui cada CI vermelho e o conserto.
 - **Regras adotadas sem confirmação da Helena:** as nove de [REGRAS-DE-NEGOCIO.md](REGRAS-DE-NEGOCIO.md), seção 17.
 - **Validação pedagógica:** a ligação de cada código da BNCC com as habilidades e as aulas é proposta; a equipe pedagógica valida antes de publicar o relatório (lote 31).
@@ -281,12 +287,16 @@ Abertas:
 |---|---|---|---|
 | 28/11/2026 | 0 | `docs/familias-e-escolas/canvas` fora do Biome | São geradores e páginas do Canvas, não código do produto. |
 | 28/11/2026 | 0 | Push no fim de cada lote (antes, esta frente só commitava local) | Pedido da Helena: outra sessão, em outro computador, precisa continuar. |
+| 28/11/2026 | 1 | A sessão implanta e configura a staging inteira (Railway pela CLI e pelos MCPs), inclusive o serviço `institutions`; produção, nada até a Helena decidir a promoção | Decisão da Helena: "primeiro nós vamos implantar tudo em staging e só depois que tiver tudo muito bem testado é que a gente faz a promoção para produção". |
+| 28/11/2026 | 1 | Os grupos se chamam `TEAM_ROLES` (equipe inteira), `TEAM_ADMIN_ROLES` (superadmin e admin) e `SUPERADMIN_ONLY` | O Admin já usa `ADMIN_ROLES` para a equipe inteira; outro nome evita confusão quando ele passar a importar do core. |
+| 28/11/2026 | 1 | O enum `auth.user_role` do schema do auth continua escrito à mão, com teste de igualdade | É histórico de migration; importar do core no schema arriscaria o `drizzle-kit`. |
+| 28/11/2026 | 2 (desenho) | A tabela `parent_controls` (members) nasce com todas as chaves da tela B12: conversa com o Zappy, Clube, ranking, sequência, limite por dia e aviso antes do fim. Sem linha = tudo como hoje (ligado, sem limite) | Os lotes 3 e 4 só passam a usar as colunas, sem outra migration. |
+| 28/11/2026 | 2 (desenho) | A posse do perfil para os pais mudarem as chaves é conferida em `kids_journey_earned` (perfil + conta, gravado na admissão do perfil) | O members não pode confiar no id que vem do navegador; perfil ainda não admitido responde 404. |
+| 28/11/2026 | 2 (desenho) | Com a conversa desligada, a leitura da gamificação Kids tira `ai` das capacidades devolvidas (sem mexer no que está gravado) e as três portas de IA recusam também no servidor | Um ponto só faz o Zappy sumir da tela e o Pensa recusar, e as portas seguram quem chamar direto. |
 
 ## O que depende da Helena
 
-- Criar o serviço `institutions` no Railway de staging e, depois, de produção (o lote 9 deixa tudo pronto).
-- Autorizar a conferência, no banco da staging, de que o usuário da aplicação respeita o isolamento.
-- Produção: quando e como.
+- A promoção para a produção, quando tudo estiver muito bem testado na staging. A staging é da sessão (criar o serviço `institutions`, variáveis, banco e conferências, pela CLI e pelos MCPs do Railway).
 - Confirmar ou mudar as nove regras adotadas.
 
 ## Fora do código

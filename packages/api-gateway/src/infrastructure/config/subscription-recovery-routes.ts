@@ -1,3 +1,4 @@
+import { TEAM_ADMIN_ROLES, TEAM_ROLES } from '@sistemazero/core/identity'
 import type { GatewayConfigInput } from './gateway-config.schema'
 
 type Route = NonNullable<GatewayConfigInput['routes']>[number]
@@ -10,7 +11,7 @@ export function subscriptionRecoveryRoutes(transforms: Route['transforms']): Rou
       pathPattern: '/payments/admin/subscription-recovery/review',
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      authorize: { roles: [...TEAM_ROLES], statuses: ['active'] },
       transforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
@@ -25,7 +26,7 @@ export function subscriptionRecoveryRoutes(transforms: Route['transforms']): Rou
       pathPattern: `/payments/admin/subscription-recovery/${path}`,
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      authorize: { roles: [...TEAM_ADMIN_ROLES], statuses: ['active'] },
       transforms,
       maxBodyBytes: 1024,
       audit: {},

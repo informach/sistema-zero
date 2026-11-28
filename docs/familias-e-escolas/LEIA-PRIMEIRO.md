@@ -58,6 +58,7 @@ Estas regras vêm da Helena e valem para qualquer sessão desta frente.
   git push origin $alvo:refs/heads/staging
   ```
 - O push publica no ambiente de staging do Railway e roda as migrations de lá.
+- **Staging é sua; produção, não.** A sessão implanta e configura a staging inteira, inclusive criar serviço, variáveis e banco no Railway pela CLI e pelos MCPs (decisão da Helena, 28/11/2026). Para a produção não sobe nada desta frente até tudo estar muito bem testado na staging e a Helena decidir a promoção.
 - Só entra no commit o que funciona inteiro. Nada de "o teste eu conserto no próximo lote".
 
 **Testes e máquina**

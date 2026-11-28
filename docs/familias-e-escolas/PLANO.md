@@ -105,7 +105,7 @@ Regras fixas:
 - **Variável nova:** em `.railway/variables.ts`, e criada no painel antes do deploy.
 - **Cursos gravados** (Cadê, Chave, Ilha do Farol) não podem quebrar. Campo novo no manifesto é sempre opcional.
 - **Texto de tela** em português, seguindo os guias de cada app e o vocabulário da regra 15.
-- **Produção:** nada sem a Helena pedir.
+- **Staging e produção:** a sessão implanta e configura a staging (Railway pela CLI e pelos MCPs). Produção, nada até a Helena decidir a promoção (seção 8).
 
 ## 6. Lotes
 
@@ -290,11 +290,10 @@ Cada uma entra em `REGRAS-DE-NEGOCIO.md` e no controle, para a Helena ver e muda
 - **Crachá:** código curto com QR, válido no ano letivo, com 10 tentativas por computador a cada 10 minutos.
 - **Protetores de sequência já comprados:** as moedas voltam para a criança.
 
-## 8. O que depende da Helena
+## 8. Staging e produção
 
-- Criar o serviço `institutions` no Railway de staging e, depois, de produção. O lote 9 deixa o arquivo do serviço e a lista de variáveis prontos.
-- Autorizar a conferência, no banco da staging, de que o usuário da aplicação respeita o isolamento (`rolsuper`, `rolbypassrls`).
-- Produção, quando e como.
+- **A staging é da sessão** (decisão da Helena, 28/11/2026): implantar tudo na staging, inclusive criar e configurar no Railway o serviço `institutions`, as variáveis e o que mais for preciso, pela CLI e pelos MCPs do Railway. Conferir no banco da staging que o usuário da aplicação respeita o isolamento (`rolsuper`, `rolbypassrls`) também é da sessão.
+- **Produção: nada por enquanto.** A promoção só acontece depois de tudo muito bem testado na staging, quando a Helena decidir.
 
 ## 9. Verificação
 

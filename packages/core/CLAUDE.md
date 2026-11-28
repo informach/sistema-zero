@@ -507,6 +507,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 
 | Subpath | O que mora | Arquivos |
 |---|---|---|
+| `/identity` | padrão de UUID das identidades e a **lista ÚNICA de papéis** (`USER_ROLES`, `TEAM_ROLES`, `TEAM_ADMIN_ROLES`, `SUPERADMIN_ONLY`, `isUserRole`, `isTeamRole`). A borda e o auth leem daqui; papel de instituição (gestão, professor…) NÃO entra: mora no vínculo | `index` |
 | `/security` | HMAC de borda, hash, comparação constante, IP do request, rate limiter | `hmac` · `hash` · `safe-equal` · `ip` · `rate-limiter` |
 | `/logging` | logger estruturado + serialização segura de erro (redige segredos) | `logger` · `serialize-error` |
 | `/errors` | hierarquia de erros de domínio compartilhada (base do `shared/errors` dos serviços) | `domain-errors` |

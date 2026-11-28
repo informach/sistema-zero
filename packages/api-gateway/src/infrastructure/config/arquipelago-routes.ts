@@ -1,3 +1,4 @@
+import { TEAM_ADMIN_ROLES, TEAM_ROLES } from '@sistemazero/core/identity'
 import type { GatewayConfigInput } from './gateway-config.schema'
 
 type Route = NonNullable<GatewayConfigInput['routes']>[number]
@@ -19,13 +20,13 @@ export function arquipelagoGateway(opts: {
   const leituraDaEquipe = {
     service: 'arquipelago',
     auth: { required: true, mode: 'any', strategies: ['jwt'] },
-    authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    authorize: { roles: [...TEAM_ROLES], statuses: ['active'] },
     transforms: opts.transforms,
     rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
   } satisfies Partial<Route>
   const escritaDaEquipe = {
     ...leituraDaEquipe,
-    authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+    authorize: { roles: [...TEAM_ADMIN_ROLES], statuses: ['active'] },
     // Dois projetos do Estúdio (inicial e gabarito) e o resto do desafio.
     maxBodyBytes: 4 * 1024 * 1024,
     audit: {},

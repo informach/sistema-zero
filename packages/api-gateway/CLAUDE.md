@@ -1,5 +1,13 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Papéis pela lista do core (28/11/2026)
+
+`authorize.roles` usa as constantes de `@sistemazero/core/identity` (`[...TEAM_ROLES]`,
+`[...TEAM_ADMIN_ROLES]`, `[...SUPERADMIN_ONLY]`), nunca lista escrita à mão. O schema não valida o
+texto do papel; quem segura é `tests/unit/role-lists.test.ts` (nenhuma lista literal nos arquivos
+de rotas e todo papel citado existe em `USER_ROLES`). Frente Famílias e Escolas, lote 1
+(`docs/familias-e-escolas/`).
+
 ## Produto pelo SKU (25/11/2026)
 
 `catalog-product-by-sku` (`GET /catalog/products/by-sku/:sku`, pública, 600/min por IP): o funil

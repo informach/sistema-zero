@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { TEAM_ADMIN_ROLES, TEAM_ROLES } from '../identity'
 import { parseStudioBuildSubmission, studioBuildSchema } from '../studio/build-contract'
 
 const id = z.string().uuid()
@@ -89,10 +90,10 @@ export const staffRequestSchema = z
 export function staffMutation(operation: StaffOperation) {
   return ['messages.send', 'helpdesk.reply', 'studio.build'].includes(operation.action)
 }
-export function staffRoles(operation: StaffOperation) {
-  return operation.action === 'messages.send'
-    ? ['superadmin', 'admin']
-    : ['superadmin', 'admin', 'staff']
+// `string[]` explícito: quem chama compara com o papel da conta (que inclui `customer`); o tipo
+// estreito das constantes do core quebraria o `.includes(user.role)` do auth.
+export function staffRoles(operation: StaffOperation): string[] {
+  return operation.action === 'messages.send' ? [...TEAM_ADMIN_ROLES] : [...TEAM_ROLES]
 }
 export function staffCanonical(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value)
