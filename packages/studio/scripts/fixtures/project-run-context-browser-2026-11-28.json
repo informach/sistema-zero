@@ -1,0 +1,54 @@
+{
+  "sourceCommit": "45c9249c15e0d748d4c40318c5d266da03ff943a",
+  "sourceChunks": [
+    {
+      "path": "/_next/static/chunks/0gqtcvuvlv0n-.js",
+      "sha256": "ddd3e668d99364d6e153bbdb6fd2de1a5b5d522a5e45c0cd9adc84db6641cf09"
+    }
+  ],
+  "factorySha256": "579ee7344c6c6dd6832e96072373b4c06ec87d337a522aa481a0868c362f1c35",
+  "factorySource": "function a(e){let a=e.clock??{requestFrame:e=>requestAnimationFrame(e),cancelFrame:e=>cancelAnimationFrame(e)},t=e.timers??{setTimeout:(e,a)=>setTimeout(e,a),clearTimeout:e=>clearTimeout(e),setInterval:(e,a)=>setInterval(e,a),clearInterval:e=>clearInterval(e)},o=new AbortController,r=new Set,n=new Set,i=new Set,s=new Set,l=[],c=null,d=null,m=!1,p=!1,u=!1,g=a=>{if(!u)return e.runCallback?e.runCallback(a):a()},h=()=>{u||p||m||null!==c||0===r.size||(c=a.requestFrame(f))},f=e=>{if(c=null,u||p||m)return;let a=null===d?0:Math.max(0,(e-d)/1e3);for(let t of(d=e,[...r]))if(g(()=>t(a)),u)break;h()},b={onFrame:e=>u||p?()=>void 0:(r.add(e),h(),()=>{r.delete(e),0===r.size&&null!==c&&(a.cancelFrame(c),c=null)}),everyFrames(e,a){let t=Math.max(1,Math.floor(e)),o=0;return b.onFrame(()=>{(o+=1)<t||(o=0,a())})},everySeconds(e,a){let t=Math.max(.001,e),o=0;return b.onFrame(e=>{for(o+=e;o>=t;)o-=t,a()})},pause(){u||p||m||(m=!0,d=null,null!==c&&a.cancelFrame(c),c=null)},resume(){u||p||!m||(m=!1,d=null,h())},dispose(){p||(p=!0,null!==c&&a.cancelFrame(c),c=null,r.clear())}};return{signal:o.signal,scheduler:b,run:g,isControlSignal:a=>e.isControlSignal?.(a)??!1,setTimeout(e,a){if(u)return -1;let o=-1;return o=t.setTimeout(()=>{i.delete(o),u||g(e)},a),i.add(o),o},setInterval(e,a){if(u)return -1;let o=t.setInterval(()=>{u||g(e)},a);return s.add(o),o},requestFrame(e){if(u)return -1;let t=-1;return t=a.requestFrame(a=>{n.delete(t),u||g(()=>e(a))}),n.add(t),t},setEventHandler(e,a,t){if(u||!e)return;let o=a=>g(()=>t.call(e,a));Reflect.set(e,a,o),l.push(()=>{Reflect.get(e,a)===o&&Reflect.set(e,a,null)})},registerResource(e){u?e():l.push(e)},requestRestart(){u||e.requestRestart()},dispose(){if(!u){for(let e of(u=!0,b.dispose(),o.abort(),n))a.cancelFrame(e);for(let e of(n.clear(),i))t.clearTimeout(e);for(let e of(i.clear(),s))t.clearInterval(e);for(let e of(s.clear(),l.reverse()))try{e()}catch(e){console.error(\"Falha ao descartar um recurso da execução do projeto.\",e)}l.length=0}}}}",
+  "observedCopy": {
+    "extensionId": "game-2d",
+    "variant": "completo",
+    "sha256": "e0205c39c3e5509ea2f2247efe0f411f990d65af02819f5e3bb7d0e72b40fd30"
+  },
+  "copies": [
+    {
+      "extensionId": "game-2d",
+      "variant": "completo",
+      "canonicalSha256": "aea63e52477195af4539e404a7b38b92ad665c549fae85afaf7bd2265388ef81",
+      "browserSha256": "e0205c39c3e5509ea2f2247efe0f411f990d65af02819f5e3bb7d0e72b40fd30"
+    },
+    {
+      "extensionId": "game-2d",
+      "variant": "sem-cenario-pinta",
+      "canonicalSha256": "8a9bccb260de8ffc03200e48c182cd2060c0540fcfbd0df5826d4df1e4162987",
+      "browserSha256": "510717a6c6fce9778ec9ef3fa73168640fdb463aaf507f2c3d5decec7692fc3f"
+    },
+    {
+      "extensionId": "game-2d",
+      "variant": "completo",
+      "canonicalSha256": "3560e8cf24748d9ccd776349438c1143fb7d6dd99f72cd2e553b0dfc7dd97f1e",
+      "browserSha256": "995b3fd57e489452853136d7551bdd34b97584eeac200170e77b0d23d23cd763"
+    },
+    {
+      "extensionId": "game-2d-advanced",
+      "variant": "completo",
+      "canonicalSha256": "8249b0975d703de4f14a8addbaa91771591e4edc242e9476291bbf21d2ca5e79",
+      "browserSha256": "1c74b5d61c1607140ca1155888c42351809f650c42b9477399cdd6aa621f2402"
+    },
+    {
+      "extensionId": "game-2d-advanced",
+      "variant": "sem-cenario-pinta",
+      "canonicalSha256": "7e1b13b1e023646b5be071dbefdeaeb6f104b095986f5a9011222386928933c7",
+      "browserSha256": "dd02dfe2a0aca32ecb00bccb19514ca6f1549b4477d26a143e147cfe3488933d"
+    },
+    {
+      "extensionId": "game-2d-advanced",
+      "variant": "completo",
+      "canonicalSha256": "0c32835c6c72d18968b90b282b40506c59e898a6b4cce3188bdae7738a086b1d",
+      "browserSha256": "d3770936f6bb10f61c42a9faafff3205e8a820109824a092bde69927b4a104e9"
+    }
+  ]
+}
