@@ -3550,7 +3550,7 @@
     },
     {
       "key": "video-fim",
-      "plannedVideo": "Título: No zero, o chefão cai\n\nMaster integral da professora. Roteiro: chefao-aula-2.roteiro.md, clipe video-fim. Substituições kids: [{\"id\":\"video-fim-K1\",\"clipe\":\"video-fim\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"É o mesmo problema do jogo 2D?\",\"falaPersonagem\":\"É o mesmo problema do jogo 2D?\",\"ancoraAntes\":\"acertos de novo. Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some... e o placar dispara!\",\"ancoraDepois\":\"É, sim: o quadro roda sem parar e a vida continua em zero. A guarda é a próxima parte. Se algo não funcionou no seu\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+      "plannedVideo": "Título: No zero, o chefão cai\n\nMaster integral da professora. Roteiro: chefao-aula-2.roteiro.md, clipe video-fim. Substituições kids: [{\"id\":\"video-fim-K1\",\"clipe\":\"video-fim\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"É o mesmo problema do jogo 2D?\",\"falaPersonagem\":\"É o mesmo problema do jogo 2D?\",\"ancoraAntes\":\"aperte Enter e acerte o chefão cinco vezes. Ele some, e o placar dispara: passa da meta e a patrulha termina na hora!\",\"ancoraDepois\":\"É, sim: o quadro roda sem parar e a vida continua em zero, então o prêmio soma até passar da meta. A guarda é a próxima\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-fim",
@@ -3605,7 +3605,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "Na primeira vez, chefaoDerrotado ainda é falso: o prêmio soma 10 e a guarda vira verdadeiro. Nos quadros seguintes a guarda já é verdadeiro, e o prêmio não soma mais."
+            "explanation": "Na primeira vez, chefaoDerrotado ainda é falso: o prêmio soma 10 e chefaoDerrotado vira verdadeiro. Nos quadros seguintes chefaoDerrotado já é verdadeiro, e o prêmio não soma mais."
           },
           {
             "id": "texto",
@@ -3613,18 +3613,18 @@
             "choices": [
               {
                 "id": "a",
-                "label": "Escrever o texto Chefão de novo logo depois de tirar 1 da vida."
-              },
-              {
-                "id": "b",
                 "label": "Trocar a vida do chefão por 10."
               },
               {
-                "id": "c",
+                "id": "b",
                 "label": "Tirar o laser do grupo tiros."
+              },
+              {
+                "id": "c",
+                "label": "Escrever o texto Chefão de novo logo depois de tirar 1 da vida."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": ["c"],
             "explanation": "No Jogo 3D, o texto da tela só muda quando é escrito de novo. A vida desce, mas o texto continua com o valor da última vez que foi escrito, lá em Ao iniciar."
           }
         ]
@@ -22862,6 +22862,19 @@
               "fields": {
                 "CORNER": "top-left"
               },
+              "inputBlocks": {
+                "TEXT": {
+                  "blockType": "sz_math_arithmetic",
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "vidaDoChefao"
+                      }
+                    }
+                  }
+                }
+              },
               "area": "start"
             }
           }
@@ -22918,13 +22931,26 @@
               "fields": {
                 "CORNER": "top-left"
               },
+              "inputBlocks": {
+                "TEXT": {
+                  "blockType": "sz_math_arithmetic",
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "vidaDoChefao"
+                      }
+                    }
+                  }
+                }
+              },
               "area": "start"
             }
           },
           {
             "id": "um-laser-tira-um",
             "label": "Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.",
-            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.",
+            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -22982,7 +23008,7 @@
           {
             "id": "encontro-do-laser",
             "label": "No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.",
-            "hint": "Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo e mudar vidaDoChefao em -1.",
+            "hint": "Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo, Somar -1 em vidaDoChefao e escrever o texto Chefão de novo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g3d_on_touch_group",
@@ -23003,6 +23029,25 @@
                     "fields": {
                       "NAME": "vidaDoChefao",
                       "DELTA": -1
+                    }
+                  },
+                  {
+                    "blockType": "sz_g3d_hud_text",
+                    "fields": {
+                      "CORNER": "top-left"
+                    },
+                    "inputBlocks": {
+                      "TEXT": {
+                        "blockType": "sz_math_arithmetic",
+                        "inputBlocks": {
+                          "B": {
+                            "blockType": "sz_val_variable",
+                            "fields": {
+                              "NAME": "vidaDoChefao"
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 ]
@@ -23062,13 +23107,26 @@
               "fields": {
                 "CORNER": "top-left"
               },
+              "inputBlocks": {
+                "TEXT": {
+                  "blockType": "sz_math_arithmetic",
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "vidaDoChefao"
+                      }
+                    }
+                  }
+                }
+              },
               "area": "start"
             }
           },
           {
             "id": "um-laser-tira-um",
             "label": "Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.",
-            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.",
+            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -23126,7 +23184,7 @@
           {
             "id": "encontro-do-laser",
             "label": "No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.",
-            "hint": "Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo e mudar vidaDoChefao em -1.",
+            "hint": "Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo, Somar -1 em vidaDoChefao e escrever o texto Chefão de novo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g3d_on_touch_group",
@@ -23147,6 +23205,25 @@
                     "fields": {
                       "NAME": "vidaDoChefao",
                       "DELTA": -1
+                    }
+                  },
+                  {
+                    "blockType": "sz_g3d_hud_text",
+                    "fields": {
+                      "CORNER": "top-left"
+                    },
+                    "inputBlocks": {
+                      "TEXT": {
+                        "blockType": "sz_math_arithmetic",
+                        "inputBlocks": {
+                          "B": {
+                            "blockType": "sz_val_variable",
+                            "fields": {
+                              "NAME": "vidaDoChefao"
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 ]
@@ -23338,13 +23415,26 @@
               "fields": {
                 "CORNER": "top-left"
               },
+              "inputBlocks": {
+                "TEXT": {
+                  "blockType": "sz_math_arithmetic",
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "vidaDoChefao"
+                      }
+                    }
+                  }
+                }
+              },
               "area": "start"
             }
           },
           {
             "id": "um-laser-tira-um",
             "label": "Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.",
-            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.",
+            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -23402,7 +23492,7 @@
           {
             "id": "encontro-do-laser",
             "label": "No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.",
-            "hint": "Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo e mudar vidaDoChefao em -1.",
+            "hint": "Use Quando chefao encostar em algum do grupo tiros: tirar o laser do grupo, Somar -1 em vidaDoChefao e escrever o texto Chefão de novo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g3d_on_touch_group",
@@ -23423,6 +23513,25 @@
                     "fields": {
                       "NAME": "vidaDoChefao",
                       "DELTA": -1
+                    }
+                  },
+                  {
+                    "blockType": "sz_g3d_hud_text",
+                    "fields": {
+                      "CORNER": "top-left"
+                    },
+                    "inputBlocks": {
+                      "TEXT": {
+                        "blockType": "sz_math_arithmetic",
+                        "inputBlocks": {
+                          "B": {
+                            "blockType": "sz_val_variable",
+                            "fields": {
+                              "NAME": "vidaDoChefao"
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 ]
@@ -23682,9 +23791,55 @@
             "hint": "Dentro do Se vidaDoChefao ≤ 0: Se chefaoDerrotado = falso, então Alterar chefaoDerrotado para verdadeiro e o prêmio.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_js_var_assign",
-              "fields": {
-                "NAME": "chefaoDerrotado"
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_val_compare",
+                  "fieldOptions": {
+                    "OP": ["<=", "<", "==", "==="]
+                  },
+                  "inputBlocks": {
+                    "LEFT": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "vidaDoChefao"
+                      }
+                    }
+                  },
+                  "inputs": {
+                    "RIGHT": 0
+                  }
+                }
+              },
+              "inputBlocksAll": {
+                "THEN": [
+                  {
+                    "blockType": "sz_js_if_else",
+                    "inputBlocks": {
+                      "COND": {
+                        "blockType": "sz_val_compare",
+                        "inputBlocks": {
+                          "LEFT": {
+                            "blockType": "sz_val_variable",
+                            "fields": {
+                              "NAME": "chefaoDerrotado"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "inputBlocksAll": {
+                      "THEN": [
+                        {
+                          "blockType": "sz_js_var_assign",
+                          "fields": {
+                            "NAME": "chefaoDerrotado"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               "area": "loops"
             }

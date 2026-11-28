@@ -31,7 +31,7 @@ export const inimigoQuiz2d: ManifestQuiz = {
       ],
       correctChoiceIds: ['c'],
       explanation:
-        'O centro x da inimiga é lido na hora em que o tiro nasce. Com a inimiga na ponta direita, o tiro nasce ali, embaixo dela.',
+        'O centro x da inimiga é lido na hora em que o tiro nasce. Quando o tiro nasce, a inimiga já chegou à ponta direita, e o tiro nasce ali, embaixo da inimiga.',
     },
     {
       id: 'acerta',
@@ -44,7 +44,7 @@ export const inimigoQuiz2d: ManifestQuiz = {
       ],
       correctChoiceIds: ['a'],
       explanation:
-        'No encontro da nave com o grupo tirosInimigos, o tiro sai do grupo e a nave perde uma vida. Sem tirar o tiro do grupo, ele continuaria encostando e tiraria mais vidas.',
+        'No encontro da nave com o grupo tirosInimigos, o tiro sai do grupo e a nave perde uma vida. Tirar o tiro do grupo faz ele sumir na hora; sem isso, ele atravessaria a nave e continuaria descendo pela tela.',
     },
     {
       id: 'testes',

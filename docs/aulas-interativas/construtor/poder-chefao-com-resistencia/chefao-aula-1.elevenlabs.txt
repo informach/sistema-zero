@@ -46,7 +46,7 @@
 
 [confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] No fim de A cada quadro do jogo, logo abaixo da Barra dos acertos, encaixe outra Barra de, de Jogo 2D, Vida e placar e Indicadores e texto na tela.
+[confident, clear, unhurried voice] No fim de A cada quadro do jogo, logo abaixo da legenda SETAS mover, ESPAÇO disparar, encaixe Barra de, de Jogo 2D, Vida e placar e Indicadores e texto na tela.
 
 [confident, clear, unhurried voice] No valor, solte valor da variável vidaDoChefao. No máximo, 5. Na posição, x 300 e y 158; na largura, 200; na altura, 10. Escolha uma cor vermelha.
 
@@ -69,6 +69,8 @@
 [confident, clear, unhurried voice] Logo abaixo do encontro das pedras com a nave, encaixe Para cada sprite do grupo que colidir com o sprite, de Jogo 2D, Colisões e Encostar e bloquear. Escolha o grupo tiros, o sprite chefao e chame o laser de tiroNoChefao.
 
 [confident, clear, unhurried voice] No fazer: Tirar o sprite tiroNoChefao do grupo tiros e, logo abaixo, Somar 1 em variável, com menos 1 e vidaDoChefao.
+
+[confident, clear, unhurried voice] Por último, encaixe Tocar efeito, de Jogo 2D, Som e Efeitos prontos, e escolha batida.
 
 [interested, animated voice] Sem tirar o laser do grupo, ele continuaria encostando a cada quadro, e um laser só tiraria toda a vida.
 
@@ -96,11 +98,13 @@
 
 [confident, clear, unhurried voice] No então: Soltar explosão no sprite chefao, Levar o sprite chefao para x 300 e y menos 400, e Somar 10 em pontos.
 
-[upbeat, encouraging voice] Clique no jogo, aperte Enter e acerte o chefão cinco vezes. Ele explode e some... e o placar dispara!
+[confident, clear, unhurried voice] Por último, Tocar efeito, de Jogo 2D, Som e Efeitos prontos, com o efeito explosão.
+
+[upbeat, encouraging voice] Clique no jogo, aperte Enter e acerte o chefão cinco vezes. Ele explode e some, e o placar dispara: passa da meta e a partida termina na hora!
 
 [curious] Por que o placar disparou?
 
-[engaging, energetic, conversational voice] Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada quadro. Na próxima parte, ele vai valer uma vez só.
+[engaging, energetic, conversational voice] Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada quadro, até passar da meta. Na próxima parte, ele vai valer uma vez só.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no quadro, o Se vidaDoChefao menor ou igual a 0 explode o chefão, leva o chefão para longe e soma 10 em pontos.
 
@@ -118,7 +122,9 @@
 
 [confident, clear, unhurried voice] Dentro do Se vidaDoChefao ≤ 0, encaixe outro Se no começo do então. Os blocos do prêmio descem para baixo dele; leve os quatro para dentro do Se novo.
 
-[confident, clear, unhurried voice] No Se novo, escolha chefaoDerrotado no x, o sinal de igual e, no lugar do zero, o valor falso. Logo no começo do então, encaixe Alterar variável chefaoDerrotado para verdadeiro.
+[confident, clear, unhurried voice] No Se novo, escolha chefaoDerrotado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro, de Programação e Valores. Depois troque verdadeiro por falso.
+
+[confident, clear, unhurried voice] Arraste Soltar explosão no sprite, com os blocos de baixo, para o então do Se novo. Logo no começo desse então, encaixe Alterar variável chefaoDerrotado para verdadeiro.
 
 [upbeat, encouraging voice] Clique no jogo, aperte Enter e derrote o chefão. Agora o placar ganha dez e para.
 

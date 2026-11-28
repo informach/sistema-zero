@@ -66,12 +66,21 @@ export const encontrar = (area: string): FalaPatrulha => [
   `[arrastar até "${area}"]`,
 ]
 
-/** A guarda da partida do 2D: o Se com a pergunta pronta "o estado do jogo é jogando". */
-export function guarda2D(destino: string): FalaPatrulha[] {
+/**
+ * A guarda da partida do 2D: o Se com a pergunta pronta "o estado do jogo é jogando". O texto muda
+ * com o bloco que recebe a guarda: um relógio (nada nasce antes da partida) ou uma tecla (a tecla
+ * só vale durante a partida).
+ */
+export function guarda2D(destino: string, em: 'relogio' | 'tecla' = 'relogio'): FalaPatrulha[] {
+  const dono = em === 'relogio' ? 'desse relógio' : 'dessa tecla'
+  const porque =
+    em === 'relogio'
+      ? 'Assim, nada nasce antes de a partida começar.'
+      : 'Assim, a tecla só vale durante a partida.'
   return [
     [
       'instrucao',
-      'Deixe o fazer desse relógio à vista. Abra Programação e depois Lógica e Se, e encaixe um Se dentro desse fazer.',
+      `Deixe o fazer ${dono} à vista. Abra Programação e depois Lógica e Se, e encaixe um Se dentro desse fazer.`,
       `[apontar encaixe em "${destino}"] [abrir categoria Programação > Lógica & Se] [encaixar "Se" em "${destino}"]`,
     ],
     [
@@ -81,10 +90,43 @@ export function guarda2D(destino: string): FalaPatrulha[] {
     ],
     [
       'instrucao',
-      'Escolha jogando no estado. Assim, nada nasce antes de a partida começar.',
+      `Escolha jogando no estado. ${porque}`,
       `[trocar "inicio" por "jogando" em "o estado do jogo é dentro de ${destino}"]`,
     ],
   ]
 }
 
 export const TIPOS_GUARDA_2D = ['sz_js_if_else', 'sz_g2d_scene_is']
+
+type ValorDoSe = { bloco: 'verdadeiro' | 'falso' } | { bloco: 'texto'; texto: string }
+
+/**
+ * As marcas do robô que montam a pergunta de um Se novo a partir do "x > 0" da paleta: a variável no
+ * lugar do x, o sinal e, quando pedido, o valor do lado direito (verdadeiro, falso ou um texto). O
+ * Se é identificado pelo bloco de cima (`dentro`), como nas outras marcas; o Se novo é o único que
+ * ainda diz x > 0 ali.
+ */
+export function marcasDoSe(
+  dentro: string,
+  variavel: string,
+  sinal: string,
+  valor?: ValorDoSe,
+): string {
+  const se = (pergunta: string) => `Se valor da variável ${pergunta} dentro de ${dentro}`
+  const marcas = [`[trocar "x" por "${variavel}" em "${se('x > 0')}"]`]
+  if (sinal !== '>') marcas.push(`[trocar ">" por "${sinal}" em "${se(`${variavel} > 0`)}"]`)
+  if (valor) {
+    marcas.push(
+      `[abrir categoria Programação > Valores] [soltar "${valor.bloco === 'texto' ? 'texto' : 'verdadeiro'}" em cima do "0" em "${se(`${variavel} ${sinal} 0`)}"]`,
+    )
+    if (valor.bloco === 'texto')
+      marcas.push(
+        `[trocar "Olá" por "${valor.texto}" em "${se(`${variavel} ${sinal} texto Olá`)}"]`,
+      )
+    if (valor.bloco === 'falso')
+      marcas.push(
+        `[abrir campo "verdadeiro" em "${se(`${variavel} ${sinal} verdadeiro`)}"] [escolher "falso" em "${se(`${variavel} ${sinal} verdadeiro`)}"]`,
+      )
+  }
+  return marcas.join(' ')
+}

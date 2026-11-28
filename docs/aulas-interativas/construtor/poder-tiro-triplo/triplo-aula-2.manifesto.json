@@ -4793,7 +4793,7 @@
               },
               {
                 "id": "b",
-                "label": "Juntos e retos: as cópias pegam a velocidade do grupo, e o grupo tiros sobe reto."
+                "label": "Juntos e retos: as cópias pegam a velocidade do grupo, e o grupo tiros segue reto para a frente."
               },
               {
                 "id": "c",
@@ -4815,15 +4815,15 @@
               },
               {
                 "id": "b",
-                "label": "No senão do Se tempoTriplo > 0."
+                "label": "Antes do Se, para sair sempre."
               },
               {
                 "id": "c",
-                "label": "Antes do Se, para sair sempre."
+                "label": "No senão do Se tempoTriplo > 0."
               }
             ],
             "correctChoiceIds": [
-              "b"
+              "c"
             ],
             "explanation": "O senão roda quando o Triplo está em 0: é ali que sai o laser de sempre. Antes do Se, ele sairia junto com os três, e o leque teria quatro lasers."
           }
@@ -31127,6 +31127,12 @@
                         "inputs": {
                           "VALUE": 5
                         }
+                      },
+                      {
+                        "blockType": "sz_g3d_hud_text",
+                        "fields": {
+                          "CORNER": "top-left"
+                        }
                       }
                     ]
                   }
@@ -31281,6 +31287,12 @@
                         },
                         "inputs": {
                           "VALUE": 5
+                        }
+                      },
+                      {
+                        "blockType": "sz_g3d_hud_text",
+                        "fields": {
+                          "CORNER": "top-left"
                         }
                       }
                     ]
@@ -31624,6 +31636,12 @@
                         },
                         "inputs": {
                           "VALUE": 5
+                        }
+                      },
+                      {
+                        "blockType": "sz_g3d_hud_text",
+                        "fields": {
+                          "CORNER": "top-left"
                         }
                       }
                     ]
@@ -32062,6 +32080,12 @@
                         "inputs": {
                           "VALUE": 5
                         }
+                      },
+                      {
+                        "blockType": "sz_g3d_hud_text",
+                        "fields": {
+                          "CORNER": "top-left"
+                        }
                       }
                     ]
                   }
@@ -32352,7 +32376,7 @@
           {
             "id": "contagem-com-guarda",
             "label": "A cada segundo, se o tiro triplo ainda tem tempo, ele perde 1.",
-            "hint": "Dentro do A cada 1 segundo: Se tempoTriplo > 0, então mudar tempoTriplo em -1. Sem o Se, o tempo passa do zero.",
+            "hint": "Dentro do A cada 1 segundo: Se tempoTriplo > 0, então Somar -1 em tempoTriplo. Sem o Se, o tempo passa do zero.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g3d_every_seconds",

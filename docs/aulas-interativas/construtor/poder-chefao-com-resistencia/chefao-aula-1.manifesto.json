@@ -3379,7 +3379,7 @@
     },
     {
       "key": "video-fim",
-      "plannedVideo": "Título: No zero, o chefão cai\n\nMaster integral da professora. Roteiro: chefao-aula-1.roteiro.md, clipe video-fim. Substituições kids: [{\"id\":\"video-fim-K1\",\"clipe\":\"video-fim\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Por que o placar disparou?\",\"falaPersonagem\":\"Por que o placar disparou?\",\"ancoraAntes\":\"10 em pontos. Clique no jogo, aperte Enter e acerte o chefão cinco vezes. Ele explode e some... e o placar dispara!\",\"ancoraDepois\":\"Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+      "plannedVideo": "Título: No zero, o chefão cai\n\nMaster integral da professora. Roteiro: chefao-aula-1.roteiro.md, clipe video-fim. Substituições kids: [{\"id\":\"video-fim-K1\",\"clipe\":\"video-fim\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Por que o placar disparou?\",\"falaPersonagem\":\"Por que o placar disparou?\",\"ancoraAntes\":\"Enter e acerte o chefão cinco vezes. Ele explode e some, e o placar dispara: passa da meta e a partida termina na hora!\",\"ancoraDepois\":\"Porque o quadro do jogo roda sessenta vezes por segundo, e a vida continua em zero: o prêmio soma de novo a cada\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-fim",
@@ -21742,7 +21742,7 @@
           {
             "id": "um-laser-tira-um",
             "label": "Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.",
-            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.",
+            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -21800,7 +21800,7 @@
           {
             "id": "encontro-do-laser",
             "label": "No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.",
-            "hint": "Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e mudar vidaDoChefao em -1.",
+            "hint": "Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -21897,7 +21897,7 @@
           {
             "id": "um-laser-tira-um",
             "label": "Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.",
-            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.",
+            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -21955,7 +21955,7 @@
           {
             "id": "encontro-do-laser",
             "label": "No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.",
-            "hint": "Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e mudar vidaDoChefao em -1.",
+            "hint": "Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -22191,7 +22191,7 @@
           {
             "id": "um-laser-tira-um",
             "label": "Cada laser que acerta o chefão tira 1 da vida dele: um laser só não derrota.",
-            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e mude vidaDoChefao em -1.",
+            "hint": "No encontro do chefão com o grupo tiros: tire o laser do grupo e use Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -22249,7 +22249,7 @@
           {
             "id": "encontro-do-laser",
             "label": "No encontro de um laser com o chefão: o laser sai do grupo e a vida perde 1.",
-            "hint": "Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e mudar vidaDoChefao em -1.",
+            "hint": "Use Para cada sprite do grupo tiros que colidir com o sprite chefao: tirar o laser do grupo e Somar -1 em vidaDoChefao.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_sprite_group_overlap",
@@ -22535,9 +22535,60 @@
             "hint": "Dentro do Se vidaDoChefao ≤ 0: Se chefaoDerrotado = falso, então Alterar chefaoDerrotado para verdadeiro e o prêmio.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_js_var_assign",
-              "fields": {
-                "NAME": "chefaoDerrotado"
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_val_compare",
+                  "fieldOptions": {
+                    "OP": [
+                      "<=",
+                      "<",
+                      "==",
+                      "==="
+                    ]
+                  },
+                  "inputBlocks": {
+                    "LEFT": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "vidaDoChefao"
+                      }
+                    }
+                  },
+                  "inputs": {
+                    "RIGHT": 0
+                  }
+                }
+              },
+              "inputBlocksAll": {
+                "THEN": [
+                  {
+                    "blockType": "sz_js_if_else",
+                    "inputBlocks": {
+                      "COND": {
+                        "blockType": "sz_val_compare",
+                        "inputBlocks": {
+                          "LEFT": {
+                            "blockType": "sz_val_variable",
+                            "fields": {
+                              "NAME": "chefaoDerrotado"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "inputBlocksAll": {
+                      "THEN": [
+                        {
+                          "blockType": "sz_js_var_assign",
+                          "fields": {
+                            "NAME": "chefaoDerrotado"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               "area": "loops"
             }

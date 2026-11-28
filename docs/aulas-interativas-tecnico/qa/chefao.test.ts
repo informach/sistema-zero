@@ -162,6 +162,31 @@ describe('Chefão com resistência', () => {
           ),
         ),
       ).toContain('guarda-do-premio')
+      // a guarda que não cerca o prêmio: chefaoDerrotado vira verdadeiro antes de perguntar
+      expect(
+        falhas(
+          comMudanca(
+            d,
+            /if \(chefaoDerrotado === false\) \{\n(\s*)chefaoDerrotado = true;/,
+            'chefaoDerrotado = true;\n$1if (chefaoDerrotado === false) {',
+          ),
+        ),
+      ).toContain('guarda-do-premio')
+      if (d === '3d') {
+        // o texto Chefão sem a vida, e o acerto que não escreve o texto de novo
+        expect(falhas(comMudanca(d, /"Chefão: " \+ vidaDoChefao\);/, '"Chefão: 5");'))).toContain(
+          'vida-na-tela',
+        )
+        expect(
+          falhas(
+            comMudanca(
+              d,
+              /(vidaDoChefao = vidaDoChefao - 1;)\n\s*SZGame3D\.hudText\("top-left", "Chefão: " \+ vidaDoChefao\);/,
+              '$1',
+            ),
+          ),
+        ).toContain('encontro-do-laser')
+      }
     })
   }
 })

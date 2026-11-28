@@ -16,7 +16,7 @@
 
 [confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Logo abaixo de Dar 3 de vida a nave, crie a variável vidaDoChefao com 5.
+[confident, clear, unhurried voice] Logo abaixo de Colocar o objeto chefao, o bloco que põe o chefão lá na frente, crie a variável vidaDoChefao com 5.
 
 [confident, clear, unhurried voice] Logo abaixo do placar dos acertos, Escrever na tela, em cima, à esquerda, com Chefão, dois-pontos e um espaço, mais o valor de vidaDoChefao.
 
@@ -34,13 +34,15 @@
 
 [engaging, energetic, conversational voice] O laser encostando no chefão é um encontro, como a pedra batendo na nave. Só que agora quem encosta é o chefão.
 
-[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
 [confident, clear, unhurried voice] Abra Jogo 3D, Encostar e Encostar. Pegue Quando heroi encostar em algum do grupo e encaixe logo abaixo do encontro da nave com os asteroides.
 
 [confident, clear, unhurried voice] Troque heroi por chefao, o grupo por tiros e chame o laser de tiroNoChefao.
 
-[confident, clear, unhurried voice] Dentro: Tirar o objeto tiroNoChefao do grupo tiros, Somar menos 1 em vidaDoChefao e escrever o texto Chefão de novo.
+[confident, clear, unhurried voice] Dentro: Tirar o objeto do grupo, com tiroNoChefao e tiros, e logo abaixo Somar 1 em variável, com menos 1 e vidaDoChefao.
+
+[confident, clear, unhurried voice] Logo abaixo, escreva o texto Chefão de novo: Escrever na tela, em cima, à esquerda, Chefão, dois-pontos e um espaço, mais o valor de vidaDoChefao. Por último, Tocar o som pronto, com o som acerto.
 
 [interested, animated voice] O texto da tela só muda quando é escrito de novo. Sem ele, a vida desce, mas o texto continua mostrando 5.
 
@@ -58,15 +60,17 @@
 
 [engaging, energetic, conversational voice] No zero, como no jogo 2D: o chefão sai e dá dez pontos.
 
-[confident, clear, unhurried voice] No quadro, logo abaixo de Mover os objetos do grupo asteroides, um Se com vidaDoChefao menor ou igual a 0.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] No quadro, logo abaixo de Mover o grupo asteroides, encaixe um Se, de Programação e Lógica e Se. Escolha vidaDoChefao no x e o sinal de menor ou igual. Conserve o zero.
 
 [confident, clear, unhurried voice] No então: Colocar o objeto chefao em x 0, y 1 e z menos 200, Somar 10 em pontos e escrever o placar dos acertos de novo.
 
-[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some... e o placar dispara!
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e acerte o chefão cinco vezes. Ele some, e o placar dispara: passa da meta e a patrulha termina na hora!
 
 [curious] É o mesmo problema do jogo 2D?
 
-[engaging, energetic, conversational voice] É, sim: o quadro roda sem parar e a vida continua em zero. A guarda é a próxima parte.
+[engaging, energetic, conversational voice] É, sim: o quadro roda sem parar e a vida continua em zero, então o prêmio soma até passar da meta. A guarda é a próxima parte.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no quadro, o Se vidaDoChefao menor ou igual a 0 leva o chefão para longe e soma 10 em pontos.
 
@@ -82,7 +86,11 @@
 
 [confident, clear, unhurried voice] Em Ao iniciar, logo abaixo de vidaDoChefao, crie chefaoDerrotado com o valor falso.
 
-[confident, clear, unhurried voice] Dentro do Se do zero, um Se chefaoDerrotado igual a falso com os blocos do prêmio dentro, e no começo dele Alterar chefaoDerrotado para verdadeiro.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Dentro do Se do zero, encaixe outro Se no começo do então. Escolha chefaoDerrotado no x, o sinal de igual e, no lugar do zero, o valor verdadeiro; depois troque verdadeiro por falso.
+
+[confident, clear, unhurried voice] Arraste Colocar o objeto chefao, com os blocos de baixo, para o então do Se novo. Logo no começo desse então, encaixe Alterar variável chefaoDerrotado para verdadeiro.
 
 [upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e derrote o chefão. O placar ganha dez e para.
 

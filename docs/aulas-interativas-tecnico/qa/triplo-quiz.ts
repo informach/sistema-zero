@@ -80,7 +80,7 @@ export const triploQuiz3d: ManifestQuiz = {
         {
           id: 'b',
           label:
-            'Juntos e retos: as cópias pegam a velocidade do grupo, e o grupo tiros sobe reto.',
+            'Juntos e retos: as cópias pegam a velocidade do grupo, e o grupo tiros segue reto para a frente.',
         },
         { id: 'c', label: 'Cada um para um lado sorteado.' },
       ],
@@ -94,10 +94,10 @@ export const triploQuiz3d: ManifestQuiz = {
         'No Espaço da patrulha, onde deve ficar a cópia de sempre, a de um laser só, para ela valer só sem o tiro triplo?',
       choices: [
         { id: 'a', label: 'No então do Se tempoTriplo > 0.' },
-        { id: 'b', label: 'No senão do Se tempoTriplo > 0.' },
-        { id: 'c', label: 'Antes do Se, para sair sempre.' },
+        { id: 'b', label: 'Antes do Se, para sair sempre.' },
+        { id: 'c', label: 'No senão do Se tempoTriplo > 0.' },
       ],
-      correctChoiceIds: ['b'],
+      correctChoiceIds: ['c'],
       explanation:
         'O senão roda quando o Triplo está em 0: é ali que sai o laser de sempre. Antes do Se, ele sairia junto com os três, e o leque teria quatro lasers.',
     },

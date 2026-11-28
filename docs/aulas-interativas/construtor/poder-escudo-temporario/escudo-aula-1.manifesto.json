@@ -3518,15 +3518,15 @@
               },
               {
                 "id": "b",
-                "label": "5, porque pegar o item põe 5 em tempoDoEscudo."
+                "label": "2, porque o escudo ainda não tinha acabado."
               },
               {
                 "id": "c",
-                "label": "2, porque o escudo ainda não tinha acabado."
+                "label": "5, porque pegar o item põe 5 em tempoDoEscudo."
               }
             ],
             "correctChoiceIds": [
-              "b"
+              "c"
             ],
             "explanation": "O encontro com o item usa Alterar variável tempoDoEscudo para 5: o número antigo é trocado por 5, não somado. Com Somar 5, o escudo poderia crescer sem parar."
           },
@@ -3536,11 +3536,11 @@
             "choices": [
               {
                 "id": "a",
-                "label": "Só deixar uma pedra bater logo depois de pegar o item."
+                "label": "Deixar uma pedra bater com o escudo ligado, esperar o Escudo chegar a 0 e deixar outra pedra bater."
               },
               {
                 "id": "b",
-                "label": "Deixar uma pedra bater com o escudo ligado, esperar o Escudo chegar a 0 e deixar outra pedra bater."
+                "label": "Só deixar uma pedra bater logo depois de pegar o item."
               },
               {
                 "id": "c",
@@ -3548,7 +3548,7 @@
               }
             ],
             "correctChoiceIds": [
-              "b"
+              "a"
             ],
             "explanation": "O escudo tem duas respostas: com tempo, a pedra só sai; sem tempo, a nave perde uma vida. Uma batida com o escudo ligado e outra com ele em 0 conferem as duas, e o número parando no 0 confere o prazo."
           }
@@ -22829,7 +22829,7 @@
           {
             "id": "contagem-com-guarda",
             "label": "A cada segundo, se o escudo ainda tem tempo, ele perde 1 e a nave pisca.",
-            "hint": "Dentro do A cada 1 segundo: Se tempoDoEscudo > 0, então mudar tempoDoEscudo em -1 e fazer a nave piscar. Sem o Se, o tempo fica negativo.",
+            "hint": "Dentro do A cada 1 segundo: Se tempoDoEscudo > 0, então Somar -1 em tempoDoEscudo e fazer a nave piscar. Sem o Se, o tempo fica negativo.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",

@@ -1,10 +1,26 @@
 {
-  "aula-1-item": [6],
-  "aula-1-liga": [5],
-  "aula-1-protege": [6],
-  "aula-1-acaba": [6],
-  "aula-2-item": [7],
-  "aula-2-liga": [8],
-  "aula-2-protege": [5],
-  "aula-2-acaba": [5]
+  "aula-1-item": [
+    6
+  ],
+  "aula-1-liga": [
+    5
+  ],
+  "aula-1-protege": [
+    6
+  ],
+  "aula-1-acaba": [
+    6
+  ],
+  "aula-2-item": [
+    7
+  ],
+  "aula-2-liga": [
+    8
+  ],
+  "aula-2-protege": [
+    5
+  ],
+  "aula-2-acaba": [
+    5
+  ]
 }

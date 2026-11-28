@@ -56,7 +56,7 @@ Antes e depois de cada teste, observe onde a inimiga está, de onde cada tiro sa
 
 **A regra:** Tirar do grupo tirosInimigos os tiros que saem da tela.
 
-1. No quadro do jogo, logo abaixo de Tirar do grupo asteroides quem sair da tela: Tirar do grupo tirosInimigos quem sair da tela.
+1. No quadro do jogo, logo abaixo de Mover os sprites do grupo tirosInimigos: Tirar do grupo tirosInimigos quem sair da tela.
 
 **Teste:**
 

@@ -72,7 +72,7 @@ Antes e depois de cada teste, observe o número do Escudo, as vidas e o segundo 
 **Teste:**
 
 - Depois de pegar o item, o Escudo desce de 5 a 0, um por segundo, e a nave pisca.
-- Com o Escudo em 0, a pedra volta a tirar vida. O número nunca fica negativo.
+- Com o Escudo em 0, a nave para de piscar e a pedra volta a tirar vida. O número nunca fica negativo.
 - Pegar o item de novo volta o Escudo a 5.
 
 ## Aula 2 · Patrulha Espacial (3D): O escudo na patrulha
@@ -136,7 +136,7 @@ Antes e depois de cada teste, observe o número do Escudo, as vidas e o segundo 
 **Teste:**
 
 - Depois de pegar o item, o Escudo desce de 5 a 0, um por segundo, e a nave pisca.
-- Com o Escudo em 0, a pedra volta a tirar vida. O número nunca fica negativo.
+- Com o Escudo em 0, a nave para de piscar e a pedra volta a tirar vida. O número nunca fica negativo.
 
 ## Entrega
 

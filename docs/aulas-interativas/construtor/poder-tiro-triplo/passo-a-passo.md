@@ -95,7 +95,7 @@ Antes e depois de cada disparo, observe quantos lasers estão no ar, por onde ca
 
 1. No Espaço, no começo do então da guarda, encaixe um Se e escolha tempoTriplo no lugar de x. Conserve > e 0.
 2. Abra o senão e leve a cópia de moldeTiro, com a nota, para dentro dele.
-3. Duplique a cópia três vezes e leve as cópias para o então.
+3. Duplique a cópia três vezes e leve as cópias para o então. Logo abaixo delas, Tocar nota 1320 Hz por 80 ms (Jogo 3D → Som).
 
 **Teste:**
 
