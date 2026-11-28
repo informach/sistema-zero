@@ -7,6 +7,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-032cb675aa1bd8b543a76ac6d792a97d4248c190d24c839859752bd3374ddad4.generated'),
   '041261defe6b98aba436bee2558e6287d79b9d62622691951780344c1a31155f': () =>
     import('./m-041261defe6b98aba436bee2558e6287d79b9d62622691951780344c1a31155f.generated'),
+  '045d626ba955908947e2b7feb5ba61ace18c45072006247096c0379d0b0d299a': () =>
+    import('./m-045d626ba955908947e2b7feb5ba61ace18c45072006247096c0379d0b0d299a.generated'),
   '07afb147527aa1c6a1ce224a39212ea9d74c32a79bf7bed9cb177415c1dc8757': () =>
     import('./m-07afb147527aa1c6a1ce224a39212ea9d74c32a79bf7bed9cb177415c1dc8757.generated'),
   '08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1': () =>
@@ -19,18 +21,32 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-0f3ab28f860cda1821d148c2c5ff4ce113a47fc6bf097b04cd5bfa22b6e84c3b.generated'),
   '0f5a1e4f196e8a7691e51bb7246e1b62775d1c124763850cf962cd3e97b7e669': () =>
     import('./m-0f5a1e4f196e8a7691e51bb7246e1b62775d1c124763850cf962cd3e97b7e669.generated'),
+  '1237eedb20b14ea64f6830d38d09f10031bad8605a1ffa10f170986d4129bd1b': () =>
+    import('./m-1237eedb20b14ea64f6830d38d09f10031bad8605a1ffa10f170986d4129bd1b.generated'),
   '138ac184d7b47496e61eae2d3dbb6de10f6507888dc27b116bd0920cb77584eb': () =>
     import('./m-138ac184d7b47496e61eae2d3dbb6de10f6507888dc27b116bd0920cb77584eb.generated'),
+  '14da4d8ad106725af5d40e1696e70e4747a7010e5bb7d5231f968d549d23bd82': () =>
+    import('./m-14da4d8ad106725af5d40e1696e70e4747a7010e5bb7d5231f968d549d23bd82.generated'),
+  '19c8fbef35b41af9e617c4091429ed15921396917784ef23cb6b62a9ad232ac9': () =>
+    import('./m-19c8fbef35b41af9e617c4091429ed15921396917784ef23cb6b62a9ad232ac9.generated'),
+  '1d3964a05732eeda789375c6cca375ff46bfaf69a93921c1876b7e1dff8f3a3c': () =>
+    import('./m-1d3964a05732eeda789375c6cca375ff46bfaf69a93921c1876b7e1dff8f3a3c.generated'),
   '25005eba2c56ff677d2b4e84d015287fd41a79316868457ad0ffe2520d3f5a08': () =>
     import('./m-25005eba2c56ff677d2b4e84d015287fd41a79316868457ad0ffe2520d3f5a08.generated'),
+  '285a689a10036fd4a356db0639df73d62707c431fff173e9a8ed2b535e11582e': () =>
+    import('./m-285a689a10036fd4a356db0639df73d62707c431fff173e9a8ed2b535e11582e.generated'),
   '2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485': () =>
     import('./m-2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485.generated'),
   '29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72': () =>
     import('./m-29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72.generated'),
+  '2d07858bfc7c789ffd47b06f0ca0e38dbe5c178e954d613e4cc7dcaf05a1f492': () =>
+    import('./m-2d07858bfc7c789ffd47b06f0ca0e38dbe5c178e954d613e4cc7dcaf05a1f492.generated'),
   '2e1bbecbdc653acfa56a8f2125882e49a222d3dbed994afef882f970cffb27d2': () =>
     import('./m-2e1bbecbdc653acfa56a8f2125882e49a222d3dbed994afef882f970cffb27d2.generated'),
   '3075b03110db60485bcaf2fb8c509bc636a06b31874b9c80e4bc9cd3bf8b0cf8': () =>
     import('./m-3075b03110db60485bcaf2fb8c509bc636a06b31874b9c80e4bc9cd3bf8b0cf8.generated'),
+  '3127760ac6c6a9379a69b9ff3d6441e98ec57e38d47023099e8f9038b44d39af': () =>
+    import('./m-3127760ac6c6a9379a69b9ff3d6441e98ec57e38d47023099e8f9038b44d39af.generated'),
   '36f5d23499800d1baf57d3820f069cdac4f08346e0a7e3d56bb1b21d1fad008c': () =>
     import('./m-36f5d23499800d1baf57d3820f069cdac4f08346e0a7e3d56bb1b21d1fad008c.generated'),
   '39e9a83bc9bbc4e3ae55c16522752aceaeb5d1efd44fff68b453e0d26aa25ec2': () =>
@@ -55,8 +71,12 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-49bfc5c247907367d5280af2e25061a776eee8459208ee0f0084d2a335bed13f.generated'),
   '4a8a1da7c8aef4397acef34ad5f155d5c33759830ae1a55f89f202f33d99b0e8': () =>
     import('./m-4a8a1da7c8aef4397acef34ad5f155d5c33759830ae1a55f89f202f33d99b0e8.generated'),
+  '4cd878fa1e8467d97e5c26d478133be717b5abf6fa86c255acc4fff34d18a32c': () =>
+    import('./m-4cd878fa1e8467d97e5c26d478133be717b5abf6fa86c255acc4fff34d18a32c.generated'),
   '4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022': () =>
     import('./m-4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022.generated'),
+  '4e1a0f1c52920e658e3d9b307aa26dee05cdc189fb5a9ccbcc84bb9936a9a5bc': () =>
+    import('./m-4e1a0f1c52920e658e3d9b307aa26dee05cdc189fb5a9ccbcc84bb9936a9a5bc.generated'),
   '512654325c01d72ac25cd8d8339e84ceb0757834c36e17929193ad9b68dc5c7b': () =>
     import('./m-512654325c01d72ac25cd8d8339e84ceb0757834c36e17929193ad9b68dc5c7b.generated'),
   '55f6077b90524602de013c823e20e12d76f02210be8dbd6a49608b63bf4e12f0': () =>
@@ -73,10 +93,18 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-6324182a406da1d2152d230f57e07071f1f5a542b3f57ca0dbf78eb2cf3dccc9.generated'),
   '645d69d96a12599c362ca53a85b639df6c9c9ab77dd36c107e85afb8676d6cbd': () =>
     import('./m-645d69d96a12599c362ca53a85b639df6c9c9ab77dd36c107e85afb8676d6cbd.generated'),
+  '64646f9d2d315795ecba42f94855ac9abafe941944a60a09aa11f46a4f440487': () =>
+    import('./m-64646f9d2d315795ecba42f94855ac9abafe941944a60a09aa11f46a4f440487.generated'),
+  '66710eb7762e62518534443e9da8f46458fa6cac55a6b662cfbf7688a4c5aa87': () =>
+    import('./m-66710eb7762e62518534443e9da8f46458fa6cac55a6b662cfbf7688a4c5aa87.generated'),
   '66e32d2c65b5d2f57cd295a95c3772a19e7a815e8180ec8d4749a7b0bd62a04d': () =>
     import('./m-66e32d2c65b5d2f57cd295a95c3772a19e7a815e8180ec8d4749a7b0bd62a04d.generated'),
+  '6789ee2f8213bd71a11d8ee8f240ea11a0e0f35b334e7a7c9a938d7f16b16405': () =>
+    import('./m-6789ee2f8213bd71a11d8ee8f240ea11a0e0f35b334e7a7c9a938d7f16b16405.generated'),
   '6dc2b91a0472c05826556eb4ded6e1fe71b60846b4300819fb1d8b1bcb172682': () =>
     import('./m-6dc2b91a0472c05826556eb4ded6e1fe71b60846b4300819fb1d8b1bcb172682.generated'),
+  '6fcb11ff13af332fe478dd07ea35da3963c5cb07d6040c541ac7d91553bb0513': () =>
+    import('./m-6fcb11ff13af332fe478dd07ea35da3963c5cb07d6040c541ac7d91553bb0513.generated'),
   '7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b': () =>
     import('./m-7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b.generated'),
   '7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96': () =>
@@ -85,10 +113,14 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-709a16868c3eaed25e0bba97a95f70a7f55f1f04d9f353e3237f6b8ba3f3740f.generated'),
   '719168486d735f334b911c4f3c2291dc29d2f5d43f82d1737de20d5ee48961d1': () =>
     import('./m-719168486d735f334b911c4f3c2291dc29d2f5d43f82d1737de20d5ee48961d1.generated'),
+  '71a0d035a5f9b246be6752a5feb551c83c2b2f519af2d00cacd89033f86e03d0': () =>
+    import('./m-71a0d035a5f9b246be6752a5feb551c83c2b2f519af2d00cacd89033f86e03d0.generated'),
   '748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f': () =>
     import('./m-748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f.generated'),
   '767dd70ecf46373e1a5104cfbfef61e8a6b9eb51c27665746d227fc863ba33a8': () =>
     import('./m-767dd70ecf46373e1a5104cfbfef61e8a6b9eb51c27665746d227fc863ba33a8.generated'),
+  '767e848d78625a8fac893bc23e7d145bb325650b1e7e19276c80ae74508f65ca': () =>
+    import('./m-767e848d78625a8fac893bc23e7d145bb325650b1e7e19276c80ae74508f65ca.generated'),
   '77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6': () =>
     import('./m-77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6.generated'),
   '79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345': () =>
@@ -103,6 +135,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7.generated'),
   '893ba2eb4826eda3b658648d5772ad5be1e3d3260c3cbe93e288f76e8cc0ffde': () =>
     import('./m-893ba2eb4826eda3b658648d5772ad5be1e3d3260c3cbe93e288f76e8cc0ffde.generated'),
+  '89d537975cbbf0416dbe1f65262f3e85240b6fa81235c073d9989b43f1b00067': () =>
+    import('./m-89d537975cbbf0416dbe1f65262f3e85240b6fa81235c073d9989b43f1b00067.generated'),
   '8a09955da9abd6ee32b566f7604db12d155208c7af7b167da15a5db3d8c7177c': () =>
     import('./m-8a09955da9abd6ee32b566f7604db12d155208c7af7b167da15a5db3d8c7177c.generated'),
   '8bd6eb4613f22f162a3d0be00eeec0afdbd245d4856a730986761719bdf732d9': () =>
@@ -119,6 +153,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-9ce128cef616f414c1eabdc71bb1b706eb8aa96572b44c7eeaa24a9b4cc6a92a.generated'),
   '9db58123e677bc92524c5c8529a51651d5915b51b03e52979262f8ca82d529cf': () =>
     import('./m-9db58123e677bc92524c5c8529a51651d5915b51b03e52979262f8ca82d529cf.generated'),
+  '9dfac649511b1d6bd4ade5da51c5c852fec96925b7614b2c8e1ff0f6e89a0800': () =>
+    import('./m-9dfac649511b1d6bd4ade5da51c5c852fec96925b7614b2c8e1ff0f6e89a0800.generated'),
   '9eb653cebe4a2700045df315d0e94c595363919b7d158507b3b8d60d2b5db3a9': () =>
     import('./m-9eb653cebe4a2700045df315d0e94c595363919b7d158507b3b8d60d2b5db3a9.generated'),
   '9f5606fb490c74835ce0f3f8c9c962367fa70570eb56b565e3618385a991e1ad': () =>
@@ -137,8 +173,12 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-a7abe1ff6d1b9a2a2c0f17c3a1d18ae7afcb92c0d5e8e8f25fd126f00a034ba3.generated'),
   ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93: () =>
     import('./m-ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93.generated'),
+  af3c82e79f76c3449d05c5290b70df5e876b0a7549f0042f5f96e3f3506f1c30: () =>
+    import('./m-af3c82e79f76c3449d05c5290b70df5e876b0a7549f0042f5f96e3f3506f1c30.generated'),
   afae1718423f88549c070e4051f4b4bd8d1e524df80fe9847841807bf5156279: () =>
     import('./m-afae1718423f88549c070e4051f4b4bd8d1e524df80fe9847841807bf5156279.generated'),
+  b406300e8253bf80885e3eb9f6a72d94cd8ede0e4dfccfc8dd622708b300a6fe: () =>
+    import('./m-b406300e8253bf80885e3eb9f6a72d94cd8ede0e4dfccfc8dd622708b300a6fe.generated'),
   b4ebb3a039df0cf4c728a06ba7aaab40de6784ec28445f28c16f11ad21923613: () =>
     import('./m-b4ebb3a039df0cf4c728a06ba7aaab40de6784ec28445f28c16f11ad21923613.generated'),
   b567e1a687054a9b4438ddaea0879247115eea26ed01e9698d268f451112bc01: () =>
@@ -153,6 +193,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706.generated'),
   b81892445f52e846b7a91daaa33e5080935806e76195e2d3771b80495d1857bd: () =>
     import('./m-b81892445f52e846b7a91daaa33e5080935806e76195e2d3771b80495d1857bd.generated'),
+  bb67ceab33e095db1d1e0ccf3213818ef489252554965e912eb2af86371885dd: () =>
+    import('./m-bb67ceab33e095db1d1e0ccf3213818ef489252554965e912eb2af86371885dd.generated'),
   bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb: () =>
     import('./m-bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb.generated'),
   bb9b410c0358f307fee9c132aa5ea3b7748be8e2e99c7e1a5aead9f6f100b6b1: () =>
@@ -165,6 +207,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-bf4a6768b178ee88291a4761723160d74c4bfc12c267dff2c6f6262b83b2c43e.generated'),
   bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0: () =>
     import('./m-bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0.generated'),
+  c2c032040472181aac5261f3df56289664b50b078dd21ef6a6ba35b232b89d67: () =>
+    import('./m-c2c032040472181aac5261f3df56289664b50b078dd21ef6a6ba35b232b89d67.generated'),
   c39437ce46cfc792dd6b9f855dcce03bb98bd3c7fc5150e24567fa45d359fa23: () =>
     import('./m-c39437ce46cfc792dd6b9f855dcce03bb98bd3c7fc5150e24567fa45d359fa23.generated'),
   c47430029006463dacd4067ee4f6db5906a6733614e1027a11c6c776761ca202: () =>
@@ -175,16 +219,24 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e.generated'),
   c6849d19e280bb306ef82b2a9c73382a4fbd93042d5f50d39aa801d3b54f30aa: () =>
     import('./m-c6849d19e280bb306ef82b2a9c73382a4fbd93042d5f50d39aa801d3b54f30aa.generated'),
+  c92953824a8f09a3dfe84bf4676d9545180229fdc092c9da8547782fec84ba4f: () =>
+    import('./m-c92953824a8f09a3dfe84bf4676d9545180229fdc092c9da8547782fec84ba4f.generated'),
   caa4eec50423511c0d09ab0d430a653f374f32aadbb1e9871d01d807bbbd715d: () =>
     import('./m-caa4eec50423511c0d09ab0d430a653f374f32aadbb1e9871d01d807bbbd715d.generated'),
   d2369529ab41bedc47a9464141655d279dd42016cc189609b263d84985b51a71: () =>
     import('./m-d2369529ab41bedc47a9464141655d279dd42016cc189609b263d84985b51a71.generated'),
   d37fba1fc8b71c254dcf90605ce75f09e205b0d31907820d612eeb4f11f80b32: () =>
     import('./m-d37fba1fc8b71c254dcf90605ce75f09e205b0d31907820d612eeb4f11f80b32.generated'),
+  d4186b20b8e6d1812f793c4a4dea6be62e111ce25783c91e03b14b95422114e5: () =>
+    import('./m-d4186b20b8e6d1812f793c4a4dea6be62e111ce25783c91e03b14b95422114e5.generated'),
   d5f59b23586f2f1131a765e88e4a8aea18d515dadde8f0df29844b2b48aebe63: () =>
     import('./m-d5f59b23586f2f1131a765e88e4a8aea18d515dadde8f0df29844b2b48aebe63.generated'),
+  d6d97b4ae33c6eea41a7ae7ebc2f8528612b530b4f266715779c77ce6a367b60: () =>
+    import('./m-d6d97b4ae33c6eea41a7ae7ebc2f8528612b530b4f266715779c77ce6a367b60.generated'),
   d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38: () =>
     import('./m-d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38.generated'),
+  d8c52e27fcdd1795b8c277016d539a3a0fa0ca78259048e6830a52b52f1e01a2: () =>
+    import('./m-d8c52e27fcdd1795b8c277016d539a3a0fa0ca78259048e6830a52b52f1e01a2.generated'),
   dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92: () =>
     import('./m-dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92.generated'),
   dd04fc28f36a34920e1f9227ac2b0bf00c752cf0af6189778488a555ee3e83e1: () =>
@@ -193,6 +245,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-de050666a6e1ebbeb8590ca2db87a6f3d71d1fa95faf4c2fcf7fe8a03b346f4a.generated'),
   e058ad95d87c2e681e3facc12ce8c9b9810f588ae6b6c92523a1a6acb26b6e98: () =>
     import('./m-e058ad95d87c2e681e3facc12ce8c9b9810f588ae6b6c92523a1a6acb26b6e98.generated'),
+  e2b5035ef0a0c3c44de39978f0828258ee04e6ae2fd845f5777e02827005aa35: () =>
+    import('./m-e2b5035ef0a0c3c44de39978f0828258ee04e6ae2fd845f5777e02827005aa35.generated'),
   e45c4403e837872060f2a2e1f7872d0e2ae39cb3897bcb6dd0b91ea5d8de784e: () =>
     import('./m-e45c4403e837872060f2a2e1f7872d0e2ae39cb3897bcb6dd0b91ea5d8de784e.generated'),
   ecff8f7cee580caa17e8075826c91e7d47155b29cbe6bdb7798d1af4af29f75b: () =>
@@ -207,6 +261,8 @@ export const COURSE_MODEL_LOADERS: Readonly<Record<string, () => Promise<{ defau
     import('./m-f2cec94fcd9acea42c87cc9c079896fcb0440faf0dfa08e713f0329b71f88f43.generated'),
   f680266c8ccc489d013a9d38a194e98489eb929a86f5f8c082270a4c1c97d2c0: () =>
     import('./m-f680266c8ccc489d013a9d38a194e98489eb929a86f5f8c082270a4c1c97d2c0.generated'),
+  faf56dc67d59a776909821734c7eed1733d657186322272ed535c41d58f38209: () =>
+    import('./m-faf56dc67d59a776909821734c7eed1733d657186322272ed535c41d58f38209.generated'),
   fd0733741cff4d979ba55f1bc4055ea12f602dc1582591847bb1709127b88b9a: () =>
     import('./m-fd0733741cff4d979ba55f1bc4055ea12f602dc1582591847bb1709127b88b9a.generated'),
   fe0453251cf4587f7e7441b3d8abf4eab5da96305a47f0993743edb6c011eb3d: () =>

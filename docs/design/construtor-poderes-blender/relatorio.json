@@ -1,0 +1,658 @@
+{
+  "item-escudo-redondo": {
+    "categoria": "item-escudo",
+    "triangulos": 1082,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 29728,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-escudo-hexagono": {
+    "categoria": "item-escudo",
+    "triangulos": 522,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 21180,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-escudo-losango": {
+    "categoria": "item-escudo",
+    "triangulos": 442,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 18972,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-escudo-octogono": {
+    "categoria": "item-escudo",
+    "triangulos": 602,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 23772,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-triplo-redondo": {
+    "categoria": "item-triplo",
+    "triangulos": 1106,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 31108,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-triplo-hexagono": {
+    "categoria": "item-triplo",
+    "triangulos": 546,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 22560,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-triplo-losango": {
+    "categoria": "item-triplo",
+    "triangulos": 466,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 20352,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-triplo-octogono": {
+    "categoria": "item-triplo",
+    "triangulos": 626,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "halo",
+      "brilho"
+    ],
+    "bytes": 25152,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-plasma-redondo": {
+    "categoria": "item-plasma",
+    "triangulos": 1218,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "brilho",
+      "halo"
+    ],
+    "bytes": 31812,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-plasma-hexagono": {
+    "categoria": "item-plasma",
+    "triangulos": 658,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "brilho",
+      "halo"
+    ],
+    "bytes": 23260,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-plasma-losango": {
+    "categoria": "item-plasma",
+    "triangulos": 578,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "brilho",
+      "halo"
+    ],
+    "bytes": 21052,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "item-plasma-octogono": {
+    "categoria": "item-plasma",
+    "triangulos": 738,
+    "materiais": [
+      "fundo",
+      "moldura",
+      "simbolo",
+      "brilho",
+      "halo"
+    ],
+    "bytes": 25852,
+    "caixa": [
+      [
+        -0.6000000238418579,
+        -0.6000000238418579,
+        -0.6000000238418579
+      ],
+      [
+        0.6000000238418579,
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    ]
+  },
+  "inimiga-garra-vermelha": {
+    "categoria": "inimiga",
+    "triangulos": 1412,
+    "materiais": [
+      "casco",
+      "cascoEscuro",
+      "olho",
+      "faixa",
+      "metal",
+      "grafite",
+      "chamaInimiga"
+    ],
+    "bytes": 40968,
+    "caixa": [
+      [
+        -1.5,
+        -1.149999976158142,
+        -0.3400000035762787
+      ],
+      [
+        1.5,
+        1.149999976158142,
+        0.46000000834465027
+      ]
+    ]
+  },
+  "inimiga-disco-roxo": {
+    "categoria": "inimiga",
+    "triangulos": 2348,
+    "materiais": [
+      "prato",
+      "pratoClaro",
+      "cupula",
+      "olho",
+      "grafite",
+      "luz"
+    ],
+    "bytes": 51172,
+    "caixa": [
+      [
+        -1.5,
+        -1.149999976158142,
+        -0.3400000035762787
+      ],
+      [
+        1.5,
+        1.149999976158142,
+        0.46000000834465027
+      ]
+    ]
+  },
+  "inimiga-vespa-amarela": {
+    "categoria": "inimiga",
+    "triangulos": 1284,
+    "materiais": [
+      "amarelo",
+      "preto",
+      "olho",
+      "asaVespa"
+    ],
+    "bytes": 34828,
+    "caixa": [
+      [
+        -1.5,
+        -1.149999976158142,
+        -0.3400000035762787
+      ],
+      [
+        1.5,
+        1.149999976158142,
+        0.46000000834465027
+      ]
+    ]
+  },
+  "inimiga-tridente-cinza": {
+    "categoria": "inimiga",
+    "triangulos": 1502,
+    "materiais": [
+      "cinza",
+      "cinzaClaro",
+      "olho",
+      "laranja",
+      "grafite",
+      "chamaInimiga"
+    ],
+    "bytes": 42276,
+    "caixa": [
+      [
+        -1.5,
+        -1.149999976158142,
+        -0.3400000035762787
+      ],
+      [
+        1.5,
+        1.149999976158142,
+        0.46000000834465027
+      ]
+    ]
+  },
+  "laser-inimigo-vermelho": {
+    "categoria": "laser-inimigo",
+    "triangulos": 22,
+    "materiais": [
+      "casca",
+      "nucleo"
+    ],
+    "bytes": 3664,
+    "caixa": [
+      [
+        -0.14000000059604645,
+        -0.44999998807907104,
+        -0.14000000059604645
+      ],
+      [
+        0.14000000059604645,
+        0.44999998807907104,
+        0.14000000059604645
+      ]
+    ]
+  },
+  "laser-inimigo-laranja": {
+    "categoria": "laser-inimigo",
+    "triangulos": 450,
+    "materiais": [
+      "casca",
+      "nucleo"
+    ],
+    "bytes": 10752,
+    "caixa": [
+      [
+        -0.14000000059604645,
+        -0.44999998807907104,
+        -0.14000000059604645
+      ],
+      [
+        0.14000000059604645,
+        0.44999998807907104,
+        0.14000000059604645
+      ]
+    ]
+  },
+  "laser-inimigo-rosa": {
+    "categoria": "laser-inimigo",
+    "triangulos": 770,
+    "materiais": [
+      "nucleo",
+      "casca"
+    ],
+    "bytes": 16416,
+    "caixa": [
+      [
+        -0.14000000059604645,
+        -0.44999998807907104,
+        -0.14000000059604645
+      ],
+      [
+        0.14000000059604645,
+        0.44999998807907104,
+        0.14000000059604645
+      ]
+    ]
+  },
+  "laser-inimigo-amarelo": {
+    "categoria": "laser-inimigo",
+    "triangulos": 938,
+    "materiais": [
+      "casca",
+      "nucleo"
+    ],
+    "bytes": 25500,
+    "caixa": [
+      [
+        -0.14000000059604645,
+        -0.44999998807907104,
+        -0.14000000059604645
+      ],
+      [
+        0.14000000059604645,
+        0.44999998807907104,
+        0.14000000059604645
+      ]
+    ]
+  },
+  "chefao-cruzador": {
+    "categoria": "chefao",
+    "triangulos": 2726,
+    "materiais": [
+      "casco",
+      "placa",
+      "nucleo",
+      "grafite",
+      "metal",
+      "chamaChefao",
+      "luzChefao"
+    ],
+    "bytes": 70384,
+    "caixa": [
+      [
+        -3.0,
+        -2.0,
+        -0.6000000238418579
+      ],
+      [
+        3.0,
+        2.0,
+        1.0
+      ]
+    ]
+  },
+  "chefao-disco-mae": {
+    "categoria": "chefao",
+    "triangulos": 3756,
+    "materiais": [
+      "prato",
+      "pratoClaro",
+      "cupula",
+      "nucleo",
+      "luzChefao",
+      "grafite",
+      "metal"
+    ],
+    "bytes": 82128,
+    "caixa": [
+      [
+        -3.0,
+        -2.0,
+        -0.6000000238418579
+      ],
+      [
+        3.0,
+        2.0,
+        1.0
+      ]
+    ]
+  },
+  "chefao-escorpiao": {
+    "categoria": "chefao",
+    "triangulos": 1392,
+    "materiais": [
+      "laranja",
+      "marrom",
+      "nucleo"
+    ],
+    "bytes": 33036,
+    "caixa": [
+      [
+        -3.0,
+        -2.0,
+        -0.6000000238418579
+      ],
+      [
+        3.0,
+        2.0,
+        1.0
+      ]
+    ]
+  },
+  "chefao-fortaleza": {
+    "categoria": "chefao",
+    "triangulos": 2602,
+    "materiais": [
+      "rocha",
+      "placaMetal",
+      "metal",
+      "nucleo",
+      "grafite",
+      "luzChefao"
+    ],
+    "bytes": 82400,
+    "caixa": [
+      [
+        -3.0,
+        -2.0,
+        -0.6000000238418579
+      ],
+      [
+        3.0,
+        2.0,
+        1.0
+      ]
+    ]
+  },
+  "plasma-roxo": {
+    "categoria": "plasma",
+    "triangulos": 1122,
+    "materiais": [
+      "nucleo",
+      "casca",
+      "faisca"
+    ],
+    "bytes": 23464,
+    "caixa": [
+      [
+        -0.30000001192092896,
+        -0.4000000059604645,
+        -0.30000001192092896
+      ],
+      [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.30000001192092896
+      ]
+    ]
+  },
+  "plasma-verde": {
+    "categoria": "plasma",
+    "triangulos": 966,
+    "materiais": [
+      "nucleo",
+      "casca"
+    ],
+    "bytes": 19812,
+    "caixa": [
+      [
+        -0.30000001192092896,
+        -0.4000000059604645,
+        -0.30000001192092896
+      ],
+      [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.30000001192092896
+      ]
+    ]
+  },
+  "plasma-laranja": {
+    "categoria": "plasma",
+    "triangulos": 522,
+    "materiais": [
+      "nucleo",
+      "casca",
+      "faisca"
+    ],
+    "bytes": 12972,
+    "caixa": [
+      [
+        -0.30000001192092896,
+        -0.4000000059604645,
+        -0.30000001192092896
+      ],
+      [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.30000001192092896
+      ]
+    ]
+  },
+  "plasma-azul": {
+    "categoria": "plasma",
+    "triangulos": 322,
+    "materiais": [
+      "nucleo",
+      "casca"
+    ],
+    "bytes": 8308,
+    "caixa": [
+      [
+        -0.30000001192092896,
+        -0.4000000059604645,
+        -0.30000001192092896
+      ],
+      [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.30000001192092896
+      ]
+    ]
+  }
+}
