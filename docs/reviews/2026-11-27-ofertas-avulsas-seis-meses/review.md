@@ -95,9 +95,9 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 - Biome nos arquivos TypeScript/JSON alterados: sem erros, com avisos existentes.
 
 Os typechecks dos pacotes de produto alterados passaram. Members e Admin excederam o heap padrão
-de 4 GB do Node no Windows e passaram com 8 GB. A integração em main continua dependendo dos
-checks obrigatórios verdes. A dona autorizou posteriormente a publicação manual em produção,
-mantendo o processo do PR em paralelo.
+de 4 GB do Node no Windows e passaram com 8 GB. Os checks obrigatórios do CI final também
+passaram. A dona autorizou a publicação manual em produção, mantendo o processo do PR em
+paralelo; ambos foram concluídos.
 
 ## Produção
 
@@ -116,4 +116,13 @@ final. Nenhuma compra, lead ou resgate foi criado por essas consultas.
 
 O inventário inicial e os patches previstos estão no commit `36a119ef7`; os baselines privados
 e as respostas com dados de clientes permanecem fora do Git. O ajuste adicional da confirmação
-de compra será publicado apenas no Funnel, preservando os demais serviços desta onda.
+de compra foi publicado no Funnel. Os complementos dos links, painel de presente e Termos
+também foram publicados manualmente e depois incluídos na publicação oficial.
+
+O PR 300 foi integrado em main no commit `5400ea1d105390390a376444c2aecf9adc7ffa99`,
+após o CI `46055350051` passar. O workflow oficial `46062615482` terminou com sucesso,
+publicando Members, Auth, Indicações, Funil, Admin, Kids e adulto. O manifesto confirmou
+`PRODUCTION_WAVE_PASSED`. Na conferência posterior, 23 links passaram com prazo e tipo de
+oferta corretos; 84 acessos históricos e 17 resgates foram preservados. As três confirmações
+reais consultadas continuaram mostrando o prazo contratado. O recibo completo está em
+[publicacao.md](publicacao.md).

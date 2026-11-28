@@ -2,7 +2,8 @@
 
 A dona autorizou a publicação manual urgente, mantendo CI e PR em paralelo. A seleção saiu
 de main `0a8d77918`, sem promover a staging inteira. O fluxo normal está no
-[PR 300](https://github.com/informach/sistema-zero/pull/300), onde fica o recibo final da promoção.
+[PR 300](https://github.com/informach/sistema-zero/pull/300), já integrado em main e publicado
+com sucesso pelo workflow oficial, além da publicação manual inicial.
 
 ## Onda manual inicial
 
@@ -110,3 +111,41 @@ Após a publicação adicional do Funil, os vinte links passaram novamente, e os
 17 resgates continuaram preservados. Três confirmações reais mostraram a data contratada:
 Vivianne com doze meses, Vivianne com seis meses e Desafio adulto com trinta dias. A consulta
 foi somente leitura, sem criar compra ou contato.
+
+## Publicação oficial concluída
+
+O [CI final](https://github.com/informach/sistema-zero/actions/runs/46055350051)
+terminou com sucesso, assim como o plano da execução `46055350123`. O PR 300 foi integrado
+por merge commit `5400ea1d105390390a376444c2aecf9adc7ffa99`, com a mesma árvore aprovada
+`401658da5fe776873d9398005222e3f482862114` do head `19de0620e`.
+
+O [workflow de produção](https://github.com/informach/sistema-zero/actions/runs/46062615482)
+terminou com sucesso em 27/11/2026. O manifesto canônico confirmou
+`PRODUCTION_WAVE_PASSED`, versão publicada 4, com identidade dos serviços conferida e
+predecessores retirados. Todos os serviços selecionados usam o commit de main acima.
+
+| Serviço | Deployment oficial |
+| --- | --- |
+| Members | `610653a6-13c7-4205-ae20-aa7035197e12` |
+| Auth | `45fdc37b-3c52-451e-9f61-af5d4f5c46df` |
+| Indicações | `40819834-0d4e-422e-8156-8bf2b56f7d63` |
+| Funil | `6ca19265-8499-4835-9536-f51baa9c0580` |
+| Admin | `609377f2-be8e-4ef4-8e63-27ccf8963662` |
+| Kids | `389aca1c-2a55-4f53-9742-9f02078abe6a` |
+| Adulto | `7f837bfc-d3a7-4836-80cf-1426fafef45a` |
+
+Após essa publicação, às 17:42 de Brasília, as 23 URLs passaram novamente, com HTTP 200,
+prazo correto e distinção correta entre venda e presente. Os 84 acessos históricos conferidos
+continuaram sem alteração de oferta, origem, início, vencimento ou hash do snapshot. Os 17
+resgates da campanha do guia permanecem preservados. Às 17:43, as três confirmações reais
+voltaram a mostrar as datas contratadas de doze meses, seis meses e trinta dias.
+
+O benefício Cadê na última aula do guia e os checkouts internos continuam usando as ofertas
+corretas. A conferência combinou os contratos e consultas reais de produção com testes locais
+do componente renderizado e navegador. Não foi realizado resgate ou pagamento de teste em
+produção, nem alterado o progresso de alunos para contornar a liberação sequencial das aulas.
+
+Não houve variável de ambiente nova. Catálogo e templates foram atualizados pelas APIs de
+negócio, sem deploy desses dois serviços. Os 19 triggers nativos do Railway permaneceram
+desativados. As correções de código também estão comitadas na staging local; arquivos em
+edição pela outra frente foram preservados.
