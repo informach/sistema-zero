@@ -51,7 +51,7 @@ export class ReferralLinkService {
     codeValue: string,
     offerRef: string | null,
     checkout: boolean,
-    /** O tipo que o link pediu (`?tipo=` dos convites, 27/11/2026); sem ele, presente primeiro. */
+    /** O tipo explícito (`?tipo=`); sem ele, preservar vendas exatas e presentes legados. */
     kind?: 'gift' | 'referral',
   ): Promise<LinkResult> {
     const code = await this.repo.findCodeByCode(codeValue)
@@ -119,14 +119,16 @@ export class ReferralLinkService {
       return { kind: 'ok', link: this.ambassadorLink(code.code, audience, 'gift', offer, false) }
     }
     // A mesma oferta pode estar nas duas listas (27/11/2026: a oferta única de cada curso é venda
-    // e presente): o tipo do link decide; sem ele, o presente vem primeiro, como antes. A oferta
-    // que saiu da lista cai na ligada do MESMO curso, mas só depois das correspondências exatas.
-    const kinds: ('gift' | 'referral')[] = checkout
-      ? ['referral']
-      : kind
-        ? [kind]
-        : ['gift', 'referral']
+    // e presente): o tipo explícito decide. Sem tipo, o slug exato que antes era de venda
+    // continua vendendo. O alias de uma oferta retirada (como o antigo -presente do guia)
+    // conserva a precedência de presente na busca pelo MESMO curso.
+    const explicitKind = checkout ? 'referral' : kind
     for (const sameCourse of [false, true]) {
+      const kinds: ('gift' | 'referral')[] = explicitKind
+        ? [explicitKind]
+        : sameCourse
+          ? ['gift', 'referral']
+          : ['referral', 'gift']
       for (const listKind of kinds) {
         const option = await this.offers.allowed(audience, listKind, offerRef, { sameCourse })
         if (!option) continue

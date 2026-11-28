@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -85,4 +86,49 @@ test('external config and compiler plugins fail explicitly instead of executing 
   expect(plugin.code).toBe(1)
   expect(plugin.output).toContain('Plugins TypeScript')
   expect(plugin.output).not.toContain('EXECUTED_UNTRUSTED_PLUGIN')
+}, 60_000)
+
+const compiledPlatform =
+  'function platformValue(value) { return value }\nwindow.__platformData = {}'
+const platformPath = 'public/sz-ext/game-2d.js'
+const platformHash = createHash('sha256').update(compiledPlatform).digest('hex')
+const converted = {
+  'package.json': '{"devDependencies":{"vite":"8.1.6"}}',
+  'tsconfig.json':
+    '{"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"bundler","strict":true,"allowJs":true,"checkJs":true,"skipLibCheck":true},"include":["src","public/**/*.js"]}',
+  [platformPath]: compiledPlatform,
+  'src/main.ts': 'const score: number = 1; console.log(score)',
+  'validation-options.json': JSON.stringify({ platformFiles: { [platformPath]: platformHash } }),
+}
+test('admitted compiled platform bytes keep syntax checks while authored closed files keep semantic checks', async () => {
+  expect(await verify(converted)).toEqual({ code: 0, output: '' })
+  const broken = await verify({
+    ...converted,
+    'src/closed.ts': 'const wrong: number = "bad"; export { wrong }',
+  })
+  expect(broken.code).toBe(1)
+  expect(broken.output).toContain('closed.ts')
+  expect(broken.output).toContain('TS2322')
+  expect(broken.output).not.toContain('TS7006')
+}, 60_000)
+test('a changed or unproved platform copy cannot borrow semantic admission', async () => {
+  const changed = await verify({ ...converted, [platformPath]: compiledPlatform + '\n// changed' })
+  expect(changed.code).toBe(1)
+  expect(changed.output).toContain('bytes da plataforma')
+  const unproved = await verify({ ...converted, 'validation-options.json': '{}' })
+  expect(unproved.code).toBe(1)
+  expect(unproved.output).toContain('TS7006')
+}, 60_000)
+test('platform provenance never suppresses syntax or dependency admission', async () => {
+  for (const source of ['function broken( {', 'import "not-declared"; export {}']) {
+    const result = await verify({
+      ...converted,
+      [platformPath]: source,
+      'validation-options.json': JSON.stringify({
+        platformFiles: { [platformPath]: createHash('sha256').update(source).digest('hex') },
+      }),
+    })
+    expect(result.code).toBe(1)
+    expect(result.output).toContain(source.startsWith('function') ? 'TS1005' : 'não está declarada')
+  }
 }, 60_000)

@@ -12,7 +12,7 @@ const PRODUTO = 'Cadê Todo Mundo'
 export const TERMOS_CADE_ADULTO: LegalDoc = {
   titulo: 'Termos de Uso do curso Cadê Todo Mundo para adultos',
   descricao: `Condições para a contratação e o uso do ${PRODUTO} na área adulta da plataforma da ${EMPRESA.razaoSocial}, contratado por pessoa maior de 18 anos para uso próprio.`,
-  atualizadoEm: '25 de novembro de 2026',
+  atualizadoEm: '27 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -29,7 +29,7 @@ export const TERMOS_CADE_ADULTO: LegalDoc = {
       titulo: '2. O que é e como funciona o Curso',
       paragrafos: [
         `O ${PRODUTO} é um material digital de caráter educacional: aulas guiadas em que o Usuário monta as regras de um jogo de procurar personagens no Estúdio da plataforma, sem instalar programas. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito. O mesmo Curso também pode ser recebido de presente, por um link de convite ou de campanha, nas condições informadas na página do presente.`,
-        'Após a aprovação do pagamento, o acesso às aulas do Curso, ao Estúdio das atividades e ao Mural adulto é liberado na área de membros pelo prazo informado na página da oferta, no resumo do checkout e no e-mail de confirmação, em dias corridos contados em períodos exatos de 24 horas. As instruções de primeiro acesso são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'Após a aprovação do pagamento, o acesso às aulas do Curso, ao Estúdio das atividades e ao Mural adulto é liberado na área de membros pelo prazo informado na página da oferta, no resumo do checkout e no e-mail de confirmação. Quando o prazo é em meses, a contagem usa meses de calendário. Quando é em dias, cada dia corresponde a 24 horas. As instruções de primeiro acesso são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
         'As aulas do Curso podem ser feitas em mais de um momento, dentro do prazo de acesso.',
         'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento da compra.',
       ],

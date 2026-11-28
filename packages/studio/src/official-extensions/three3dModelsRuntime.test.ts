@@ -658,7 +658,12 @@ describe('createSzModels — cópias com ossos', () => {
       const fog = new Map<string, boolean>()
       copy.traverse((node) => {
         const mesh = node as RealTHREE.Mesh
-        if (mesh.isMesh) fog.set(node.name, (mesh.material as RealTHREE.Material).fog)
+        if (mesh.isMesh) {
+          const material = mesh.material
+          if (Array.isArray(material) || !('fog' in material) || typeof material.fog !== 'boolean')
+            throw new Error('A peça deve ter um material com controle de névoa.')
+          fog.set(node.name, material.fog)
+        }
       })
       expect(fog.get('ceu')).toBe(false)
       expect(fog.get('nave')).toBe(true)

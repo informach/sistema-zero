@@ -41,7 +41,13 @@ import { useMapKeyboard } from './mapTools/useMapKeyboard'
 import { useMapLevel } from './mapTools/useMapLevel'
 import { useMapSheets } from './mapTools/useMapSheets'
 import { stageCursor } from './stageCursor'
-import { MAP_SELECT_CLASS, MapLevelSelect, type MapTool, TilemapToolbar } from './TilemapPanels'
+import {
+  MAP_SELECT_CLASS,
+  MapLevelSelect,
+  MapSidePanels,
+  type MapTool,
+  TilemapToolbar,
+} from './TilemapPanels'
 import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
@@ -373,7 +379,7 @@ function RegionalMapStage({
             />
           </MapPaper>
         </div>
-        <aside className="max-h-72 w-full shrink-0 overflow-y-auto bg-pin-surface md:max-h-none md:w-64">
+        <MapSidePanels>
           <Panel title={COPY.scene.criarDoMeuJeito}>
             <MapLevelSelect level={level} onChange={setLevel} />
           </Panel>
@@ -467,7 +473,7 @@ function RegionalMapStage({
               />
             </>
           ) : null}
-        </aside>
+        </MapSidePanels>
       </div>
       <div className="pin-band flex shrink-0 items-center justify-between gap-2 px-4 py-2">
         <MapStatusBar

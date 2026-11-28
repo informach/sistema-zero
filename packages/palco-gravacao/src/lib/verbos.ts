@@ -638,10 +638,20 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // (Cadê A1P4, 27/11/2026: o "apontar \"Objetivo cumprido!\"" do EdiAula achava o aviso e a mão ia ao meio
   // de baixo da tela, onde já não havia nada).
   if (f === 'apontar objetivo cumprido')
-    return [{ fazer: 'apontar', alvo: { seletor: '.sz-lesson-objectives-feedback[data-tone="ok"]' } }]
+    // A mensagem ocupa a linha inteira do quadro e o texto fica no começo dela: a mão vai ao texto.
+    return [
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '.sz-lesson-objectives-feedback[data-tone="ok"]', u: 0.035, v: 0.5 },
+        exato: true,
+      },
+    ]
+  // O material é um botão da linha inteira, com a palavra "Baixar" na ponta direita: a mão vai à palavra, que é
+  // o que a fala manda clicar (no meio da linha ela caía no nome do arquivo; Cadê A1P2, 27/11/2026).
   if (f === 'apontar baixar')
-    return [{ fazer: 'apontar', alvo: { seletor: '[aria-label^="Baixar"]' } }]
-  if (f === 'baixar') return [{ fazer: 'clicar', alvo: { seletor: '[aria-label^="Baixar"]' } }]
+    return [{ fazer: 'apontar', alvo: { seletor: '[aria-label^="Baixar"] .sz-lesson-material-cta' } }]
+  if (f === 'baixar')
+    return [{ fazer: 'clicar', alvo: { seletor: '[aria-label^="Baixar"] .sz-lesson-material-cta' } }]
 
   // "tocar prévia …" é o jogo do Estúdio, mais abaixo.
   const tocar = /^tocar (?!pr[eé]via\b)(.+)$/i.exec(texto)

@@ -66,7 +66,8 @@
     "./pinta-regional-pro-runtime": "./src/modes/pro/pintaRegionalProRuntime.ts",
     "./python-snapshot": "./src/runtime/python/snapshot.ts",
     "./python-project-validation": "./src/state/pythonProjectValidation.ts",
-    "./blockly-theme": "./src/blockly/publicTheme.ts"
+    "./blockly-theme": "./src/blockly/publicTheme.ts",
+    "./pro-runtime-declarations": "./src/modes/pro/runtimeDeclarations.ts"
   },
   "imports": {
     "#core": "./src/core/index.ts",
@@ -137,7 +138,9 @@
     "serve:e2e": "node scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts"
+    "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts",
+    "gen:pro-runtime-declarations": "bun scripts/gen-pro-runtime-declarations.ts",
+    "check:pro-runtime-declarations": "bun scripts/gen-pro-runtime-declarations.ts --check"
   },
   "dependencies": {
     "@astral-sh/ruff-wasm-web": "0.17.1",

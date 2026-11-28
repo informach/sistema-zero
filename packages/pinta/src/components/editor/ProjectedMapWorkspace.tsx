@@ -31,6 +31,7 @@ import {
 import { Button } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { ProjectedAutomappingPanel } from './MapAutomappingPanel'
+import { MapSidePanels } from './TilemapPanels'
 import { useProjectedScene } from './useProjectedScene'
 
 type Tool = 'paint' | 'erase' | 'pan' | 'select'
@@ -513,7 +514,7 @@ export function ProjectedMapWorkspace({
           </label>
         </div>
       </div>
-      <div className="pin-col pin-col--end flex max-h-64 shrink-0 flex-col gap-3 overflow-auto p-3 md:max-h-none md:w-68">
+      <MapSidePanels>
         <label className="flex flex-col gap-2 text-sm font-bold">
           Camada
           <select
@@ -585,7 +586,7 @@ export function ProjectedMapWorkspace({
             Criar autorregras
           </Button>
         )}
-      </div>
+      </MapSidePanels>
     </div>
   )
 }

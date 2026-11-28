@@ -1,14 +1,12 @@
 # CLAUDE.md — @sistemazero/member-shell
 
-## LG05 leitor A (27/11/2026, implementação local)
+## LG05 — contrato único da oficina e destinos (27/11/2026)
 
-`lib/pinta-workshop-capabilities.ts` separa o leitor causal (8), o gravador (7) e o teto
-nativo público (8). A montagem real do Pinta usa esse contrato, inclusive sob o Arquipélago.
-O BFF acompanha o leitor do core e verifica/sela as três variantes nativas 9 sem descartar dados;
-não há flag. `PINTA_MAX_READ_FORMAT_VERSION` do caminho legado permanece 6. Isso prepara o
-leitor anterior ao gravador: não libera edição de projetados nem PNG 6, não promove Python e
-não comprova deploy. Plano: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`.
-As seções de 23/11 que dizem leitor 7 descrevem o corte anterior.
+`lib/pinta-workshop-capabilities.ts` define leitor causal 8, gravador 8 e teto nativo 9. A montagem real do Pinta usa esse contrato em Kids, adulto e Arquipélago. O BFF verifica e sela as variantes sem perder dados. Não há flag nem gravador antigo paralelo; o canal legado 6 continua para os contextos isolados que o exigem. Leitura/importação e migração dos documentos anteriores ficam na autoridade comum. A implantação segue a ordem leitor compatível → imagem/serviços → gravador; fonte preparada não equivale a publicação.
+
+`studio-regional-build.ts` reutiliza as declarações portáteis do Estúdio nos builds com cópia reconhecida do motor 2D. Acrescenta somente arquivos derivados ausentes ou idênticos; conflitos preservam autoria. PNG e árvore de origem continuam intactos. A imagem deve provar o projeto criado pelo botão Jogar: tipos com `checkJs`, erro autoral recusado, build e playtest reais. Biblioteca compilada tem procedência de bytes conferida, sem esconder erros autorais nem dispensar sintaxe/importação.
+
+Preservar integralmente a fonte comercial já publicada e conferir a fonte exata do CI, imagem e promoção canônica. Estado de implantação e limites ficam em `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`. Os registros antigos de leitor/gravador 7 abaixo são históricos.
 
 ## Quarto: modo construção e salvar sozinho (26/11/2026)
 

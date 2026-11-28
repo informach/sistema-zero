@@ -1,11 +1,16 @@
-import { expect, test } from 'bun:test'
+import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { createRequire } from 'node:module'
 import { buildProRuntimeBridgeScript, STUDIO_PRO_ARTIFACT_LIMITS } from '@sistemazero/core/studio'
-import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
-import { gameTwoDManifest } from '../../studio/src/official-extensions/game-2d/manifest'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
+import { registerExtensionBlocks } from '../../studio/src/blockly/blocks'
+import { ensureBlocklyInitialized } from '../../studio/src/blockly/setup'
+import { gameTwoDBlocks } from '../../studio/src/official-extensions/game-2d/blocks'
+import { buildTilemapGameProject } from '../../studio/src/projects/tilemapGame'
 import { convertClassicToProTree } from '../../studio/src/state/convertToPro'
 import {
+  installPngImageBitmap,
   projectedSceneMaterial,
   regionalSceneMaterial,
 } from '../../studio/src/testing/pintaRegionalMaterialFixture'
@@ -14,20 +19,41 @@ import {
   readBuildRequest,
   trustedPackageJson,
   trustedViteConfig,
+  verifiedValidationPlatformFiles,
   verifyBuildBinaries,
 } from '../../studio-runtime/src/contracts'
 import { projectStudioRegionalBuild } from '../src/server/studio-regional-build'
+
+const storageDescriptors = ['indexedDB', 'IDBKeyRange'].map(
+  (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,
+)
+let restoreBitmap: () => void
+beforeAll(async () => {
+  const studioRequire = createRequire(new URL('../../studio/package.json', import.meta.url))
+  await import(studioRequire.resolve('blockly/blocks'))
+  Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: IDBKeyRange, configurable: true })
+  restoreBitmap = installPngImageBitmap()
+  ensureBlocklyInitialized()
+  registerExtensionBlocks(gameTwoDBlocks)
+})
+afterAll(() => {
+  restoreBitmap()
+  for (const [name, descriptor] of storageDescriptors) {
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor)
+    else Reflect.deleteProperty(globalThis, name)
+  }
+})
 
 async function fixture(projection?: 'isometric' | 'hexagonal') {
   const asset = projection
     ? await projectedSceneMaterial(projection)
     : await regionalSceneMaterial()
-  const original = {
-    ...createBlankProjectSnapshot('regional-build', 'Vila'),
-    installedExtensions: [
-      { id: gameTwoDManifest.id, version: gameTwoDManifest.version, installedAt: 1 },
-    ],
-  }
+  const original = await buildTilemapGameProject(
+    { ...asset, id: asset.regional.sourceId },
+    { namespace: 'lg05-pro-build-' + crypto.randomUUID() },
+  )
+  if (!original) throw new Error('O botão Jogar não montou o projeto regional.')
   const tree = await convertClassicToProTree(original)
   const pro = {
     ...original,
@@ -117,6 +143,7 @@ for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
       const files = await projectStudioRegionalBuild(input)
       const accepted = await readBuildRequest({ ...input, files })
       await verifyBuildBinaries(accepted.binaries)
+      const platformFiles = await verifiedValidationPlatformFiles(accepted)
       const script = `
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
 const root = '/workspace/builds/lg04-' + require('node:crypto').randomUUID();
@@ -136,11 +163,23 @@ try {
   }
   fs.writeFileSync(root + '/package.json', ${JSON.stringify(trustedPackageJson(accepted.templateId, accepted.dependencies))});
   fs.writeFileSync(root + '/vite.config.mjs', ${JSON.stringify(trustedViteConfig(accepted.templateId, accepted.dependencies))});
+  fs.writeFileSync(root + '/validation-options.json', ${JSON.stringify(JSON.stringify({ templateId: accepted.templateId, platformFiles }))});
   fs.writeFileSync(root + '/artifact-options.json', ${JSON.stringify(JSON.stringify({ consoleBridge: buildProRuntimeBridgeScript('https://kids.test') }))});
   fs.symlinkSync('/opt/sz-runtime/node_modules', root + '/node_modules');
   const run = (args) => cp.execFileSync('node', args, { cwd: root, stdio: 'inherit', timeout: 120000 });
+  run(['/opt/sz-runtime/check-project.mjs']);
+  const types = JSON.parse(fs.readFileSync(root + '/typecheck-result.json', 'utf8'));
+  if (types.status !== 'passed' || types.checkJs !== true || types.validation.runtimeFingerprint !== profile.runtimeFingerprint) throw new Error('The regional project lacks exact type evidence.');
+  const authoredPath = root + '/public/script.js', authored = fs.readFileSync(authoredPath, 'utf8');
+  fs.writeFileSync(authoredPath, authored + '\\n/** @type {number} */ const __lg05Wrong = "wrong";');
+  const broken = cp.spawnSync('node', ['/opt/sz-runtime/check-project.mjs'], { cwd: root, encoding: 'utf8', timeout: 30000 });
+  if (broken.status !== 1 || !broken.stderr.includes('TS2322') || !broken.stderr.includes('public/script.js')) throw new Error('Authored errors were not diagnosed.');
+  fs.writeFileSync(authoredPath, authored);
   run(['/opt/sz-runtime/node_modules/vite/bin/vite.js', 'build', '--config', './vite.config.mjs', '--configLoader', 'native']);
   run(['/opt/sz-runtime/pack-artifact.mjs', '${STUDIO_PRO_ARTIFACT_LIMITS.maxBytes}', '${STUDIO_PRO_ARTIFACT_LIMITS.maxFiles}']);
+  run(['/opt/sz-runtime/playtest.mjs']);
+  const playtest = JSON.parse(fs.readFileSync(root + '/playtest-result.json', 'utf8'));
+  if (playtest.evidence.length !== 2 || playtest.evidence.some(item => item.status !== 'passed')) throw new Error('The regional game lacks browser evidence.');
   let pngCount = 0;
   for (const [name, entry] of Object.entries(binaries)) {
     if (!name.startsWith('public/') || !name.endsWith('.png')) continue;

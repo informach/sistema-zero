@@ -534,7 +534,10 @@ async function ambassadorOfferLinks(
     for (const option of await deps.ambassadorOffers.options(audience)) {
       items.push({
         ...option,
-        link: referralLinkUrl(deps.funnelPublicUrl, code, { offerSlug: option.offerSlug }),
+        link: referralLinkUrl(deps.funnelPublicUrl, code, {
+          offerSlug: option.offerSlug,
+          kind: option.kind,
+        }),
         checkoutLink:
           option.kind === 'referral'
             ? referralLinkUrl(deps.funnelPublicUrl, code, {

@@ -7,10 +7,12 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
 
 ## Achados corrigidos
 
-1. **Alta, checkout abrindo presente:** quando uma oferta aparece nas listas de presente e
-   indicação, o link por slug com `/pagamento` escolhia presente antes da venda. A escolha do
-   checkout agora usa exclusivamente a lista de indicação. A precedência histórica do presente
-   continua nos links sem tipo e sem checkout. Regressão reproduzida antes da correção.
+1. **Alta, venda abrindo presente:** quando uma oferta aparece nas duas listas, o checkout e
+   o endereço exato da venda podiam abrir presente. O checkout agora usa somente indicação;
+   sem tipo, a correspondência exata conserva a venda. O alias antigo `-presente` mantém a
+   precedência de presente na busca por outra oferta do mesmo curso. Os links novos da página
+   do embaixador e dos convites informam o tipo explicitamente. As regressões foram reproduzidas
+   antes da correção, inclusive uma consulta real, sem cadastro, ao endereço antigo de venda.
 2. **Média, unidade inferida alterava a comunicação histórica:** um presente de trinta dias era
    rotulado como um mês pela tolerância entre dias e calendário. A unidade agora vem da política
    gravada no claim. Históricos não recebem backfill nem inferência de meses.
@@ -36,6 +38,16 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
    teste agora consulta o compositor nesse caso, removendo fundos CSS, borda e sombra da
    prova. O canvas vazio continua sendo rejeitado. A regressão isolada e o jogo real passaram
    no Chromium local, sem alterar o motor nem aumentar o timeout.
+8. **Média, unidade no painel interno de presente:** o painel compartilhado dos apps ainda
+   imprimia somente `accessDays`, mostrando 181 dias em um presente de seis meses. Agora usa
+   a mesma função de prazo do core, com prioridade para meses. A regressão reproduziu a falha
+   antes da correção; o painel real passou nos cinco casos de meses, Cadê com sete dias, prazo
+   histórico de trinta dias, singular e ausência de prazo. Publicar os apps Kids e adulto para
+   receber esse componente do member-shell.
+9. **Média, descrição do cálculo nos Termos do Cadê:** os dois públicos ainda descreviam
+   qualquer prazo como dias de 24 horas. Os Termos agora distinguem meses de calendário e dias,
+   seguindo o cálculo já usado no acesso. A versão passa para `cade-kids-2026-11-27` e
+   `cade-adulto-2026-11-27`, sem alterar os snapshots das compras anteriores.
 
 ## Compatibilidade e ordem
 
@@ -58,12 +70,14 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 
 - Antes da correção: três regressões falharam, demonstrando os achados de checkout, unidade e retomada.
 - Referrals: 338 testes passaram, incluindo os 59 testes de banco, sem falhas nem skips.
+- No complemento dos links, 280 testes passaram; os 70 opcionais não rodaram nessa suíte
+  padrão. Não houve alteração de SQL nesse complemento. A tipagem também foi conferida.
 - Referrals em Postgres descartável: migration aplicada, política persistida e prova da troca de
   oferta na campanha ativa com aquisição, preservando o resgate anterior.
 - Members: 2448 testes passaram, 779 opcionais não executados na suíte geral. Os 46 testes
   direcionados incluem o grant por política congelada.
 - Members em Postgres descartável: dez testes passaram; cadência do Desafio cobre dias e meses.
-- Funnel: 767 testes passaram, seis testes de banco opcionais não executados; build passou;
+- Funnel: 768 testes passaram após o complemento dos Termos do Cadê, seis testes de banco opcionais não executados; build passou;
   typecheck sem erros (nove sugestões do Astro).
 - Navegador local com gateway falso: venda do guia em quatro larguras, presente em duas,
   cadastro e estados passaram. O mesmo slug `-1-ano` mostra seis meses na venda e no presente,
@@ -73,6 +87,8 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 - Mensageria: 183 testes passaram, onze opcionais de banco não executados; typecheck passou.
 - Core: 3357 testes passaram.
 - Checkout interno compartilhado: 38 testes direcionados passaram.
+- Complemento do painel de presente: 47 testes de comércio passaram, incluindo as cinco
+  renderizações isoladas do painel real. Os sete dias anunciados do Cadê permanecem sete.
 - Confirmação de compra: a regressão falhou com a condição antiga; os nove casos passaram com
   a correção, incluindo guia e Cadê antigos de doze meses, Desafio antigo de trinta dias, compra
   nova de seis meses e pagamento pendente. O teste usa somente Postgres descartável e navegador local.
