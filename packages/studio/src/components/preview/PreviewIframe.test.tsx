@@ -735,8 +735,14 @@ describe('PreviewIframe', () => {
     fireEvent.load(primeiro)
 
     act(() => useProRun.getState().actions?.reload?.())
-    await waitFor(() => expect(getPreviewSrcDoc()).not.toBe(rodando))
+    await waitFor(() => {
+      expect(getPreviewSrcDoc()).toContain('Preview automático')
+      expect(getPreviewSrcDoc()).not.toBe(rodando)
+    })
     expect(screen.getByTitle('Pré-visualização') === primeiro).toBe(true)
+    // This case stops a live reloaded game. Before load, stopping correctly
+    // interrupts startup and replaces its potentially busy process.
+    fireEvent.load(primeiro)
 
     act(() => useProRun.getState().actions?.stop())
     await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
