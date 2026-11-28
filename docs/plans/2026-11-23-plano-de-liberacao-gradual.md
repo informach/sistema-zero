@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-**Estado em 2026-11-28T10:12:42.330Z:** correção da identidade do motor Pro aprovada localmente; imagem oficial e sete repetições aprovadas, novas fontes em CI completo. Candidatas de produção preservam os 121 arquivos das campanhas; staging preserva os cursos concorrentes. Aceite final pela conta e duas ondas de produção pendentes.
+**Estado em 2026-11-28T11:23:53.545Z:** staging concluída com oito serviços, leitores e gravador aprovados 13/13; reabertura Pro pela conta aprovada. O aceite identificou ausência do adaptador hospedado no Pro livre com bibliotecas; correção local em validação, antes de promover. Campanhas e cursos concorrentes preservados.
 
 Registrado em 23/11/2026. Atualizado em 27/11 para preservar as campanhas já publicadas e executar LG05. LG01, LG02 e LG04 estão concluídas em produção. LG03 segue parcial: Ilha do Farol 3/3 e Jardim Secreto 2/2, nos dois públicos; Pinta e Moedas em rascunho 0/1, conferidos por leitura de produção em 28/11, 01:54 UTC.
 
