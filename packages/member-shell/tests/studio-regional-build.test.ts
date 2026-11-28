@@ -4,8 +4,10 @@ import { createRequire } from 'node:module'
 import { buildProRuntimeBridgeScript, STUDIO_PRO_ARTIFACT_LIMITS } from '@sistemazero/core/studio'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
+import publishedBrowser from '../../studio/scripts/fixtures/project-run-context-browser-2026-11-28.json'
 import { registerExtensionBlocks } from '../../studio/src/blockly/blocks'
 import { ensureBlocklyInitialized } from '../../studio/src/blockly/setup'
+import portableFactorySource from '../../studio/src/extensions/projectRunContextFactory.generated.json'
 import { gameTwoDBlocks } from '../../studio/src/official-extensions/game-2d/blocks'
 import { buildTilemapGameProject } from '../../studio/src/projects/tilemapGame'
 import { convertClassicToProTree } from '../../studio/src/state/convertToPro'
@@ -45,7 +47,7 @@ afterAll(() => {
   }
 })
 
-async function fixture(projection?: 'isometric' | 'hexagonal') {
+async function fixture(projection?: 'isometric' | 'hexagonal', browserPublishedEngine = false) {
   const asset = projection
     ? await projectedSceneMaterial(projection)
     : await regionalSceneMaterial()
@@ -55,6 +57,20 @@ async function fixture(projection?: 'isometric' | 'hexagonal') {
   )
   if (!original) throw new Error('O botão Jogar não montou o projeto regional.')
   const tree = await convertClassicToProTree(original)
+  if (browserPublishedEngine) {
+    const path = 'public/sz-ext/game-2d.js'
+    const node = tree[path]
+    if (node?.kind !== 'file') throw new Error('O projeto não contém o motor esperado.')
+    const canonicalSha = createHash('sha256').update(node.content).digest('hex')
+    const copy = publishedBrowser.copies.find(
+      (item) => item.extensionId === 'game-2d' && item.canonicalSha256 === canonicalSha,
+    )
+    if (!copy) throw new Error('A origem da cópia publicada não foi reconhecida.')
+    const content = node.content.replace(portableFactorySource, publishedBrowser.factorySource)
+    if (createHash('sha256').update(content).digest('hex') !== copy.browserSha256)
+      throw new Error('A cópia do navegador não corresponde ao motor publicado.')
+    tree[path] = { ...node, content }
+  }
   const pro = {
     ...original,
     kind: 'pro' as const,
@@ -92,7 +108,8 @@ async function fixture(projection?: 'isometric' | 'hexagonal') {
 }
 for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
   test(`o pacote ${projection ?? 'ortogonal'} passa pelo BFF e pelo compilador sem alterar a árvore autoral`, async () => {
-    const { input, pro, asset } = await fixture(projection)
+    // The isometric case reopens a copy already emitted by the deployed browser build.
+    const { input, pro, asset } = await fixture(projection, projection === 'isometric')
     const before = JSON.stringify(pro),
       filesBefore = JSON.stringify(input.files)
     const files = await projectStudioRegionalBuild(input)
@@ -139,7 +156,7 @@ for (const projection of [undefined, 'isometric', 'hexagonal'] as const)
     `o Pro ${projection ?? 'ortogonal'} compila na imagem real sem rede e conserva o PNG original`,
     async () => {
       if (!image) throw new Error('Informe a imagem qualificada da LG04.')
-      const { input } = await fixture(projection)
+      const { input } = await fixture(projection, projection === 'isometric')
       const files = await projectStudioRegionalBuild(input)
       const accepted = await readBuildRequest({ ...input, files })
       await verifyBuildBinaries(accepted.binaries)
