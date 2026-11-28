@@ -11,6 +11,7 @@ import portableFactorySource from '../../studio/src/extensions/projectRunContext
 import { gameTwoDBlocks } from '../../studio/src/official-extensions/game-2d/blocks'
 import { buildTilemapGameProject } from '../../studio/src/projects/tilemapGame'
 import { convertClassicToProTree } from '../../studio/src/state/convertToPro'
+import { prepareEditableStudioProject } from '../../studio/src/state/editableProjectValidation'
 import {
   installPngImageBitmap,
   projectedSceneMaterial,
@@ -289,6 +290,11 @@ test('o Pro público envia a identidade do motor e preserva os PNGs no fallback 
     const adapter = createFreeProRuntime(async (url, init) =>
       handler(new Request(`https://adult.test${String(url)}`, init)),
     )
+    // Match StudioCore's opening boundary before preview selection. Compiler quotas apply
+    // to the admitted projection, never to the retained browser engine copy.
+    const opened = await prepareEditableStudioProject(pro, { proBuildLimits: adapter.limits })
+    expect(opened?.tree).toEqual(pro.tree)
+    expect(opened?.assets).toEqual(pro.assets)
     const result = await adapter.build({ project: pro, signal: new AbortController().signal })
     expect(result.artifact?.id).toBe('a'.repeat(64))
     expect(captured?.files['public/sz-ext/game-2d.js']).toContain('_pintaRegionFactory')
