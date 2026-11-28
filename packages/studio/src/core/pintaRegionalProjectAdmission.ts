@@ -12,6 +12,7 @@ import {
   readPintaRegionalMarker,
 } from './pintaRegionalMaterial'
 import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
+import { validProMaterialPath } from './proAssetPaths'
 import { MAX_ASSETS_COUNT, MAX_ASSETS_TOTAL_CHARS } from './projectAssetBudget'
 import { ProjectDocumentError } from './projectDocumentGuards'
 
@@ -211,9 +212,7 @@ export async function admitRegionalProjectAssets(
       (source !== 'upload' && source !== 'library') ||
       libOrigin === 'molda' ||
       (proPath !== undefined &&
-        (typeof proPath !== 'string' ||
-          !/\.png$/i.test(proPath) ||
-          paths.get(proPath.toLowerCase()) !== 1)) ||
+        (!validProMaterialPath(proPath, 'image') || paths.get(proPath.toLowerCase()) !== 1)) ||
       (libId !== undefined && (libOrigin !== 'pinta' || libId !== `personal:${regional.sourceId}`))
     )
       throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
