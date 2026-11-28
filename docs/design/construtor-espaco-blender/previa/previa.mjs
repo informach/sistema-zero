@@ -100,7 +100,8 @@ try {
     }
   } else if (modo === 'capa') {
     // A capa do caderno da Patrulha: a mesma cena do jogo, mais perto da nave, em 1600 × 1400.
-    const [cenario, nave, asteroide, laser] = resto
+    // Peças a mais depois do laser (as capas dos Poderes): "nome:tamanho:x:y:z".
+    const [cenario, nave, asteroide, laser, ...extras] = resto
     await foto(
       {
         modo: 'jogo',
@@ -108,6 +109,7 @@ try {
         nave,
         asteroide,
         laser,
+        ...(extras.length ? { extras: extras.join(';') } : {}),
         cam: '0,4.6,8.5',
         alvo: '0,2.2,-14',
         fov: '58',

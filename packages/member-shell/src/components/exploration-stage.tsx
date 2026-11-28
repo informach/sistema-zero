@@ -42,6 +42,7 @@ import {
   LayersStage,
   SpawnStage,
 } from './scene-dino-stages'
+import { EnemyFireStage } from './scene-enemy-fire'
 import { FixedVsReadStage } from './scene-fixed-vs-read'
 import { FoundCounterStage } from './scene-found-counter'
 import { InvincibilityStage } from './scene-invincibility'
@@ -71,9 +72,11 @@ import { NumberLineStage } from './scene-number-line'
 import { OnceVsAlwaysStage } from './scene-once-vs-always'
 import { SameRulesStage } from './scene-same-rules'
 import { ScoreGoalStage } from './scene-score-goal'
+import { SpreadShotStage } from './scene-spread-shot'
 import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
 import { SymbolSequenceStage } from './scene-symbol-sequence'
 import { TimedBridgeStage } from './scene-timed-bridge'
+import { TimedShieldStage } from './scene-timed-shield'
 import { TouchResponseStage } from './scene-touch-response'
 import { TwoClocksStage } from './scene-two-clocks'
 import { TwoPiecesStage } from './scene-two-pieces'
@@ -401,6 +404,12 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
   if (m === 'island-3d') return <IslandWorld state={state.island3d!} />
   // A meta do jogo (Nave, Dia 5, 02/11/2026).
   if (m === 'score-goal') return <ScoreGoalStage state={state} />
+  // O escudo temporário (Construtor, 28/11/2026).
+  if (m === 'timed-shield') return <TimedShieldStage state={state} cast={cast} />
+  // O tiro triplo (Construtor, 28/11/2026).
+  if (m === 'spread-shot') return <SpreadShotStage state={state} cast={cast} />
+  // O inimigo que atira (Construtor, 28/11/2026).
+  if (m === 'enemy-fire') return <EnemyFireStage state={state} cast={cast} />
   return semPalco(m)
 }
 

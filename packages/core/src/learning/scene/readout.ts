@@ -1,4 +1,4 @@
-import { MESH_SKIN_LABELS, type SceneId, STAGE_TARGET, TIMED_BRIDGE } from './actions'
+import { MESH_SKIN_LABELS, type SceneId, STAGE_TARGET, TIMED_BRIDGE, TIMED_SHIELD } from './actions'
 import {
   FOLHA_DA_NAVE,
   LUPA,
@@ -21,6 +21,9 @@ import { CONTACT_HEARTS, cameraWindow, contactTouching, rechargeWords } from './
 import { emCamadas, type ScenePilha } from './pilha'
 import {
   DELTA_RACE,
+  enemyFireOver,
+  enemyFirePlace,
+  enemyFireX,
   HITBOX_DINO_SIZE,
   lighthouseWalkGone,
   MESH_POINTS,
@@ -31,9 +34,14 @@ import {
   sceneCactiOnScreen,
   sceneContact,
   sceneDrawingsGap,
+  spreadShotHits,
+  timedShieldOver,
   UNIQUE_NAME_WARNINGS,
   uniqueNamesWarning,
 } from './state'
+
+/** "2, 5, 8 e 11": os segundos das pedras do escudo temporário, como a criança lê. */
+const ROCHAS_DO_ESCUDO = `${TIMED_SHIELD.rocks.slice(0, -1).join(', ')} e ${TIMED_SHIELD.rocks.at(-1)}`
 
 /**
  * O que a cena DIZ de si mesma: a faixa de estado e a frase da situação.
@@ -295,6 +303,32 @@ function leituras(
           tone: 'plain',
         },
       ]
+    case 'timed-shield':
+      // ⚠️ Só os números: se a pedra tira vida ou só sai é a descoberta.
+      return [
+        { label: 'segundo', value: String(state.timedShield.second), tone: 'plain' },
+        { label: 'vidas', value: String(state.timedShield.lives), tone: 'a' },
+        { label: 'escudo', value: String(state.timedShield.shield), tone: 'b' },
+      ]
+    case 'spread-shot': {
+      // ⚠️ Só os números: onde cada laser chega é a descoberta. O Tiro triplo ligado ou desligado
+      // é dito pela frase da situação (e pela faixa da tela livre); a faixa tem três números.
+      const sp = state.spreadShot
+      return [
+        { label: 'lasers no ar', value: String(sp.lasers.length), tone: 'a' },
+        { label: 'pedras acertadas', value: String(spreadShotHits(sp).length), tone: 'b' },
+        { label: 'desvio', value: String(sp.deviation), tone: 'plain' },
+      ]
+    }
+    case 'enemy-fire': {
+      // ⚠️ Só os números e a escolha: de onde o tiro sai e o que o encosto faz são a descoberta.
+      const f = state.enemyFire
+      return [
+        { label: 'tiros no ar', value: String(f.shots.length), tone: 'a' },
+        { label: 'vidas', value: String(f.lives), tone: 'b' },
+        { label: 'origem', value: f.origin === 'middle' ? 'no meio' : 'na inimiga', tone: 'plain' },
+      ]
+    }
     case 'published-copy':
       return [
         { label: 'seu projeto', value: state.copies.projectColor, tone: 'a' },
@@ -1128,6 +1162,38 @@ function situacao(scene: SceneId, state: SceneState): string {
     case 'score-goal': {
       const g = state.scoreGoal
       return `O placar está em ${g.points} e a placa da meta diz ${g.goal}. A vitória vem com o placar ${g.op === '>' ? 'maior que a' : 'maior ou igual à'} meta.${g.won ? ' A partida acabou.' : ''}`
+    }
+    case 'timed-shield': {
+      const t = state.timedShield
+      const fim = timedShieldOver(t) ? ' A partida acabou.' : ''
+      return `Segundo ${t.second}. A nave tem ${quantos(t.lives, 'vida', 'vidas')} e o Escudo está em ${t.shield}. As pedras batem nos segundos ${ROCHAS_DO_ESCUDO}.${fim}`
+    }
+    case 'spread-shot': {
+      const sp = state.spreadShot
+      const tiro = sp.triple
+        ? `O tiro triplo está ligado, com desvio ${sp.deviation}.`
+        : 'O tiro triplo está desligado.'
+      const acertos = spreadShotHits(sp).length
+      const agora =
+        sp.lasers.length > 0
+          ? `${quantos(sp.lasers.length, 'laser está', 'lasers estão')} no ar.`
+          : sp.volley === null
+            ? 'Três pedras esperam no alto da tela.'
+            : acertos === 0
+              ? 'No último disparo, nenhuma pedra foi acertada.'
+              : `No último disparo, ${quantos(acertos, 'pedra foi acertada', 'pedras foram acertadas')}.`
+      return `${tiro} ${agora}`
+    }
+    case 'enemy-fire': {
+      const f = state.enemyFire
+      const nave = f.shipX === 400 ? 'no meio' : f.shipX < 400 ? 'à esquerda' : 'à direita'
+      const origem = f.origin === 'middle' ? 'no meio' : 'na inimiga'
+      const tiros =
+        f.shots.length === 0
+          ? 'Nenhum tiro está no ar'
+          : quantos(f.shots.length, 'tiro está no ar', 'tiros estão no ar')
+      const fim = enemyFireOver(f) ? ' A partida acabou.' : ''
+      return `A inimiga está ${enemyFirePlace(enemyFireX(f.tick))}, e a nave está ${nave}. A origem do tiro está ${origem}. ${tiros}, e a nave tem ${quantos(f.lives, 'vida', 'vidas')}.${fim}`
     }
     case 'published-copy':
       return `Seu projeto está ${state.copies.projectColor}. O Mural tem ${state.copies.posts.length} ${state.copies.posts.length === 1 ? 'publicação' : 'publicações'}; ${state.copies.posts.length ? `a mais recente está ${state.copies.posts.at(-1)?.color}.` : 'a tela está vazia.'}`

@@ -276,7 +276,7 @@ const MANIFESTOS = listarArquivosAulas()
   .sort()
 describe('os manifestos atuais das aulas', () => {
   test('o inventário distingue os cursos, incluindo o novo Desafio e Cadê Todo Mundo?', () => {
-    expect(MANIFESTOS).toHaveLength(56)
+    expect(MANIFESTOS).toHaveLength(60)
     // O Jardim Secreto (Faísca) usa os nomes curtos da pasta própria.
     expect(MANIFESTOS.filter((name) => /^aula-\d+\.manifesto\.json$/.test(name))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('ilha-aula-'))).toHaveLength(3)
@@ -291,6 +291,8 @@ describe('os manifestos atuais das aulas', () => {
     expect(MANIFESTOS.filter((name) => name.startsWith('nave-contra-asteroides-'))).toHaveLength(9)
     expect(MANIFESTOS.filter((name) => name.startsWith('meu-jeito-'))).toHaveLength(8)
     expect(MANIFESTOS.filter((name) => name.startsWith('patrulha-espacial-'))).toHaveLength(5)
+    expect(MANIFESTOS.filter((name) => name.startsWith('escudo-aula-'))).toHaveLength(2)
+    expect(MANIFESTOS.filter((name) => name.startsWith('triplo-aula-'))).toHaveLength(2)
   })
   test('os cinco identificadores anteriores de Nave preservam a identidade; o certificado fica no Desafio', () => {
     for (const day of [1, 2, 3, 4, 5]) {
@@ -656,6 +658,12 @@ describe('o cenário das cenas dos cursos', () => {
     'jornada-faisca-base-3d': 'ilha',
     // A Patrulha Espacial usa a nave nas experiências 2D de ritmo e movimento.
     'jornada-construtor-base-3d': 'nave',
+    // Os Poderes do Construtor: a experiência de cada um é sobre a Nave Contra Asteroides.
+    'jornada-construtor-poder-1': 'nave',
+    'jornada-construtor-poder-2': 'nave',
+    'jornada-construtor-poder-3': 'nave',
+    'jornada-construtor-poder-4': 'nave',
+    'jornada-construtor-poder-5': 'nave',
     'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }

@@ -17,7 +17,7 @@ test('os destinos reconhecem as ofertas editoriais, sem confundir slugs semelhan
 
 test('todas as aulas projetam somente o vínculo do curso, sem mutar a fonte ou seus projetos', () => {
   const arquivos = listarArquivosAulas().filter((n) => n.endsWith('.manifesto.json'))
-  expect(arquivos).toHaveLength(56)
+  expect(arquivos).toHaveLength(60)
   for (const nome of arquivos) {
     const origem = JSON.parse(readFileSync(caminhoAula(nome), 'utf8'))
     // Os moldes plannedVideo são válidos no formato editorial, conferido pelo validador da autoria.

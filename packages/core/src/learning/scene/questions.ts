@@ -424,6 +424,21 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, o placar sobe a cada acerto e a placa da meta fica parada. Você troca o sinal da vitória e compara.',
   },
+  'timed-shield': {
+    label: 'Um escudo que conta para trás',
+    explanation:
+      'Nesta experiência, pedras batem na nave nos segundos 2, 5, 8 e 11. Você pega o item do escudo e avança um segundo de cada vez.',
+  },
+  'spread-shot': {
+    label: 'Um tiro, três caminhos',
+    explanation:
+      'Nesta experiência, a nave dispara contra três pedras paradas no alto da tela. Você liga o tiro triplo, escolhe o desvio e olha onde cada laser chega.',
+  },
+  'enemy-fire': {
+    label: 'Uma inimiga com tiros próprios',
+    explanation:
+      'Nesta experiência, a nave inimiga anda de um lado para o outro no alto da tela e atira a cada um segundo e meio. Você escolhe a origem do tiro e avança o tempo.',
+  },
 }
 
 /**
@@ -2329,6 +2344,91 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       correctChoiceId: 'maior-igual',
       explanation:
         'Com maior ou igual, o placar igual à meta já conta. Com maior que, o placar precisa passar da meta. E a placa é uma constante: durante a partida, ela não muda.',
+    },
+  },
+  // O escudo temporário (28/11/2026): o erro típico é achar que pegar o item basta, e que a pedra
+  // sempre tira vida (ou que o escudo dura a partida inteira).
+  'timed-shield': {
+    prediction: {
+      prompt:
+        'A nave pegou o escudo agora. Uma pedra bate daqui a 2 segundos. O que acontece com as vidas?',
+      choices: [
+        {
+          id: 'perde',
+          label: 'A nave perde uma vida, como sem escudo',
+          shows: 'A pedra bateu com o Escudo maior que 0 e só saiu. As vidas ficaram iguais.',
+        },
+        { id: 'iguais', label: 'As vidas ficam iguais: a pedra só sai' },
+      ],
+      correctChoiceId: 'iguais',
+      revealOn: 'shield-protects',
+    },
+    explain: {
+      prompt: 'O Escudo chegou a 0 e outra pedra bateu. O que aconteceu com as vidas?',
+      choices: [
+        { id: 'nada', label: 'Nada: o escudo protege até o fim da partida.' },
+        { id: 'perdeu', label: 'A nave perdeu uma vida, como sem escudo.' },
+      ],
+      correctChoiceId: 'perdeu',
+      explanation:
+        'Pegar o item liga o Escudo em 5, e o Escudo desce 1 a cada segundo. Enquanto o Escudo é maior que 0, a pedra só sai. Quando o Escudo chega a 0, a batida volta a tirar vida, até a nave pegar o item de novo.',
+    },
+  },
+  // O tiro triplo (28/11/2026): o erro típico é achar que três lasers sempre acertam três pedras,
+  // ou que o laser do lado sai "mais forte" em vez de andar para o lado.
+  'spread-shot': {
+    prediction: {
+      prompt:
+        'O tiro triplo está ligado com desvio 0. A nave dispara uma vez. Quantas pedras os lasers acertam?',
+      choices: [
+        {
+          id: 'tres',
+          label: 'Três: cada laser acerta uma pedra',
+          shows: 'Os três lasers seguiram juntos pelo mesmo caminho, e só a pedra do meio saiu.',
+        },
+        { id: 'uma', label: 'Uma só: a pedra do meio' },
+      ],
+      correctChoiceId: 'uma',
+      revealOn: 'triple-stacked',
+    },
+    explain: {
+      prompt: 'Com o tiro triplo e desvio 2, por que os lasers chegam a pedras diferentes?',
+      choices: [
+        { id: 'forca', label: 'Os lasers dos lados saem com mais força.' },
+        { id: 'lado', label: 'Cada laser anda para o lado de um jeito diferente.' },
+      ],
+      correctChoiceId: 'lado',
+      explanation:
+        'Os três lasers sobem 7 a cada quadro. O laser do meio não anda para o lado; os lasers dos lados andam 2 para a esquerda ou para a direita a cada quadro. A velocidade para o lado escolhe o caminho de cada laser: com desvio 0 os três seguem juntos, e com desvio 1 os lasers dos lados passam entre as pedras.',
+    },
+  },
+  // O inimigo que atira (28/11/2026): o erro típico é achar que todo tiro da inimiga sai de onde ela
+  // está, mesmo com a origem num lugar fixo (e, na pergunta final, que o tiro já criado segue a
+  // inimiga).
+  'enemy-fire': {
+    prediction: {
+      prompt:
+        'A origem do tiro é No meio, e a inimiga está na ponta esquerda. De onde sai o próximo tiro?',
+      choices: [
+        { id: 'meio', label: 'Do meio da tela, como os outros tiros' },
+        {
+          id: 'inimiga',
+          label: 'Da ponta esquerda, embaixo da inimiga',
+          shows: 'Com a origem No meio, os tiros nasceram no meio da tela, longe da inimiga.',
+        },
+      ],
+      correctChoiceId: 'meio',
+      revealOn: 'fixed-origin',
+    },
+    explain: {
+      prompt: 'Com a origem Na inimiga, por que cada tiro sai de um lugar diferente?',
+      choices: [
+        { id: 'onde-esta', label: 'O tiro nasce onde a inimiga está quando atira.' },
+        { id: 'sorteio', label: 'A tela sorteia um lugar para cada tiro.' },
+      ],
+      correctChoiceId: 'onde-esta',
+      explanation:
+        'Com a origem No meio, o tiro é criado sempre no mesmo lugar fixo, e todos saem do meio da tela. Com a origem Na inimiga, o tiro é criado na posição da inimiga naquele momento: a origem acompanha a inimiga, e cada tiro sai de onde a inimiga estava. Um relógio decide o ritmo: a inimiga atira a cada um segundo e meio. O tiro que encosta na nave sai e tira uma vida, e Recomeçar a partida limpa os tiros.',
     },
   },
 }

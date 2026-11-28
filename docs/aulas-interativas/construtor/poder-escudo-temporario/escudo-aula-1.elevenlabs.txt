@@ -1,0 +1,193 @@
+[upbeat, welcoming voice] Oi! A sua nave vai ganhar um Poder: um escudo.
+
+[engaging, energetic, conversational voice] O jogo é a Nave Contra Asteroides que você montou: as setas movem a nave, o Espaço dispara, e você precisa acertar vinte asteroides antes de perder as três vidas.
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a partida.
+
+[interested, animated voice] Olha aqui no meio da tela: de tempos em tempos cai um item azul. Quando a nave pega o item, o número do Escudo, aqui no canto, vira 5, e a nave pisca.
+
+[engaging, energetic, conversational voice] Enquanto o escudo está ligado, a pedra que bate na nave só sai, e a vida fica.
+
+[curious] Será que o escudo dura para sempre?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: pegue o escudo, deixe uma pedra bater e repare no número do Escudo. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar o seu Poder nas duas aulas, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o material.
+
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
+
+[confident, clear, unhurried voice] Agora clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Um escudo que dura para sempre deixaria o jogo fácil demais. Por isso, o escudo tem um prazo.
+
+[confident, clear, unhurried voice] O jogo guarda esse prazo numa variável: um número que pode mudar durante a partida.
+
+[engaging, energetic, conversational voice] Sabe a ampulheta? Quando você vira, a areia começa a descer, e o tempo acaba quando a areia acaba.
+
+[engaging, energetic, conversational voice] No seu jogo, a ampulheta é a variável tempoDoEscudo. Pegar o item vira a ampulheta: o número vai para cinco. E, a cada segundo, ele perde um.
+
+[engaging, energetic, conversational voice] Na batida de uma pedra, o jogo faz uma pergunta: o escudo ainda tem tempo?
+
+[curious] E se a nave pegar o item de novo, com o escudo ainda ligado?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar quando a pedra tira vida e quando ela só sai, e o que acontece quando o escudo acaba. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O seu jogo já tem tudo para o escudo: o grupo itensEscudo, que vai guardar os itens, o desenho deles e o placar do Escudo, ainda em zero. Só que nenhum item cai. Vamos criar um relógio que solta um item a cada quatro segundos.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Siga até o relógio A cada 1.5 segundos, o dos asteroides, e deixe à vista o espaço logo abaixo dele, fora do fazer.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Tempo e depois Quadros e intervalos. Pegue A cada segundos e encaixe nesse espaço.
+
+[confident, clear, unhurried voice] Troque o 2 por 4.
+
+[confident, clear, unhurried voice] Deixe o fazer desse relógio à vista. Abra Programação e depois Lógica e Se, e encaixe um Se dentro desse fazer.
+
+[confident, clear, unhurried voice] Leve a pergunta x maior que zero para a lixeira. Com o espaço da pergunta à vista, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, e encaixe o estado do jogo é.
+
+[confident, clear, unhurried voice] Escolha jogando no estado. Assim, nada nasce antes de a partida começar.
+
+[confident, clear, unhurried voice] Deixe o então desse Se à vista. Abra Jogo 2D, depois Grupos e depois Criar e percorrer. Pegue No grupo criar um sprite com imagem e encaixe nesse então.
+
+[confident, clear, unhurried voice] Troque o grupo inimigos por itensEscudo.
+
+[confident, clear, unhurried voice] No x, coloque 378. É o meio da tela, menos a metade da largura do item. No y, coloque menos 44, para o item nascer acima da tela.
+
+[confident, clear, unhurried voice] Na largura e na altura, coloque 44.
+
+[confident, clear, unhurried voice] Escolha a imagem item-escudo-redondo. Deixe vx em zero e, no último número, logo depois de vy, coloque 2, para o item descer devagar.
+
+[interested, animated voice] Se quiser, troque a imagem por outra moldura de escudo: são quatro, e todas funcionam igual.
+
+[upbeat, encouraging voice] Clique no jogo e aperte Enter. Espere alguns segundos: o item cai pelo meio, a cada quatro segundos. Por enquanto, ele passa pela nave sem fazer nada.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 4 segundos fica fora de A cada quadro, com o Se do estado jogando, e dentro dele está a criação no grupo itensEscudo, em x 378 e y menos 44, com vy 2.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O item já cai, mas passa pela nave sem fazer nada. Pegar o item é um encontro, como a pedra batendo na nave. Só que, agora, o encontro liga o escudo.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre o então de Se jogando. Deixe à vista o espaço logo abaixo do encontro das pedras com a nave.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue Para cada sprite do grupo que colidir com o sprite e encaixe nesse espaço.
+
+[confident, clear, unhurried voice] No grupo, escolha itensEscudo. Conserve o sprite nave. Em chamar o sprite de, troque inimigo por itemPego, tudo junto, com P maiúsculo.
+
+[confident, clear, unhurried voice] Deixe o fazer desse encontro à vista. Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar o sprite do grupo e solte dentro desse fazer.
+
+[confident, clear, unhurried voice] No sprite, escolha itemPego. No grupo, escolha itensEscudo.
+
+[interested, animated voice] Sem tirar o item do grupo, ele continuaria encostando na nave a cada quadro, e o escudo ligaria de novo sem parar.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis. Pegue Alterar variável para e encaixe logo abaixo de Tirar o sprite.
+
+[confident, clear, unhurried voice] Troque contador por tempoDoEscudo e o 1 por 5. São os cinco segundos do escudo.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Som e depois Efeitos prontos. Encaixe Tocar efeito logo abaixo e escolha power-up.
+
+[upbeat, encouraging voice] Clique no jogo e aperte Enter. Deixe a nave no meio e espere o item. Quando ela pega o item, o item some, toca o power-up, e o Escudo, no canto, vira 5.
+
+[engaging, energetic, conversational voice] Só que o número fica parado no cinco, e as pedras ainda tiram vida. A proteção e o prazo vêm nas próximas partes.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro de itensEscudo com a nave tira o itemPego do grupo itensEscudo e, logo abaixo, põe 5 em tempoDoEscudo.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O Escudo já vira cinco, mas a pedra continua tirando vida. Na batida, o jogo precisa fazer uma pergunta: o escudo ainda tem tempo? Se tem, a pedra só sai. Se não tem, a nave perde uma vida.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Encontre o encontro das pedras com a nave e deixe à vista o espaço logo abaixo de Soltar explosão no sprite atingiuNave.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se. Pegue o bloco Se e encaixe logo abaixo da explosão. Machucar o sprite e Tocar efeito descem para baixo do Se.
+
+[confident, clear, unhurried voice] A pergunta já vem x maior que zero. Clique no x e escolha tempoDoEscudo. Conserve o sinal de maior e o zero.
+
+[engaging, energetic, conversational voice] A resposta do não é a batida de antes: perder uma vida. Ela vai no senão, e o Se chega sem esse espaço.
+
+[confident, clear, unhurried voice] Na linha de baixo do Se tem dois sinais de mais. Clique no segundo, o de antes da palavra senão.
+
+[confident, clear, unhurried voice] Arraste Machucar o sprite para dentro do senão. Tocar efeito batida vai junto, logo abaixo dele.
+
+[confident, clear, unhurried voice] Agora o sim. Deixe o então à vista. Abra Jogo 2D, depois Som e depois Efeitos prontos, encaixe Tocar efeito no então e escolha quicar.
+
+[interested, animated voice] A pedra sai do grupo antes do Se, então ela sai com escudo ou sem escudo. Só a vida depende da resposta.
+
+[upbeat, encouraging voice] Clique no jogo, aperte Enter e pegue o item. Deixe uma pedra bater: ela some com um quique, e os corações continuam iguais.
+
+[curious] Mas o número do Escudo continua em cinco. Será que esse escudo acaba?
+
+[engaging, energetic, conversational voice] Do jeito que está, não acaba nunca: falta o prazo. Ele é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no encontro das pedras com a nave, depois da explosão, está o Se tempoDoEscudo maior que 0: no então, Tocar efeito quicar; no senão, Machucar o sprite nave e Tocar efeito batida, e nenhum Machucar fora do Se.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora o escudo protege, mas não acaba nunca. Lembra da ampulheta da experiência? A cada segundo, o número do escudo perde um, até chegar a zero.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo do relógio A cada 4 segundos, o do item, fora do fazer.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Tempo e depois Quadros e intervalos. Pegue outro A cada segundos, encaixe nesse espaço e troque o 2 por 1.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e encaixe um Se no fazer desse relógio.
+
+[confident, clear, unhurried voice] Na pergunta, clique no x e escolha tempoDoEscudo. Conserve maior que zero.
+
+[curious] Por que perguntar, se é só tirar um?
+
+[engaging, energetic, conversational voice] Sem a pergunta, o número passaria do zero: menos um, menos dois. O Se faz o escudo parar no zero.
+
+[confident, clear, unhurried voice] Deixe o então à vista. Abra Programação e depois Variáveis, pegue Somar 1 em variável e encaixe nesse então.
+
+[confident, clear, unhurried voice] Troque o 1 por menos 1 e a variável por tempoDoEscudo. Somar menos um é o mesmo que tirar um.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos. Pegue Fazer o sprite piscar e encaixe logo abaixo. Conserve nave e troque o 60 por 30.
+
+[interested, animated voice] Assim a nave pisca enquanto o escudo dura, e quem joga vê que ela está protegida.
+
+[upbeat, encouraging voice] Clique no jogo, aperte Enter e pegue o item. Agora o Escudo desce: cinco, quatro, três, dois, um, zero. Saia do meio e deixe uma pedra bater com o Escudo em zero: ela tira uma vida.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio A cada 1 segundo fica fora de A cada quadro, com o Se tempoDoEscudo maior que 0, e no então estão Somar menos 1 em tempoDoEscudo e Fazer o sprite nave piscar.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a sua nave ganhou um escudo com prazo: o item liga, a batida pergunta e o tempo acaba!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar no escudo. Quando aparecer Projeto enviado!, clique em Próxima parte.

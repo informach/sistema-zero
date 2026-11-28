@@ -7,6 +7,8 @@ import {
   segundo,
   segundos,
 } from '../../../tests/fixtures/caminhos-livres/nave-b'
+import { CAMINHOS_LIVRES_NAVE_ESCUDO } from '../../../tests/fixtures/caminhos-livres/nave-escudo'
+import { CAMINHOS_LIVRES_NAVE_TRIPLO } from '../../../tests/fixtures/caminhos-livres/nave-triplo'
 import { isSceneAction, RESTART_CASE_SCENES, type SceneAction, type SceneId } from './actions'
 import { openScene, stepScene } from './engine'
 import {
@@ -28,6 +30,10 @@ const CAMINHOS: Partial<Record<SceneId, SceneAction[]>> = {
   ...CAMINHOS_LIVRES_MEU_JEITO_E,
   // A reta e a aceleração do Corre Dino (frente C) também têm o "Voltar ao começo".
   ...CAMINHOS_LIVRES_DINO_C,
+  // O escudo temporário (28/11/2026) também tem o "Voltar ao começo".
+  ...CAMINHOS_LIVRES_NAVE_ESCUDO,
+  // O tiro triplo (28/11/2026) também tem o "Voltar ao começo".
+  ...CAMINHOS_LIVRES_NAVE_TRIPLO,
 }
 const livre = (scene: SceneId): SceneStart => ({ scene, setup: { freeExploration: true } })
 const percorrer = (start: SceneStart, acoes: readonly SceneAction[]) =>

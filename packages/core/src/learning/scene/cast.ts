@@ -142,7 +142,12 @@ export const TIROS_E_PEDRAS_CAST: SceneCast = {
 export function sceneNativeCast(scene: SceneId, cast?: SceneCast): SceneCast | undefined {
   if (scene === 'fixed-vs-read') return { ...NAVE_E_TIRO_CAST, ...cast }
   if (scene === 'collision-pair') return { ...TIROS_E_PEDRAS_CAST, ...cast }
-  if (scene === 'invincibility')
+  if (
+    scene === 'invincibility' ||
+    scene === 'timed-shield' ||
+    scene === 'spread-shot' ||
+    scene === 'enemy-fire'
+  )
     return { hero: TIROS_E_PEDRAS_CAST.hero, obstacle: TIROS_E_PEDRAS_CAST.obstacle, ...cast }
   if (scene === 'motion-amount')
     return { hero: { name: 'pedra', gender: 'f', figure: 'pedra' }, ...cast }
@@ -383,6 +388,13 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   'fill-stroke': [],
   shading: [],
   'score-goal': [],
+  // O escudo temporário (28/11/2026): a nave e as pedras; o item e a bolha são enfeite do palco.
+  'timed-shield': ['hero', 'obstacle'],
+  // O tiro triplo (28/11/2026): a nave e as três pedras; os lasers são enfeite do palco.
+  'spread-shot': ['hero', 'obstacle'],
+  // O inimigo que atira (28/11/2026): a nave e as pedras que passam ao longe; a nave inimiga e os
+  // tiros dela são enfeite do palco (nenhuma figura nova).
+  'enemy-fire': ['hero', 'obstacle'],
 }
 
 /** Cenas que representam um jogo específico, sem papéis intercambiáveis do elenco. */

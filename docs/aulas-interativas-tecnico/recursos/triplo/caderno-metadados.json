@@ -1,0 +1,20 @@
+{
+  "course": "poder-tiro-triplo",
+  "resource": "triplo",
+  "dimension": "2d",
+  "title": "Tiro triplo",
+  "cover": "capa-triplo.jpg",
+  "line1": "Tiro",
+  "line2": "triplo",
+  "phrase": "Três lasers de uma vez, cada um no seu caminho, em 2D e na patrulha 3D.",
+  "promise": "Um Poder do Construtor",
+  "ui": {
+    "drawingTitle": "Confira os encaixes desta etapa",
+    "testsTitle": "Teste e observe",
+    "continuation": "continuação",
+    "earlierBlocks": "Blocos anteriores",
+    "drawingContinuation": "Confira os encaixes",
+    "galleryTitle": "Escolha a aparência",
+    "pageLabel": "Passo a passo do projeto"
+  }
+}

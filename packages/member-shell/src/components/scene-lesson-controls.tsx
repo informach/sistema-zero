@@ -19,6 +19,7 @@ import { CollisionPairControls } from './scene-collision-pair'
 import { CopyVsOriginalControls, PublishedCopyControls } from './scene-copies'
 import { CoreSceneControls } from './scene-core-controls'
 import { DinoNumbersControls } from './scene-dino-numbers-controls'
+import { EnemyFireControls } from './scene-enemy-fire'
 import { FixedVsReadControls } from './scene-fixed-vs-read'
 import { GardenLearningControls } from './scene-garden-learning'
 import { InvincibilityControls } from './scene-invincibility'
@@ -32,8 +33,10 @@ import { NumberLineControls } from './scene-number-line'
 import { OnceVsAlwaysControls } from './scene-once-vs-always'
 import { SameRulesControls } from './scene-same-rules'
 import { ScoreGoalControls } from './scene-score-goal'
+import { SpreadShotControls } from './scene-spread-shot'
 import { SymbolSequenceControls } from './scene-symbol-sequence'
 import { TimedBridgeControls } from './scene-timed-bridge'
+import { TimedShieldControls } from './scene-timed-shield'
 import { TwoClocksControls } from './scene-two-clocks'
 import { TwoPiecesControls } from './scene-two-pieces'
 import { UniqueNamesControls } from './scene-unique-names'
@@ -142,6 +145,9 @@ export function LessonSceneControls({
       {m === 'copy-vs-original' && <CopyVsOriginalControls state={state} dispatch={dispatch} />}
       {m === 'published-copy' && <PublishedCopyControls state={state} dispatch={dispatch} />}
       {m === 'score-goal' && <ScoreGoalControls state={state} dispatch={dispatch} />}
+      {m === 'timed-shield' && <TimedShieldControls state={state} dispatch={dispatch} />}
+      {m === 'spread-shot' && <SpreadShotControls state={state} dispatch={dispatch} />}
+      {m === 'enemy-fire' && <EnemyFireControls state={state} dispatch={dispatch} />}
       {m === 'same-rules-new-skin' && (
         <SameRulesControls state={state} dispatch={dispatch} onRunning={onRunning} />
       )}

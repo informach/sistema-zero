@@ -206,6 +206,12 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
         'acceleration',
         // A meta do jogo (Nave, Dia 5, frente D, 02/11/2026).
         'score-goal',
+        // O Poder "Escudo temporário" do Construtor (Nave, 28/11/2026).
+        'timed-shield',
+        // O Poder "Tiro triplo" do Construtor (Nave, 28/11/2026).
+        'spread-shot',
+        // O Poder "Inimigo que atira" do Construtor (Nave, 28/11/2026).
+        'enemy-fire',
       ].includes(scene))
   )
     return false

@@ -1,0 +1,529 @@
+[
+  {
+    "id": "encontre",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Cada montagem do Poder, bloco por bloco, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "Os vídeos montam cada parte com você. Este caderno guarda os mesmos passos: o caminho na paleta, o bloco, onde encaixar e como testar. Volte aqui sempre que esquecer um passo."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Três lasers de uma vez",
+        "text": "Na Nave Contra Asteroides: o item do tiro triplo, o Espaço que pergunta, o vx de cada laser e o tempo que acaba.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-volta}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. O leque na patrulha",
+        "text": "O mesmo tiro triplo na Patrulha Espacial: o item pela esquerda, as três cópias, um grupo para cada lado e o prazo.",
+        "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-volta}}"
+      },
+      {
+        "kind": "note",
+        "text": "O jogo da trilha já vem pronto, com as peças novas do Poder. Você programa a regra nova e testa cada parte."
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3",
+    "title": "A experiência: o leque de tiros",
+    "subtitle": "Cada laser tem uma velocidade para cima e outra para o lado. Com o tiro triplo, um aperto cria três lasers. Se os três têm a mesma velocidade para o lado, eles seguem juntos e parecem um só; com desvios diferentes, cada um segue o seu caminho.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O que investigar",
+        "text": "Com o tiro triplo desligado, dispare e veja quantos lasers saem.<br>Ligue o tiro triplo com desvio 0 e dispare.<br>Com o tiro triplo e desvio 2, dispare e veja onde cada laser chega.<br>Troque o desvio para 1 e dispare de novo: os lasers dos lados chegam às pedras?"
+      },
+      {
+        "kind": "note",
+        "text": "Antes e depois de cada disparo, observe quantos lasers estão no ar, por onde cada um passa e quantas pedras ele acerta. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Um leque de lasers",
+    "subtitle": "Jogue a versão pronta antes de programar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. Deixe a nave no meio e pegue o item que cai: o Triplo vira 5. Dispare e veja os três lasers; espere o Triplo chegar a 0 e dispare de novo."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-item",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "O item do tiro triplo",
+    "subtitle": "Criar o relógio que solta o item pelo meio, só na partida, e o encontro que liga o tiro triplo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que solta o item pelo meio, só na partida, e o encontro que liga o tiro triplo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos: A cada 4 segundos (Jogo 2D → Tempo → Quadros e intervalos), com um Se e a pergunta o estado do jogo é jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então: No grupo itensTriplo criar um sprite com imagem item-triplo-redondo, x 378, y −44, largura e altura 44, vx 0 e vy 2."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Logo abaixo do encontro das pedras com a nave: Para cada sprite do grupo itensTriplo que colidir com o sprite nave, chamando de itemPego."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Dentro dele: Tirar o sprite itemPego do grupo itensTriplo, Alterar variável tempoTriplo para 5 e Tocar efeito power-up."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:inicio",
+        "after": "2d:item"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do Enter, nenhum item cai; na partida, um item cai pelo meio a cada 4 segundos.",
+          "Com a nave parada no meio, ela pega o item e o Triplo vira 5."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-tres",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "Três lasers no Espaço",
+    "subtitle": "Fazer o Espaço perguntar pelo tiro triplo: com tempoTriplo maior que 0, três lasers; senão, o laser de antes.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Fazer o Espaço perguntar pelo tiro triplo: com tempoTriplo maior que 0, três lasers; senão, o laser de antes."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No Espaço, dentro do então de Se jogando, encaixe um Se no começo (Programação → Lógica &amp; Se). O laser e o som descem para baixo dele."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Na pergunta, escolha tempoTriplo no lugar de x. Conserve &gt; e 0."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra o senão (o segundo +) e leve o laser, com o som, para dentro dele."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Duplique o laser (botão direito → Duplicar) três vezes e leve as cópias para o então. Abaixo delas, Tocar efeito laser."
+      },
+      {
+        "kind": "drawings",
+        "title": "O senão, com o tiro de sempre",
+        "before": "2d:item",
+        "after": "2d:tres-0"
+      },
+      {
+        "kind": "drawings",
+        "title": "O primeiro laser no então",
+        "before": "2d:tres-0",
+        "after": "2d:tres-1"
+      },
+      {
+        "kind": "drawings",
+        "title": "O segundo laser",
+        "before": "2d:tres-1",
+        "after": "2d:tres-2"
+      },
+      {
+        "kind": "drawings",
+        "title": "O terceiro laser e o som",
+        "before": "2d:tres-2",
+        "after": "2d:tres"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Sem o item, o Espaço cria um laser.",
+          "Com o Triplo maior que 0, o Espaço cria três lasers, por enquanto no mesmo caminho."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-direcoes",
+    "lesson": "aula-1",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "Cada laser para um lado",
+    "subtitle": "Dar a cada laser do tiro triplo uma direção: vx −2, 0 e 2.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Dar a cada laser do tiro triplo uma direção: vx −2, 0 e 2."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No Espaço, deixe visíveis os três lasers do então do Se tempoTriplo."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No primeiro, troque o vx por −2; deixe o segundo com 0; no terceiro, troque o vx por 2."
+      },
+      {
+        "kind": "drawings",
+        "title": "O laser da esquerda",
+        "before": "2d:tres",
+        "after": "2d:direcoes-4"
+      },
+      {
+        "kind": "drawings",
+        "title": "O laser da direita",
+        "before": "2d:direcoes-4",
+        "after": "2d:direcoes"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com o Triplo maior que 0, os três lasers abrem em leque: esquerda, reto e direita.",
+          "Sem o item, o Espaço continua com um laser reto."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-volta",
+    "lesson": "aula-1",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "O tiro triplo acaba",
+    "subtitle": "Criar o relógio de 1 segundo que tira 1 de tempoTriplo enquanto ele é maior que 0, para o tiro simples voltar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio de 1 segundo que tira 1 de tempoTriplo enquanto ele é maior que 0, para o tiro simples voltar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 4 segundos: outro A cada segundos, com 1."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No fazer, um Se com tempoTriplo &gt; 0."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No então: Somar −1 em variável tempoTriplo (Programação → Variáveis)."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:direcoes",
+        "after": "2d:volta"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Depois de pegar o item, o Triplo desce de 5 a 0, um por segundo, e para no 0.",
+          "Com o Triplo em 0, o Espaço volta a criar um laser."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-abertura",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "O tiro triplo chegou à patrulha",
+    "subtitle": "O mesmo Poder, agora em três dimensões.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. Leve a nave para a borda da esquerda: o item vem por ali, e o Triplo, no alto à esquerda, vira 5. Dispare e veja o leque."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-item",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "O item vem pela esquerda",
+    "subtitle": "Criar o relógio que cria uma cópia do item à esquerda, só na partida, e o encontro que liga o tiro triplo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio que cria uma cópia do item à esquerda, só na partida, e o encontro que liga o tiro triplo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos: A cada 4 segundos (Jogo 3D → Tempo e sorteio → Tempo)."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de o relógio A cada 4 segundos, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No então: Criar uma cópia de moldeTriplo no grupo itensTriplo, em x −4, y 1, z −20."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Em Quando acontecer, logo abaixo do encontro com os asteroides: Quando nave encostar em algum do grupo itensTriplo, chamando de itemPego, com a guarda da partida."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "No então: Tirar o objeto itemPego do grupo itensTriplo, Alterar variável tempoTriplo para 5 e Escrever na tela, em cima, à esquerda, \"Triplo: \" + tempoTriplo."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:inicio",
+        "after": "3d:item"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes do Enter, nenhum item nasce; na partida, um item vem pela esquerda a cada 4 segundos.",
+          "Na borda da esquerda, a nave pega o item e o Triplo vira 5."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-tres",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "Três lasers no Espaço",
+    "subtitle": "Fazer o Espaço perguntar pelo tiro triplo: com tempoTriplo maior que 0, três cópias do laser; senão, o laser de antes.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Fazer o Espaço perguntar pelo tiro triplo: com tempoTriplo maior que 0, três cópias do laser; senão, o laser de antes."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No Espaço, no começo do então da guarda, encaixe um Se e escolha tempoTriplo no lugar de x. Conserve &gt; e 0."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Abra o senão e leve a cópia de moldeTiro, com a nota, para dentro dele."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Duplique a cópia três vezes e leve as cópias para o então."
+      },
+      {
+        "kind": "drawings",
+        "title": "O senão, com o tiro de sempre",
+        "before": "3d:item",
+        "after": "3d:tres-0"
+      },
+      {
+        "kind": "drawings",
+        "title": "A primeira cópia no então",
+        "before": "3d:tres-0",
+        "after": "3d:tres-1"
+      },
+      {
+        "kind": "drawings",
+        "title": "As outras duas cópias e a nota",
+        "before": "3d:tres-1",
+        "after": "3d:tres"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Sem o item, o Espaço cria um laser.",
+          "Com o Triplo maior que 0, três lasers saem juntos, por enquanto no mesmo caminho."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-direcoes",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "Um grupo para cada lado",
+    "subtitle": "Mandar os lasers dos lados para os grupos tirosEsquerda e tirosDireita.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Mandar os lasers dos lados para os grupos tirosEsquerda e tirosDireita."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No então do Se tempoTriplo, troque o grupo da primeira cópia por tirosEsquerda."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe a segunda em tiros e troque o grupo da terceira por tirosDireita."
+      },
+      {
+        "kind": "drawings",
+        "title": "A cópia da esquerda",
+        "before": "3d:tres",
+        "after": "3d:direcoes-4"
+      },
+      {
+        "kind": "drawings",
+        "title": "A cópia da direita",
+        "before": "3d:direcoes-4",
+        "after": "3d:direcoes"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Com o Triplo maior que 0, os três lasers abrem em leque."]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-volta",
+    "lesson": "aula-2",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "O tiro triplo acaba",
+    "subtitle": "Criar o relógio de 1 segundo que tira 1 de tempoTriplo enquanto ele é maior que 0 e escreve o Triplo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Criar o relógio de 1 segundo que tira 1 de tempoTriplo enquanto ele é maior que 0 e escreve o Triplo."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, logo abaixo de A cada 4 segundos: outro A cada segundos, com 1."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No fazer, um Se com tempoTriplo &gt; 0."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No então: Somar −1 em variável tempoTriplo e Escrever na tela, em cima, à esquerda, \"Triplo: \" + tempoTriplo."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:direcoes",
+        "after": "3d:volta"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Depois de pegar o item, o Triplo desce de 5 a 0, um por segundo, e para no 0.",
+          "Com o Triplo em 0, o Espaço volta a criar um laser."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "poder-pronto",
+    "kicker": "Poder do Construtor",
+    "title": "Poder pronto",
+    "subtitle": "A mesma regra nova em duas dimensões e em três.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "O que você programou",
+        "text": "Um relógio que solta o item só na partida, o encontro que liga o tiro triplo, o Espaço que pergunta se ele está ligado e cria três lasers em direções diferentes, e um relógio que faz o tiro triplo acabar, sem passar do zero."
+      },
+      {
+        "kind": "note",
+        "text": "O Poder conta quando as duas aulas estão concluídas. Para subir de posto, a jornada pede dois Poderes diferentes."
+      }
+    ]
+  }
+]

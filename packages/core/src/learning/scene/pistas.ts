@@ -155,6 +155,21 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['igual-conta', 'maior-pula', 'placa-fixa'],
     ['igual-conta', 'maior-pula', 'placa-fixa'],
   ],
+  'timed-shield': [
+    ['hit-costs', 'shield-protects'],
+    ['hit-costs', 'shield-protects', 'shield-ends'],
+    ['hit-costs', 'shield-protects', 'shield-ends', 'shield-renews'],
+  ],
+  'spread-shot': [
+    ['single-one', 'triple-stacked'],
+    ['triple-stacked', 'triple-spread', 'deviation-matters'],
+    ['single-one', 'triple-stacked', 'triple-spread', 'deviation-matters'],
+  ],
+  'enemy-fire': [
+    ['fixed-origin', 'enemy-origin'],
+    ['fixed-origin', 'enemy-origin', 'shot-hurts', 'restart-clears'],
+    ['fixed-origin', 'enemy-origin', 'shot-hurts', 'restart-clears'],
+  ],
 }
 
 /** As metas que um degrau cita, na ordem em que foram escritas. */

@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia": [
+      {
+        "id": "spread-shot-start",
+        "text": "A nave está embaixo, e três pedras esperam no alto da tela. Com o Tiro triplo desligado, quantos lasers você acha que saem a cada disparo? Clique em Disparar e depois em Ver os lasers chegarem."
+      },
+      {
+        "id": "spread-shot-ask-single",
+        "text": "E com o tiro simples? Com o Tiro triplo desligado, clique em Disparar e depois em Ver os lasers chegarem. Quantos lasers saem da nave?"
+      },
+      {
+        "id": "spread-shot-ask-stacked",
+        "text": "E com o Tiro triplo ligado e o Desvio 0? Clique em Tiro triplo para ligar, escolha Desvio 0 e clique em Disparar. Depois clique em Ver os lasers chegarem. Quantos caminhos você vê?"
+      },
+      {
+        "id": "spread-shot-ask-spread",
+        "text": "E com o Desvio 2? Com o Tiro triplo ligado, escolha Desvio 2 e clique em Disparar. Depois clique em Ver os lasers chegarem. Onde você acha que cada laser chega?"
+      },
+      {
+        "id": "spread-shot-ask-matters",
+        "text": "E com o Desvio 1? Com o Tiro triplo ligado, escolha Desvio 1 e clique em Disparar de novo. Depois clique em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?"
+      },
+      {
+        "id": "spread-shot-in-air",
+        "text": "Os lasers saíram da nave. Onde você acha que cada laser vai chegar? Clique em Ver os lasers chegarem e olhe as pedras."
+      },
+      {
+        "id": "spread-shot-single-then-stacked",
+        "text": "Com o Tiro triplo desligado, saiu um laser só, que subiu reto até a pedra do meio. E com o Tiro triplo ligado e o Desvio 0? Clique em Tiro triplo para ligar, escolha Desvio 0 e clique em Disparar. Depois clique em Ver os lasers chegarem. Quantos caminhos você vê?"
+      },
+      {
+        "id": "spread-shot-single-then-spread",
+        "text": "Com o Tiro triplo desligado, saiu um laser só, que subiu reto até a pedra do meio. E com o Desvio 2? Com o Tiro triplo ligado, escolha Desvio 2 e clique em Disparar. Depois clique em Ver os lasers chegarem. Onde você acha que cada laser chega?"
+      },
+      {
+        "id": "spread-shot-single-then-matters",
+        "text": "Com o Tiro triplo desligado, saiu um laser só, que subiu reto até a pedra do meio. E com o Desvio 1? Com o Tiro triplo ligado, escolha Desvio 1 e clique em Disparar de novo. Depois clique em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?"
+      },
+      {
+        "id": "spread-shot-stacked-then-single",
+        "text": "Com o Desvio 0, os três lasers saíram juntos e seguiram o mesmo caminho. Pareciam um laser só, e só a pedra do meio saiu. E com o tiro simples? Com o Tiro triplo desligado, clique em Disparar e depois em Ver os lasers chegarem. Quantos lasers saem da nave?"
+      },
+      {
+        "id": "spread-shot-stacked-then-spread",
+        "text": "Com o Desvio 0, os três lasers saíram juntos e seguiram o mesmo caminho. Pareciam um laser só, e só a pedra do meio saiu. E com o Desvio 2? Com o Tiro triplo ligado, escolha Desvio 2 e clique em Disparar. Depois clique em Ver os lasers chegarem. Onde você acha que cada laser chega?"
+      },
+      {
+        "id": "spread-shot-stacked-then-matters",
+        "text": "Com o Desvio 0, os três lasers saíram juntos e seguiram o mesmo caminho. Pareciam um laser só, e só a pedra do meio saiu. E com o Desvio 1? Com o Tiro triplo ligado, escolha Desvio 1 e clique em Disparar de novo. Depois clique em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?"
+      },
+      {
+        "id": "spread-shot-spread-then-single",
+        "text": "Com o Desvio 2, os lasers se abriram em leque: o do meio subiu reto, e os dos lados andaram para o lado até as pedras dos lados. Cada laser seguiu o seu caminho. E com o tiro simples? Com o Tiro triplo desligado, clique em Disparar e depois em Ver os lasers chegarem. Quantos lasers saem da nave?"
+      },
+      {
+        "id": "spread-shot-spread-then-stacked",
+        "text": "Com o Desvio 2, os lasers se abriram em leque: o do meio subiu reto, e os dos lados andaram para o lado até as pedras dos lados. Cada laser seguiu o seu caminho. E com o Tiro triplo ligado e o Desvio 0? Clique em Tiro triplo para ligar, escolha Desvio 0 e clique em Disparar. Depois clique em Ver os lasers chegarem. Quantos caminhos você vê?"
+      },
+      {
+        "id": "spread-shot-spread-then-matters",
+        "text": "Com o Desvio 2, os lasers se abriram em leque: o do meio subiu reto, e os dos lados andaram para o lado até as pedras dos lados. Cada laser seguiu o seu caminho. E com o Desvio 1? Com o Tiro triplo ligado, escolha Desvio 1 e clique em Disparar de novo. Depois clique em Ver os lasers chegarem. Os lasers dos lados chegam às pedras?"
+      },
+      {
+        "id": "spread-shot-matters-then-single",
+        "text": "Com o Desvio 1, os lasers dos lados andaram menos para o lado e passaram entre as pedras. O desvio escolhe onde cada laser chega. E com o tiro simples? Com o Tiro triplo desligado, clique em Disparar e depois em Ver os lasers chegarem. Quantos lasers saem da nave?"
+      },
+      {
+        "id": "spread-shot-matters-then-stacked",
+        "text": "Com o Desvio 1, os lasers dos lados andaram menos para o lado e passaram entre as pedras. O desvio escolhe onde cada laser chega. E com o Tiro triplo ligado e o Desvio 0? Clique em Tiro triplo para ligar, escolha Desvio 0 e clique em Disparar. Depois clique em Ver os lasers chegarem. Quantos caminhos você vê?"
+      },
+      {
+        "id": "spread-shot-complete",
+        "text": "Você testou tudo. Com o tiro simples sai um laser só. Com o tiro triplo, um disparo cria três lasers de uma vez, e o quanto cada laser anda para o lado escolhe o caminho: com o Desvio 0 os três seguem juntos, com o Desvio 2 cada laser vai para uma pedra, e com o Desvio 1 os lasers dos lados passam entre as pedras. Pode continuar testando quando quiser."
+      }
+    ]
+  }
+}

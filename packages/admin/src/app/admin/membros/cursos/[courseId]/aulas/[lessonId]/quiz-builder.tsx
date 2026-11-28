@@ -252,6 +252,16 @@ export function QuizBuilder({
                     <option value="simbolos-ordem">Símbolos: a estrela na vez dela</option>
                     <option value="simbolos-fora">Símbolos: a estrela fora da vez</option>
                     <option value="simbolos-recomeca">Símbolos: recomeçar na ilha</option>
+                    <option value="escudo-protege">Escudo: a pedra bate com o escudo ligado</option>
+                    <option value="escudo-acabou">Escudo: a pedra bate com o escudo em 0</option>
+                    <option value="escudo-renova">Escudo: pegar outro item</option>
+                    <option value="escudo-sem-guarda">Escudo: o relógio sem a guarda</option>
+                    <option value="triplo-juntos">Tiro triplo: três lasers com vx 0</option>
+                    <option value="triplo-leque">Tiro triplo: o leque com vx −2, 0 e 2</option>
+                    <option value="triplo-um">Tiro triplo: o Triplo em 0</option>
+                    <option value="triplo-grupos">
+                      Tiro triplo: as três cópias no grupo tiros
+                    </option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

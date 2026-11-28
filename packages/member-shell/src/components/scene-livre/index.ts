@@ -8,6 +8,7 @@ import { LivreCoordinates } from './coordinates'
 import { LivreCopyVsOriginal } from './copy-vs-original'
 import { comTelaDoDino, TELAS_DINO_A } from './dino'
 import { LivreDrawLoop } from './draw-loop'
+import { LivreEnemyFire } from './enemy-fire'
 import { LivreFillStroke } from './fill-stroke'
 import { LivreFixedVsRead } from './fixed-vs-read'
 import { LivreFrames } from './frames'
@@ -33,8 +34,10 @@ import { LivreScreenReader } from './screen-reader'
 import { LivreShading } from './shading'
 import { LivreSheetVsSprite } from './sheet-vs-sprite'
 import { LivreSpawn } from './spawn'
+import { LivreSpreadShot } from './spread-shot'
 import { LivreStageSize } from './stage-size'
 import { LivreSymmetry } from './symmetry'
+import { LivreTimedShield } from './timed-shield'
 import { LivreTwoClocks } from './two-clocks'
 import { LivreUniqueNames } from './unique-names'
 import { LivreVariable } from './variable'
@@ -88,6 +91,12 @@ export const TELAS_LIVRES: Partial<Record<SceneId, ComponentType>> = {
   acceleration: LivreAcceleration,
   // A meta do jogo (Nave, Dia 5, frente D, 02/11/2026).
   'score-goal': LivreScoreGoal,
+  // O Poder "Escudo temporário" do Construtor (Nave, 28/11/2026).
+  'timed-shield': LivreTimedShield,
+  // O Poder "Tiro triplo" do Construtor (Nave, 28/11/2026).
+  'spread-shot': LivreSpreadShot,
+  // O Poder "Inimigo que atira" do Construtor (Nave, 28/11/2026).
+  'enemy-fire': LivreEnemyFire,
 }
 
 // O Corre Dino, frente A (02/11/2026): as cenas que a Nave já usava em exploração livre ganham a

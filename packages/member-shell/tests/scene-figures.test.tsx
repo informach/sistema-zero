@@ -268,8 +268,9 @@ describe('o desenho veste o elenco', () => {
     for (const cast of BORDAS) expect(isSceneCast(cast)).toBe(true)
     // A `stage-size` também é abstrata: ela mostra a página e o viewport, sem personagem ou cenário.
     // As demais exceções são `entity-state` (torres), `frames`/`onion-skin`/`sheet-vs-sprite` (nave
-    // do ateliê) e as cenas que desenham só instrumentos.
-    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(39)
+    // do ateliê) e as cenas que desenham só instrumentos. O escudo temporário, o tiro triplo e o
+    // inimigo que atira (28/11/2026) desenham a nave e as pedras.
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(42)
   })
 
   test('⚠️⚠️ a tabela SCENE_ROLES é EXATAMENTE o que cada palco desenha', () => {

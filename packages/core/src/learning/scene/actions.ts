@@ -99,6 +99,15 @@ export const SCENE_IDS = [
   'shading',
   // Nave contra Asteroides, Dia 5 (02/11/2026): a placa da meta (uma constante) e o sinal > ou ≥.
   'score-goal',
+  // Poder "Escudo temporário" (Construtor, Nave contra Asteroides, 28/11/2026): o escudo que conta
+  // para trás, segundo a segundo, e protege das batidas só enquanto é maior que 0.
+  'timed-shield',
+  // Poder "Tiro triplo" (Construtor, Nave contra Asteroides, 28/11/2026): um disparo cria três
+  // lasers, e a velocidade para o lado de cada um escolhe o caminho dele.
+  'spread-shot',
+  // Poder "Inimigo que atira" (Construtor, Nave contra Asteroides, 28/11/2026): a nave inimiga com
+  // tiros próprios. O tiro criado num lugar fixo sai sempre dali; o criado na inimiga a segue.
+  'enemy-fire',
 ] as const
 export type SceneId = (typeof SCENE_IDS)[number]
 
@@ -375,12 +384,103 @@ export type SceneAction =
   | { type: 'goal-restart' }
   /** `score-goal`: tentar mudar a placa da meta. Ela é uma constante: não muda. */
   | { type: 'goal-edit' }
+  /** `timed-shield`: a nave pega o item do escudo; o Escudo vai a `TIMED_SHIELD.shield` (renova). */
+  | { type: 'pick-shield' }
+  /** `timed-shield`: passa UM segundo: o Escudo desce 1 e, se é segundo de pedra, ela bate. */
+  | { type: 'tick-second' }
+  /** `timed-shield`: passa os segundos até a próxima pedra bater (um a um, pela mesma regra). */
+  | { type: 'next-rock' }
+  /** `spread-shot`: liga ou desliga o Tiro triplo (vale para o PRÓXIMO disparo). */
+  | { type: 'spread-triple'; on: boolean }
+  /** `spread-shot`: o desvio dos lasers dos lados, 0, 1 ou 2 (vale para o PRÓXIMO disparo). */
+  | { type: 'spread-deviation'; deviation: SpreadShotDeviation }
+  /** `spread-shot`: Disparar. Um laser com o tiro simples, três com o tiro triplo. */
+  | { type: 'spread-fire' }
+  /** `spread-shot`: os lasers no ar andam, quadro a quadro, até cada um acertar uma pedra ou sair. */
+  | { type: 'spread-arrive' }
+  /** `enemy-fire`: a origem do PRÓXIMO tiro da inimiga: o meio da tela ou onde a inimiga está. */
+  | { type: 'enemy-origin'; origin: EnemyFireOrigin }
+  /** `enemy-fire`: a nave muda de lugar, embaixo (à esquerda, no meio ou à direita). */
+  | { type: 'enemy-ship'; x: EnemyFireShipX }
+  /** `enemy-fire`: passa MEIO segundo (um tique): a inimiga anda, os tiros descem e, no tique dela, ela atira. */
+  | { type: 'enemy-tick' }
+  /** `enemy-fire`: passa os tiques até a inimiga atirar de novo (um a um, pela mesma regra). */
+  | { type: 'enemy-next-shot' }
+  /** `enemy-fire`: Recomeçar a partida. Os tiros no ar saem, as vidas voltam a 3 e a inimiga volta ao começo. */
+  | { type: 'enemy-restart' }
 
 /**
  * As duas velocidades da `lighthouse-walk`: a do projeto do Desafio (3, a do bloco "Mover sprite
  * personagem em 4 direções com setas, velocidade 3") e a de comparação (1). O DTO do servidor e o
  * editor do admin leem daqui.
  */
+/**
+ * O escudo temporário (`timed-shield`, Poder "Escudo temporário" do Construtor, 28/11/2026): pegar o
+ * item liga o Escudo em 5, ele desce 1 por segundo, e as pedras batem na nave nos segundos fixos de
+ * `rocks`. A partida vai do segundo 0 ao `lastSecond` e começa com `lives` vidas. O DTO do servidor e o
+ * editor do admin leem daqui.
+ */
+export const TIMED_SHIELD = {
+  shield: 5,
+  lives: 3,
+  lastSecond: 14,
+  rocks: [2, 5, 8, 11],
+} as const
+
+/**
+ * O tiro triplo (`spread-shot`, Poder "Tiro triplo" do Construtor, 28/11/2026), visto de cima: a nave
+ * embaixo, no meio (`ship`), e três pedras paradas no alto (`rockY`, nos x de `rocks`, com
+ * `rockSize` de lado). Cada laser sobe `speed` por quadro; os dos lados andam também ±desvio para o
+ * lado. Com desvio 2 eles chegam perto de 297 e de 503 e acertam as pedras dos lados; com desvio 1
+ * chegam perto de 349 e de 451 e passam entre as pedras. O DTO do servidor e o editor do admin leem
+ * daqui.
+ */
+export const SPREAD_SHOT = {
+  width: 800,
+  height: 480,
+  ship: { x: 400, y: 440 },
+  rockY: 80,
+  rocks: [297, 400, 503],
+  rockSize: 48,
+  speed: 7,
+} as const
+/** Os desvios que a tela oferece, em px por quadro, para os lasers dos lados. */
+export const SPREAD_SHOT_DEVIATIONS = [0, 1, 2] as const
+export type SpreadShotDeviation = (typeof SPREAD_SHOT_DEVIATIONS)[number]
+
+/**
+ * O inimigo que atira (`enemy-fire`, Poder "Inimigo que atira" do Construtor, 28/11/2026), visto de
+ * cima, numa tela de `width` por `height`. O tempo é DISCRETO: um tique é meio segundo
+ * (`tickSeconds`). A inimiga patrulha o alto (`enemyY`) pelo caminho fixo `path`, um passo por tique
+ * (no tique t ela está em `path[t % path.length]`), e atira a cada `fireEvery` tiques. Cada tiro nasce
+ * na altura da inimiga e desce `fall` por tique: chega à fileira da nave (`shipY`) em 4 tiques. O tiro
+ * que chega à fileira no x da nave encosta: sai e tira uma vida (`lives` no começo); os outros saem
+ * quando passam do fim da tela. A partida acaba sem vidas ou no tique `lastTick`.
+ *
+ * ⚠️ O caminho começa no 300 e vai para a direita: os tiros saem com a inimiga em 600, 300, 400,
+ * 500, 200, 500, 400 e 300, e o ciclo se repete. Dois tiros seguidos nunca saem do mesmo lugar, e a
+ * inimiga nunca está no meio em dois tiros seguidos. O DTO do servidor e o editor do admin leem daqui.
+ */
+export const ENEMY_FIRE = {
+  width: 800,
+  height: 480,
+  enemyY: 60,
+  shipY: 420,
+  middle: 400,
+  path: [300, 400, 500, 600, 500, 400, 300, 200],
+  fireEvery: 3,
+  fall: 90,
+  lives: 3,
+  tickSeconds: 0.5,
+  lastTick: 120,
+} as const
+/** As duas origens do tiro da inimiga: o meio da tela (fixa) ou onde a inimiga está. */
+export const ENEMY_FIRE_ORIGINS = ['middle', 'enemy'] as const
+export type EnemyFireOrigin = (typeof ENEMY_FIRE_ORIGINS)[number]
+/** Os três lugares da nave, embaixo: à esquerda, no meio e à direita. */
+export const ENEMY_FIRE_SHIP_XS = [200, 400, 600] as const
+export type EnemyFireShipX = (typeof ENEMY_FIRE_SHIP_XS)[number]
+
 /** Os dois sinais da vitória da `score-goal` (Nave, Dia 5): maior que e maior ou igual. */
 export const SCORE_GOAL_OPS = ['>', '>='] as const
 export type ScoreGoalOp = (typeof SCORE_GOAL_OPS)[number]
@@ -525,6 +625,9 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'fill-stroke': [],
   shading: [],
   'score-goal': [],
+  'timed-shield': [],
+  'spread-shot': [],
+  'enemy-fire': [],
 }
 
 /**
@@ -823,6 +926,10 @@ export const RESTART_CASE_SCENES: readonly SceneId[] = [
   // com a pergunta como a criança deixou, e a fileira de cactos esvazia.
   'number-line',
   'acceleration',
+  // O escudo temporário (28/11/2026): a partida volta ao segundo 0 com as três vidas.
+  'timed-shield',
+  // O tiro triplo (28/11/2026): as três pedras voltam e o céu fica sem laser; as escolhas ficam.
+  'spread-shot',
 ]
 
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
@@ -853,6 +960,25 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'score-goal'
     case 'goal-op':
       return scene === 'score-goal' && SCORE_GOAL_OPS.some((op) => op === value.op)
+    case 'pick-shield':
+    case 'tick-second':
+    case 'next-rock':
+      return scene === 'timed-shield'
+    case 'spread-triple':
+      return scene === 'spread-shot' && typeof value.on === 'boolean'
+    case 'spread-deviation':
+      return scene === 'spread-shot' && SPREAD_SHOT_DEVIATIONS.some((d) => d === value.deviation)
+    case 'spread-fire':
+    case 'spread-arrive':
+      return scene === 'spread-shot'
+    case 'enemy-origin':
+      return scene === 'enemy-fire' && ENEMY_FIRE_ORIGINS.some((o) => o === value.origin)
+    case 'enemy-ship':
+      return scene === 'enemy-fire' && ENEMY_FIRE_SHIP_XS.some((x) => x === value.x)
+    case 'enemy-tick':
+    case 'enemy-next-shot':
+    case 'enemy-restart':
+      return scene === 'enemy-fire'
     case 'remember-collection':
       return scene === 'collect-and-remember' && typeof value.enabled === 'boolean'
     case 'collect-key':
@@ -1356,5 +1482,14 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
     return false
   // A meta do jogo (02/11/2026): o caso escolhe só o sinal. Acertos e tentativas são da criança.
   if (scene === 'score-goal' && acao.type !== 'goal-op') return false
+  // O escudo temporário (28/11/2026): o caso não pega o item nem passa o tempo. A partida começa
+  // sempre no segundo 0, sem escudo e com as três vidas; o escudo e os segundos são da criança.
+  if (scene === 'timed-shield') return false
+  // O tiro triplo (28/11/2026): o caso não escolhe nada. A cena abre sempre com o tiro simples, o
+  // desvio 0 e as três pedras; as escolhas e os disparos são da criança.
+  if (scene === 'spread-shot') return false
+  // O inimigo que atira (28/11/2026): o caso não escolhe nada. A partida começa sempre no tique 0,
+  // com a origem no meio, a nave no meio e as três vidas; as escolhas e o tempo são da criança.
+  if (scene === 'enemy-fire') return false
   return true
 }

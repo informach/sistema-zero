@@ -22,6 +22,11 @@ TARGETS = {
     "construtor-nave": "nave-contra-asteroides",
     "construtor-patrulha": "patrulha-espacial",
     "estacao-reciclagem": "estacao-de-reciclagem",
+    # os Poderes do Construtor (recursos/construtor-poderes)
+    "escudo": "poder-escudo-temporario",
+    "triplo": "poder-tiro-triplo",
+    "inimigo": "poder-inimigo-que-atira",
+    "chefao": "poder-chefao-com-resistencia",
 }
 
 
