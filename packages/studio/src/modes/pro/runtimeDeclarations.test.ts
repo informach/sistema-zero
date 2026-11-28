@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { verifyStudioProPlatformFiles } from '@sistemazero/core/studio/pro-revision'
 import libraries from '../../monaco/pro/defaultLibraries.json'
 import { createProLanguageService } from '../../monaco/pro/languageService'
 import { mapTwoDRegionalEngineBootstrap } from '../../official-extensions/map-2d/regionBootstrap'
@@ -46,4 +47,34 @@ test('a declaration path already used by authored code is refused and preserved'
   const before = JSON.stringify(files)
   expect(() => withProRuntimeDeclarations(files, 'game-2d')).toThrow('original foi preservado')
   expect(JSON.stringify(files)).toBe(before)
+})
+
+test('editor provenance removes only compiled-library semantic diagnostics, retaining authored errors and stale-proof checks', async () => {
+  const path = 'public/sz-ext/game-2d.js'
+  const engine = await mapTwoDRegionalEngineBootstrap('g2d')
+  const files = {
+    ...proRuntimeDeclarations('game-2d'),
+    [path]: engine,
+    'public/closed.js': '/** @type {number} */ const wrong = "bad";',
+    'tsconfig.json': JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        target: 'ESNext',
+        allowJs: true,
+        checkJs: true,
+        skipLibCheck: true,
+      },
+      include: ['src', 'public'],
+    }),
+  }
+  const platform = await verifyStudioProPlatformFiles(files)
+  const service = createProLanguageService(libraries)
+  service.update(files)
+  expect(service.diagnostics(path).length).toBeGreaterThan(0)
+  expect(service.diagnostics(path, platform)).toEqual([])
+  expect(service.diagnostics('public/closed.js', platform).some((d) => d.code === 2322)).toBe(true)
+  service.update({ ...files, [path]: 'function authoredEngine(value) { return value }' })
+  expect(service.diagnostics(path, platform).some((d) => d.code === 7006)).toBe(true)
+  service.update({ ...files, [path]: 'function broken( {' })
+  expect(service.diagnostics(path, platform).some((d) => d.code === 1005)).toBe(true)
 })

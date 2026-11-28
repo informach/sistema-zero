@@ -1,3 +1,4 @@
+import type { StudioProVerifiedPlatformFiles } from '@sistemazero/core/studio/pro-build'
 import ts from 'typescript'
 
 export const PRO_TYPESCRIPT_VERSION = '5.9.3'
@@ -249,7 +250,7 @@ export function createProLanguageService(defaultLibraries: Record<string, string
       )
       configErrors = [...(parsed.error ? [parsed.error] : []), ...config.errors]
     },
-    diagnostics(path: string): ProLanguageDiagnostic[] {
+    diagnostics(path: string, platform?: StudioProVerifiedPlatformFiles): ProLanguageDiagnostic[] {
       synchronize()
       if (/^(?:tsconfig|jsconfig)\.json$/.test(path))
         return [...configErrors, ...service.getCompilerOptionsDiagnostics()].map(diagnostic)
@@ -257,7 +258,9 @@ export function createProLanguageService(defaultLibraries: Record<string, string
       if (!roots.includes(full) && !service.getProgram()?.getSourceFile(full)) return []
       return [
         ...service.getSyntacticDiagnostics(full),
-        ...service.getSemanticDiagnostics(full),
+        ...(platform?.has(path) && platform.get(path) === read(full)
+          ? []
+          : service.getSemanticDiagnostics(full)),
       ].map(diagnostic)
     },
     completions(path: string, offset: number) {
