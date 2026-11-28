@@ -48,6 +48,7 @@ export interface CreatorEditorialSpec {
       application: string
       check: string
       lessons: number
+      authoredSource?: { courseSlug: string; directory: string; lessons: string[]; note: string }
     }[]
     extras: {
       title: string

@@ -1,7 +1,8 @@
 /**
  * O padrão do Faísca nos cursos já revisados (levantado em 23/11/2026 a partir do Cadê Todo Mundo?,
  * da Chave do Farol e da Ilha do Farol). Cada curso entra em `CURSOS` quando a revisão dele fica
- * pronta; a Ilha é a referência. O teste confere, aula por aula:
+ * pronta; a Ilha é a referência. Os Poderes do Construtor seguem o mesmo padrão e entram aqui
+ * também (com `posto: 'construtor'`). O teste confere, aula por aula:
  * - a Debinha (Aula 1) ou o Dedé (Aula 2) nas frases marcadas, na tabela do roteiro e na voz;
  * - nenhuma fala nem recado espera o "Salvo";
  * - o envio fecha a última construção, sem parte só de envio, e depois dele só vêm fechamentos;
@@ -13,12 +14,14 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { avatarDaAula } from './avatares-video'
 import { cabanaAulas } from './cabana-conteudo'
+import { escudoAulas } from './escudo-conteudo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
 import { meuDesenhoAula } from './meu-desenho-conteudo'
 import { moedasAulas } from './moedas-conteudo'
 import { ponteAulas } from './ponte-conteudo'
 import { extrairPartesElevenLabs } from './roteiro-elevenlabs'
 import { simbolosAulas } from './simbolos-conteudo'
+import { triploAulas } from './triplo-conteudo'
 
 type Trecho = {
   key: string
@@ -31,13 +34,15 @@ type Trecho = {
 }
 type Curso = {
   nome: string
+  /** A pasta do posto em docs/aulas-interativas (padrão: o Faísca). */
+  posto?: 'faisca' | 'construtor'
   pasta: string
   /** O nome dos arquivos de uma aula, sem a extensão. */
   arquivo: (slug: string) => string
   aulas: { slug: string; trechos: Trecho[] }[]
 }
 
-const faisca = resolve(import.meta.dirname, '../../aulas-interativas/faisca')
+const AULAS = resolve(import.meta.dirname, '../../aulas-interativas')
 const CURSOS: Curso[] = [
   { nome: 'A Ilha do Farol', pasta: 'a-ilha-do-farol', arquivo: (s) => s, aulas: ilhaAulas },
   {
@@ -70,6 +75,20 @@ const CURSOS: Curso[] = [
     arquivo: (s) => `meu-desenho-${s}`,
     aulas: [meuDesenhoAula],
   },
+  {
+    nome: 'Escudo temporário',
+    posto: 'construtor',
+    pasta: 'poder-escudo-temporario',
+    arquivo: (s) => `escudo-${s}`,
+    aulas: escudoAulas(),
+  },
+  {
+    nome: 'Tiro triplo',
+    posto: 'construtor',
+    pasta: 'poder-tiro-triplo',
+    arquivo: (s) => `triplo-${s}`,
+    aulas: triploAulas(),
+  },
 ]
 
 const RECADO_DO_MATERIAL =
@@ -85,7 +104,7 @@ type Secao = {
 }
 
 for (const curso of CURSOS) {
-  const dir = resolve(faisca, curso.pasta)
+  const dir = resolve(AULAS, curso.posto ?? 'faisca', curso.pasta)
   describe(`${curso.nome}: padrão do Faísca`, () => {
     test.each(
       curso.aulas.map((aula, i) => [aula.slug, i] as const),

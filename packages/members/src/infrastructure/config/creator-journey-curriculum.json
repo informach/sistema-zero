@@ -91,7 +91,13 @@
           "prerequisite": "Coleta e condição do par.",
           "application": "Acrescentar moedas ao caminho do Farol e exigir uma quantidade para uma recompensa opcional.",
           "check": "Cada moeda conta uma vez; coletar menos que a meta não libera a recompensa.",
-          "lessons": 1
+          "lessons": 1,
+          "authoredSource": {
+            "courseSlug": "jornada-faisca-poder-1",
+            "directory": "docs/aulas-interativas/faisca/poder-moedas-no-caminho",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). O seed reserva só a aula-1: criar a aula-2 no Admin antes de importar. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "O segredo da cabana",
@@ -99,7 +105,13 @@
           "prerequisite": "Variável booleana e Se/senão.",
           "application": "Criar uma segunda porta que exige chave e emblema.",
           "check": "Nenhum item ou apenas um mantém a porta fechada; os dois abrem.",
-          "lessons": 1
+          "lessons": 1,
+          "authoredSource": {
+            "courseSlug": "jornada-faisca-poder-2",
+            "directory": "docs/aulas-interativas/faisca/poder-o-segredo-da-cabana",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). O seed reserva só a aula-1: criar a aula-2 no Admin antes de importar. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "A ponte apressada",
@@ -107,7 +119,13 @@
           "prerequisite": "Evento e decisão.",
           "application": "Acionar uma ponte que fecha depois de alguns segundos.",
           "check": "Abre no acionamento, fecha após o intervalo e pode ser acionada outra vez.",
-          "lessons": 1
+          "lessons": 1,
+          "authoredSource": {
+            "courseSlug": "jornada-faisca-poder-3",
+            "directory": "docs/aulas-interativas/faisca/poder-a-ponte-apressada",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). O seed reserva só a aula-1: criar a aula-2 no Admin antes de importar. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "A sequência dos símbolos",
@@ -115,7 +133,13 @@
           "prerequisite": "Evento, comparação e memória.",
           "application": "Abrir um baú ao tocar três símbolos na ordem correta.",
           "check": "A ordem correta abre; uma ordem diferente reinicia a tentativa.",
-          "lessons": 1
+          "lessons": 1,
+          "authoredSource": {
+            "courseSlug": "jornada-faisca-poder-4",
+            "directory": "docs/aulas-interativas/faisca/poder-o-bau-dos-simbolos",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). O seed reserva só a aula-1: criar a aula-2 no Admin antes de importar. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         }
       ],
       "extras": [
@@ -260,7 +284,13 @@
           "prerequisite": "Vidas, colisão e relógio do par.",
           "application": "Acrescentar um item de escudo à nave ou à patrulha.",
           "check": "A colisão não tira vida durante o escudo; volta a tirar depois.",
-          "lessons": 1
+          "lessons": 1,
+          "authoredSource": {
+            "courseSlug": "jornada-construtor-poder-1",
+            "directory": "docs/aulas-interativas/construtor/poder-escudo-temporario",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). O seed reserva só a aula-1: criar a aula-2 no Admin antes de importar. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "Tiro triplo",
@@ -268,7 +298,13 @@
           "prerequisite": "Criação de tiros e grupos.",
           "application": "Trocar temporariamente o tiro simples por três tiros.",
           "check": "Os três partem da nave e seguem direções distintas; voltam a ser removidos.",
-          "lessons": 1
+          "lessons": 1,
+          "authoredSource": {
+            "courseSlug": "jornada-construtor-poder-2",
+            "directory": "docs/aulas-interativas/construtor/poder-tiro-triplo",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). O seed reserva só a aula-1: criar a aula-2 no Admin antes de importar. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "Inimigo que atira",
