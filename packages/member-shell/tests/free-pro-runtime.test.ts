@@ -1,5 +1,7 @@
 import { afterEach, expect, spyOn, test } from 'bun:test'
+import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/core/studio/pro-limits'
 import { createEmptyProject } from '@sistemazero/studio/project'
+import { prepareEditableStudioProject } from '../../studio/src/state/editableProjectValidation'
 import { createFreeProRuntime } from '../src/lib/free-pro-runtime'
 import { createFreeProRuntimeBuild } from '../src/server/free-pro-toolchain'
 
@@ -132,4 +134,28 @@ test('public adapter retains compiler error output and refuses an expired artifa
     }),
   )
   await expect(expired.build({ project: source, signal })).rejects.toThrow()
+})
+
+test('opening an existing public document preserves its files while hosted compilation keeps its quotas', async () => {
+  const calls = runtime()
+  const source = {
+    ...project(),
+    tree: {
+      ...project().tree,
+      'large.js': {
+        kind: 'file' as const,
+        content: '// retained source\n' + ' '.repeat(STUDIO_PRO_BUILD_LIMITS.maxFileChars),
+      },
+    },
+  }
+  const before = JSON.stringify(source)
+  const handler = createFreeProRuntimeBuild(async () => ({ id: 'owner-one' }))
+  const adapter = createFreeProRuntime(async (url, init) =>
+    handler(new Request('https://adult.test' + String(url), init)),
+  )
+  const opened = await prepareEditableStudioProject(source, { proBuildLimits: adapter.limits })
+  expect(opened?.tree).toEqual(source.tree)
+  await expect(adapter.build({ project: source })).rejects.toThrow()
+  expect(calls.length).toBe(0)
+  expect(JSON.stringify(source)).toBe(before)
 })
