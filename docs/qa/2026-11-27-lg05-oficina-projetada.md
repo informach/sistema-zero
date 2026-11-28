@@ -1,11 +1,14 @@
 # LG05 — oficina projetada e destinos
 
+
+**Staging reprovada antes da implantação — 28/11, 00:15 UTC:** a rodada `46080979879`, fonte `38a74e92a`, passou nas doze suítes restantes e reprovou no TypeScript de dois testes de outras mudanças da staging: objetivos JavaScript/Python na Patrulha e acesso a `fog` no material 3D. `deploy-staging` foi skipped; nenhum serviço nem Worker novo foi publicado por essa rodada. As duas verificações foram corrigidas sem mudar o código de produto: linguagem discriminada explicitamente e propriedade de material conferida em execução. Os 53 testes dos dois arquivos passaram, com 442 expectativas; a checagem de tipos Studio foi aprovada localmente. A próxima candidata reúne a correção visual e essas correções de teste, e precisa de CI completo próprio. A candidata de leitores `52988d34c` permanece aprovada 13/13.
+
 **Estado vigente — 2026-11-27T23:15:18.058Z**
 
 - Produção comercial preservada: PR 300, `5400ea1d1`; comparação dos 121 arquivos sem divergências. A retomada está autorizada.
-- Leitores/oficina para produção: [PR 299](https://github.com/informach/sistema-zero/pull/299), fonte `52988d34cd3c9a6da33c4c0f2480cddbd6a8268d`, CI `46079975021` em execução. Configuração Railway e equivalência Classic aprovadas.
-- Gravador único para produção: [PR 301](https://github.com/informach/sistema-zero/pull/301), agora incluindo a correção visual solicitada. Novo CI exigido para essa fonte; a rodada anterior `46080179831` refere-se à fonte `e873194ff`, anterior à correção visual. Produção ainda usa 7/8.
-- Homologação única: fonte `38a74e92a91127b0ab8edb54426048ba78b2f999`, CI e onda canônica `46080979879`. A validação anterior foi substituída antes de iniciar qualquer implantação/carga. Não alterar a fonte durante a onda.
+- Leitores/oficina para produção: [PR 299](https://github.com/informach/sistema-zero/pull/299), fonte `52988d34cd3c9a6da33c4c0f2480cddbd6a8268d`, CI `46079975021` aprovado na tentativa 1, 13/13 jobs. Configuração Railway e equivalência Classic aprovadas.
+- Gravador único para produção: [PR 301](https://github.com/informach/sistema-zero/pull/301), agora incluindo a correção visual solicitada. Fonte atual `0b51db079`, CI `46084123490` em execução; a rodada anterior `46080179831` refere-se à fonte `e873194ff`, anterior à correção visual. Produção ainda usa 7/8.
+- Homologação conjunta: correção visual e correções de tipo de dois testes integradas à candidata de staging. Nova fonte e CI completo pendentes; a fonte anterior `38a74e92a` reprovou antes de qualquer implantação. Não alterar a fonte durante a futura onda.
 - Imagem Linux oficial: run `46077493200`, artefato `15234974061`, fonte `771fbf017`, perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`. Arquivo, configuração e camadas conferidos; sete testes repetidos no arquivo baixado, zero falhas. Registro `sha256:1be7f3ecfb61503144a88b5c5ebff252256a3508665b63fe4aef34e5789fa78f`. Entradas idênticas nas fontes finais. Workers simulados em ambos os ambientes; nova publicação pendente.
 
 A promoção de produção mantém duas etapas de implantação: todos os leitores compatíveis primeiro, depois a ativação do único gravador novo. As duas etapas não criam alternativas públicas. O aceite deve preservar o mapa nativo 8 já guardado, importar/editar/guardar e reabrir nativo 9 em contexto frio, e usar o jogo criado pelo botão Jogar no Estúdio. Publicação/atualização foi provada pelo BFF real com Hub/R2 controlados; não criar posts de QA no Mural real. Python e seus catálogos permanecem na LG08.

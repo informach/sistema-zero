@@ -66,8 +66,12 @@ for (const curso of cursos) {
     for (const [arquivo, manifest] of manifestos(curso)) {
       const exemplos = exemplosDoManifesto(manifest)
       for (const section of manifest.sections) {
-        const checks = (section.completion?.projectChecks ?? []).filter(
-          (check: SectionProjectCheck) => !isExecutionRule(check.rule),
+        const checks = (section.completion?.projectChecks ?? []).flatMap(
+          (check: SectionProjectCheck) => {
+            if (check.programmingLanguage === 'python')
+              throw new Error('Esta prova editorial exige objetivos JavaScript.')
+            return isExecutionRule(check.rule) ? [] : [check]
+          },
         )
         if (!checks.length) continue
         const ids = exemplos.sections[section.key]
