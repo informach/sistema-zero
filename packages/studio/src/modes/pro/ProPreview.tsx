@@ -80,7 +80,11 @@ export function ProPreview(): JSX.Element {
   const remoteRuntime = useMemo(
     () =>
       regionalScope
-        ? createPintaRegionalProRuntime(regionalScope, hostRuntime?.limits)
+        ? createPintaRegionalProRuntime(
+            regionalScope,
+            hostRuntime?.limits,
+            hostRuntime ?? undefined,
+          )
         : hostRuntime
           ? withLightProBuild(hostRuntime)
           : null,
