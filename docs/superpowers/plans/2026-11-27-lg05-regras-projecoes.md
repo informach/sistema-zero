@@ -1,14 +1,22 @@
 # LG05 — regras e projeções do Pinta
 
-**Sincronização do teste em qualificação — 2026-11-28T17:21:35.216Z**
+**Correção local aprovada — 2026-11-28T18:25:00.307Z**
 
-A CI `46162858133` encerrou com 12/13 checks: o teste clássico de identidade do iframe chamou Parar antes de confirmar o load do documento recarregado. Nessa condição, a proteção de inicialização deve trocar o processo; o teste pretendia exercitar um jogo vivo. O ajuste explicita o load antes de Parar e mantém as mesmas assertivas de identidade e sandbox. O arquivo completo passou em 50 testes/394 expectativas; o caso específico passou em 20 repetições. Apenas esse teste mudou; o componente e todo o código de aplicação continuam idênticos à candidata anterior. Nenhum serviço foi implantado pela rodada reprovada.
+O caso reprovado foi reproduzido antes da correção e a aula `desafio-dia-2` passou inteira depois: 21/21 objetivos aprovados, incluindo dois de execução, sem referência alterada nem repetição automática. Os 55 testes do Palco passaram (720 expectativas), e Biome aprovou o arquivo corrigido. A mudança acrescenta somente a condição que impede a preservação do cabeçalho de prender o alvo no rodapé; as demais melhorias de gravação permanecem. A nova qualificação de staging precisa incorporar a fonte concorrente `5b5a4a9ba` e essa correção. As candidatas de produção não foram alteradas.
 
-- Leitores PR 299: `31aff7318`; CI [46166447770](https://github.com/informach/sistema-zero/actions/runs/46166447770) em execução. Plano `46166447719` e Classic `46166447716` aprovados.
-- Gravador único PR 301: `43f7e60fe`; CI [46166452291](https://github.com/informach/sistema-zero/actions/runs/46166452291) em execução. Plano `46166452198` e Classic `46166452202` aprovados.
-- Staging `caac1cfd4`: onda explícita dos oito serviços [46166460803](https://github.com/informach/sistema-zero/actions/runs/46166460803). A fonte ativa permanece `5d273b258`; seus oito deployments foram preservados para comparação e retirada.
+**Regressão concorrente em correção — 2026-11-28T18:21:18.666Z**
 
-A correção da origem pública permanece incluída, com 16 testes/107 expectativas e tipos aprovados. A nova rodada chegou a 12/13 checks em cada fonte, sem falhas; a suíte Studio, incluindo o teste sincronizado, passou nas três. A imagem/Worker e as campanhas permanecem preservados. Faltam a CI integral das fontes novas, o aceite visível da prévia e duas ondas de produção. LG05 ainda não foi promovido.
+A rodada consolidada `dbe695aee` / `46172822181` reprovou no teste protegido `desafio-dia-2`: o gesto 8 não encontrou espaço abaixo de Ao iniciar. Reprodução local confirmou a mesma falha. A mudança de rolagem do Palco preservava o cabeçalho à custa de deixar o alvo no rodapé e tratava essa posição como centrada. A correção isolada mantém o cabeçalho quando isso ainda permite trabalhar perto do centro; está em validação real pela aula completa, sem regravar referências nem remover objetivos.
+
+A fonte concorrente já publicada `5b5a4a9ba` (incluindo o lote 1 de famílias/escolas) foi integrada por avanço simples na cópia isolada. Os arquivos ainda em edição por outras sessões permanecem intocados. Leitores e gravador final continuam aprovados 13/13; não mudaram. Produção LG05 ainda não foi iniciada.
+
+**Estado atual — 2026-11-28T18:07:41.428Z**
+
+Leitores `31aff7318` (PR 299, CI [46166447770](https://github.com/informach/sistema-zero/actions/runs/46166447770)) e gravador único `43f7e60fe` (PR 301, CI [46166452291](https://github.com/informach/sistema-zero/actions/runs/46166452291)) aprovados integralmente: 13/13 verificações na tentativa 1; plano Railway e Classic também aprovados. A sincronização do teste de iframe preservou o componente e passou em 50 testes/394 expectativas e 20 repetições.
+
+A onda anterior `46166460803` também concluiu os 13 checks, mas foi interrompida durante a implantação para preservar uma atualização concorrente do Palco. Apenas Members chegou à fonte `caac1cfd4`. A staging consolidada `dbe695aee` contém integralmente o LG05 e as alterações novas do Palco. A CI automática [46172822181](https://github.com/informach/sistema-zero/actions/runs/46172822181) está em andamento; essa rodada existente será acompanhada, sem disparo duplicado.
+
+Campanhas de `5400ea1d1` preservadas nas duas candidatas de produção. Imagem exata `8a7bef4a…` e Worker de staging permanecem qualificados; falta concluir a rodada consolidada, conferir o iframe visível, salvar e reabrir sem armazenamento local e executar as duas ondas de produção. A produção do LG05 permanece pendente. O escopo de produção é Members, Auth, Gateway, Hub, Admin, Community e Kids. O Palco tem atualização independente, que será preservada. O estado final deve ter um único gravador 8 e formato nativo 9.
 
 **Qualificação anterior da origem pública — 2026-11-28T16:03:01.218Z**
 

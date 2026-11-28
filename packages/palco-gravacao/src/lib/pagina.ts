@@ -662,7 +662,14 @@ function rolagemDe(
   // Para trabalhar numa área (centrar), ela vem para o meio da altura mesmo já à vista; de lado,
   // só anda se não couber inteira, para as outras áreas não saírem do lugar à toa.
   const dx = centrar && dentroX ? 0 : centro(b.left - view.left, b.width, view.width)
-  const dy = Math.max(centro(b.top - view.top, b.height, view.height), dyMinimo ?? -Infinity)
+  const dyCentral = centro(b.top - view.top, b.height, view.height)
+  // O cabeçalho só fica se o alvo continuar perto do meio. Prendê-lo no alto pode deixar o
+  // fim da pilha encostado na borda, sem o lugar livre que o próximo gesto precisa abaixo.
+  const minimo =
+    centrar && dyMinimo !== undefined && dyMinimo - dyCentral > view.height * CENTRADA
+      ? -Infinity
+      : (dyMinimo ?? -Infinity)
+  const dy = Math.max(dyCentral, minimo)
   // Um campo também precisa estar descoberto: com outra coisa por cima (a paleta aberta, um
   // painel), vai para o centro. Um bloco tem os de dentro por cima, e isso não conta.
   const topo = descoberto ? doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null
