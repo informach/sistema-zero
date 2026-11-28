@@ -5,9 +5,9 @@
 
 ## Como retomar
 
-- **Lote atual:** 0, preparação e registro.
-- **Situação:** em andamento.
-- **Próximo passo exato:** terminar o Lote 0 (commit e push). Depois, começar o Lote 1 lendo `PLANO.md`, seção 6, "Lote 1", e o `CLAUDE.md` de `packages/core` e de `packages/api-gateway`.
+- **Lote atual:** 1, papéis em um lugar só.
+- **Situação:** a fazer. O Lote 0 terminou (commit `de893bf4a`, push em 28/11/2026).
+- **Próximo passo exato:** começar o Lote 1 lendo `PLANO.md`, seção 6, "Lote 1", e o `CLAUDE.md` de `packages/core` e de `packages/api-gateway`.
 - **Trabalho sem commit:** nenhum desta frente.
 - **Última atualização:** 28/11/2026.
 
@@ -19,7 +19,7 @@
 
 | Lote | Nome | Estado | Commit | CI | Ressalvas |
 |---|---|---|---|---|---|
-| 0 | Preparação e registro | em andamento | | | |
+| 0 | Preparação e registro | push | `de893bf4a` | acompanhar | Só documentos; o push levou junto 18 commits de outras sessões (docs da LG05 e `palco-gravacao`, testes do pacote verdes). |
 | 1 | Papéis em um lugar só | a fazer | | | |
 | 2 | Chaves dos pais e interruptor da IA | a fazer | | | |
 | 3 | Sequência sem perda, conversas e aviso | a fazer | | | |
@@ -68,7 +68,7 @@ Marque `[x]` ao concluir. Toda tarefa de código inclui os testes dela. Todo lot
 - [x] `PLANO.md`, `REGRAS-DE-NEGOCIO.md`, `LEVANTAMENTO-DO-CODIGO.md`, `LEIA-PRIMEIRO.md`, `CONTROLE.md`, `canvas/README.md`
 - [x] Memória local aponta para o controle
 - [x] `bun run ci` (sem erro)
-- [ ] Commit e push
+- [x] Commit (`de893bf4a`) e push
 
 ### Lote 1: papéis em um lugar só
 - [ ] Lista e grupos (`equipe`, `admins`) exportados de `packages/core/src/identity/index.ts`
