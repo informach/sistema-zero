@@ -4,8 +4,8 @@
 
 A CI `46162858133` encerrou com 12/13 checks: o teste clássico de identidade do iframe chamou Parar antes de confirmar o load do documento recarregado. Nessa condição, a proteção de inicialização deve trocar o processo; o teste pretendia exercitar um jogo vivo. O ajuste explicita o load antes de Parar e mantém as mesmas assertivas de identidade e sandbox. O arquivo completo passou em 50 testes/394 expectativas; o caso específico passou em 20 repetições. Apenas esse teste mudou; o componente e todo o código de aplicação continuam idênticos à candidata anterior. Nenhum serviço foi implantado pela rodada reprovada.
 
-- Leitores PR 299: `31aff7318`; CI [46166447770](https://github.com/informach/sistema-zero/actions/runs/46166447770), plano `46166447719` e Classic `46166447716` em validação.
-- Gravador único PR 301: `43f7e60fe`; CI [46166452291](https://github.com/informach/sistema-zero/actions/runs/46166452291), plano `46166452198` e Classic `46166452202` em validação.
+- Leitores PR 299: `31aff7318`; CI [46166447770](https://github.com/informach/sistema-zero/actions/runs/46166447770) em execução. Plano `46166447719` e Classic `46166447716` aprovados.
+- Gravador único PR 301: `43f7e60fe`; CI [46166452291](https://github.com/informach/sistema-zero/actions/runs/46166452291) em execução. Plano `46166452198` e Classic `46166452202` aprovados.
 - Staging `caac1cfd4`: onda explícita dos oito serviços [46166460803](https://github.com/informach/sistema-zero/actions/runs/46166460803). A fonte ativa permanece `5d273b258`; seus oito deployments foram preservados para comparação e retirada.
 
 A correção da origem pública permanece incluída, com 16 testes/107 expectativas e tipos aprovados. A imagem/Worker e as campanhas permanecem preservados. Faltam a CI integral das fontes novas, o aceite visível da prévia e duas ondas de produção. LG05 ainda não foi promovido.
