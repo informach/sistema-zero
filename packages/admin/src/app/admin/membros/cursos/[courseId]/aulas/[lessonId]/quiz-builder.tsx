@@ -262,6 +262,12 @@ export function QuizBuilder({
                     <option value="triplo-grupos">
                       Tiro triplo: as três cópias no grupo tiros
                     </option>
+                    <option value="inimigo-meio">Inimigo que atira: o tiro no meio</option>
+                    <option value="inimigo-segue">Inimigo que atira: o tiro na inimiga</option>
+                    <option value="inimigo-acerta">Inimigo que atira: o tiro acerta a nave</option>
+                    <option value="inimigo-limpeza">
+                      Inimigo que atira: os tiros sem limpeza na patrulha
+                    </option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

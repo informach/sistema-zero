@@ -16,6 +16,7 @@ import { avatarDaAula } from './avatares-video'
 import { cabanaAulas } from './cabana-conteudo'
 import { escudoAulas } from './escudo-conteudo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
+import { inimigoAulas } from './inimigo-conteudo'
 import { meuDesenhoAula } from './meu-desenho-conteudo'
 import { moedasAulas } from './moedas-conteudo'
 import { ponteAulas } from './ponte-conteudo'
@@ -88,6 +89,13 @@ const CURSOS: Curso[] = [
     pasta: 'poder-tiro-triplo',
     arquivo: (s) => `triplo-${s}`,
     aulas: triploAulas(),
+  },
+  {
+    nome: 'Inimigo que atira',
+    posto: 'construtor',
+    pasta: 'poder-inimigo-que-atira',
+    arquivo: (s) => `inimigo-${s}`,
+    aulas: inimigoAulas(),
   },
 ]
 

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-abertura", "video-tiro", "video-origem", "video-dano", "video-limpeza"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Enter para começar a patrulha. Olha lá na frente: a inimiga vai de um lado para o outro e atira na direção da nave.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Agora é a sua vez: desvie dos tiros. Quando terminar, clique em Próxima parte.",
+      "falaPrincipal": "No espaço em três dimensões, de onde vêm os tiros?",
+      "falaPersonagem": "No espaço em três dimensões, de onde vêm os tiros?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-tiro-K1",
+      "clipe": "video-tiro",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "22. Clique em Rodar de novo e aperte Enter. A cada um segundo e meio, um tiro vem pelo meio, mesmo com a inimiga longe.",
+      "ancoraDepois": "Porque o x da cópia é zero, um número fixo. Na próxima parte, o tiro vai sair de onde a inimiga está. Se algo não",
+      "falaPrincipal": "Por que o tiro vem pelo meio, se a inimiga está longe?",
+      "falaPersonagem": "Por que o tiro vem pelo meio, se a inimiga está longe?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

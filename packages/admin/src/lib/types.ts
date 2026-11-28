@@ -645,6 +645,10 @@ export interface QuizQuestion {
     | 'triplo-leque'
     | 'triplo-um'
     | 'triplo-grupos'
+    | 'inimigo-meio'
+    | 'inimigo-segue'
+    | 'inimigo-acerta'
+    | 'inimigo-limpeza'
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]

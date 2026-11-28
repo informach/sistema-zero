@@ -125,6 +125,10 @@ export interface MemberQuizContent {
       | 'triplo-leque'
       | 'triplo-um'
       | 'triplo-grupos'
+      | 'inimigo-meio'
+      | 'inimigo-segue'
+      | 'inimigo-acerta'
+      | 'inimigo-limpeza'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

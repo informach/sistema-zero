@@ -1,0 +1,137 @@
+[upbeat, welcoming voice] Oi! A sua nave vai ganhar um desafio: uma nave inimiga que atira.
+
+[engaging, energetic, conversational voice] O jogo é a Nave Contra Asteroides que você montou: as setas movem a nave, e o Espaço dispara.
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a partida.
+
+[interested, animated voice] Olha aqui em cima: a nave inimiga vai de um lado para o outro e, a cada um segundo e meio, atira para baixo. Se o tiro encosta na sua nave, ela perde uma vida.
+
+[curious] Será que dá para desviar dos tiros dela?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: desvie dos tiros e acerte os asteroides. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar o seu Poder nas duas aulas, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o material.
+
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
+
+[confident, clear, unhurried voice] Agora clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A nave inimiga atira com um relógio: a cada um segundo e meio, nasce um tiro.
+
+[confident, clear, unhurried voice] Mas onde o tiro nasce? Isso o jogo precisa saber.
+
+[engaging, energetic, conversational voice] Sabe o carrinho de pipoca andando pela praça? Por onde ele passa, a pipoca sai do carrinho, e não de um lugar fixo.
+
+[engaging, energetic, conversational voice] No seu jogo, a inimiga é o carrinho. O tiro pode nascer num lugar fixo ou onde a inimiga está.
+
+[curious] E se o tiro nascer sempre no mesmo lugar?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar de onde os tiros saem, o que acontece quando um encosta na nave e o que o recomeço faz. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A inimiga já patrulha o alto da tela, e o grupo tirosInimigos já anda para baixo e aparece na tela. Falta o relógio que cria os tiros.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do relógio A cada 1.5 segundos, o dos asteroides, encaixe outro A cada segundos, de Jogo 2D, Tempo e Quadros e intervalos. Troque o 2 por 1.5, com ponto.
+
+[confident, clear, unhurried voice] Deixe o fazer desse relógio à vista. Abra Programação e depois Lógica e Se, e encaixe um Se dentro desse fazer.
+
+[confident, clear, unhurried voice] Leve a pergunta x maior que zero para a lixeira. Com o espaço da pergunta à vista, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, e encaixe o estado do jogo é.
+
+[confident, clear, unhurried voice] Escolha jogando no estado. Assim, nada nasce antes de a partida começar.
+
+[confident, clear, unhurried voice] No então, encaixe No grupo criar um sprite com imagem, de Jogo 2D, Grupos e Criar e percorrer. Troque o grupo inimigos por tirosInimigos.
+
+[confident, clear, unhurried voice] Coloque 395 no x e 76 no y. Na largura, 10, e na altura, 26. Escolha a imagem laser-inimigo-vermelho e, logo depois de vy, coloque 5.
+
+[upbeat, encouraging voice] Clique no jogo e aperte Enter. A cada um segundo e meio, um tiro desce, sempre pelo meio, mesmo quando a inimiga está longe.
+
+[curious] Mas o tiro não devia sair da inimiga?
+
+[engaging, energetic, conversational voice] Devia. Como na experiência, com a origem no meio. A origem é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o segundo relógio A cada 1.5 segundos cria o tiro no grupo tirosInimigos só na partida, em x 395 e y 76, com vy 5.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Para o tiro acompanhar a inimiga, a posição dele precisa ler onde ela está agora. Você já fez isso com o laser da sua nave, lembra? O x do laser lia o centro x da nave.
+
+[confident, clear, unhurried voice] No tiro da inimiga, solte uma conta de menos, de Programação e Matemática, em cima do 395.
+
+[confident, clear, unhurried voice] Na primeira parte da conta, solte o centro x do sprite, de Jogo 2D, Movimento e Posição e tamanho, e escolha inimiga. Na segunda, escreva 5.
+
+[confident, clear, unhurried voice] No y, faça o mesmo com uma conta de mais: a posição y do sprite inimiga mais 52, a altura da inimiga.
+
+[upbeat, encouraging voice] Clique no jogo e aperte Enter. Agora cada tiro sai de baixo da inimiga, onde ela estiver.
+
+[curious] E quando um tiro encosta na nave, o que acontece?
+
+[engaging, energetic, conversational voice] Por enquanto, nada: o tiro atravessa. O dano é a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no tiro da inimiga, o x é o centro x da inimiga menos 5 e o y é a posição y da inimiga mais 52.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O tiro inimigo é como uma pedra: quando encosta na nave, ela perde uma vida. Você já montou esse encontro para as pedras.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, logo abaixo do encontro das pedras com a nave, encaixe Para cada sprite do grupo que colidir com o sprite, de Jogo 2D, Colisões e Encostar e bloquear.
+
+[confident, clear, unhurried voice] Escolha o grupo tirosInimigos e chame o sprite de tiroQueAcertou.
+
+[confident, clear, unhurried voice] No fazer: Tirar o sprite do grupo, com tiroQueAcertou e tirosInimigos. Logo abaixo, Machucar o sprite nave, e um Tocar efeito batida.
+
+[upbeat, encouraging voice] Clique no jogo, aperte Enter e deixe um tiro encostar na nave: ele some, e a nave perde uma vida.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro de tirosInimigos com a nave tira o tiro do grupo e machuca a nave.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Os tiros que passam pela nave continuam no grupo, lá embaixo, fora da tela, para sempre. Como os lasers e as pedras, eles precisam sair do grupo.
+
+[confident, clear, unhurried voice] No quadro do jogo, logo abaixo da limpeza das pedras, encaixe Tirar do grupo quem sair da tela, de Jogo 2D, Grupos e Participação e limpeza, e escolha tirosInimigos.
+
+[interested, animated voice] E quando a partida recomeça, os tiros somem todos: o reinício cria o jogo de novo, com o grupo vazio.
+
+[upbeat, encouraging voice] Clique no jogo e aperte Enter. Os tiros descem e saem: o grupo não fica cheio de tiros perdidos.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no quadro do jogo, o grupo tirosInimigos tira quem sai da tela.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a sua nave ganhou uma inimiga de verdade: ela atira de onde está, os tiros machucam e saem da tela!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na inimiga. Quando aparecer Projeto enviado!, clique em Próxima parte.

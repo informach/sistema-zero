@@ -312,7 +312,13 @@
           "prerequisite": "Grupos, relógio, colisão e vidas.",
           "application": "Adicionar uma nave inimiga com disparos em intervalos.",
           "check": "O inimigo dispara; seus tiros podem causar dano e são limpos ao reiniciar.",
-          "lessons": 2
+          "lessons": 2,
+          "authoredSource": {
+            "courseSlug": "jornada-construtor-poder-3",
+            "directory": "docs/aulas-interativas/construtor/poder-inimigo-que-atira",
+            "lessons": ["aula-1", "aula-2"],
+            "note": "Autoria local completa: a Aula 1 em 2D e a Aula 2 em 3D, as duas contando como um Poder (mechanicId). Importar nas duas aulas reservadas, preservando IDs. Outline do seed conservado para manter o hash. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "Chefão com resistência",

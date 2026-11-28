@@ -342,6 +342,11 @@ export function inimigoAulas(): PoderAula<InimigoEtapa>[] {
               'Clique em Rodar de novo e aperte Enter. A cada um segundo e meio, um tiro vem pelo meio, mesmo com a inimiga longe.',
               '[rodar de novo] [tecla Enter] [aguardar 4 s]',
             ],
+            ['pergunta', 'Por que o tiro vem pelo meio, se a inimiga está longe?'],
+            [
+              'conversa',
+              'Porque o x da cópia é zero, um número fixo. Na próxima parte, o tiro vai sair de onde a inimiga está.',
+            ],
           ],
           steps: [
             'Em Enquanto estiver rodando, logo abaixo de A cada 1.5 segundos (o das pedras): outro A cada segundos, com 1.5.',

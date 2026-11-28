@@ -1,0 +1,139 @@
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou a inimiga que atira no jogo 2D. Agora ela chegou à Patrulha Espacial, em três dimensões!
+
+[engaging, energetic, conversational voice] Clique no jogo e aperte Enter para começar a patrulha.
+
+[interested, animated voice] Olha lá na frente: a inimiga vai de um lado para o outro e atira na direção da nave.
+
+[curious] No espaço em três dimensões, de onde vêm os tiros?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+
+[upbeat, encouraging voice] Agora é a sua vez: desvie dos tiros. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na patrulha, a inimiga já anda de um lado para o outro, e os tiros do grupo tirosInimigos já vêm na direção da nave. Falta o relógio.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do relógio A cada 1.5 segundos, o dos asteroides, encaixe outro A cada segundos, de Jogo 3D, Tempo e sorteio e Tempo, e troque o 2 por 1.5.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o relógio da inimiga, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então, encaixe Criar uma cópia, de Jogo 3D e Grupos. Escolha moldeTiroInimigo e o grupo tirosInimigos. Na posição: x 0, y 1 e z menos 22.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. A cada um segundo e meio, um tiro vem pelo meio, mesmo com a inimiga longe.
+
+[curious] Por que o tiro vem pelo meio, se a inimiga está longe?
+
+[engaging, energetic, conversational voice] Porque o x da cópia é zero, um número fixo. Na próxima parte, o tiro vai sair de onde a inimiga está.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio da inimiga cria a cópia de moldeTiroInimigo no grupo tirosInimigos só na partida, em z menos 22.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Como no jogo 2D, o tiro precisa nascer onde a inimiga está. No 3D, basta o x: o y e o z já ficam na frente dela.
+
+[confident, clear, unhurried voice] No x da cópia do tiro, solte posição x do objeto, de Jogo 3D, Objetos e Posição, giro e tamanho, e escolha inimiga.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Agora os tiros saem da frente da inimiga, onde ela estiver.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o x da cópia do tiro é a posição x do objeto inimiga.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora o encontro, como o das pedras: o tiro que encosta na nave sai e tira uma vida.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Logo abaixo do encontro Quando nave encostar em algum do grupo asteroides, encaixe Quando heroi encostar em algum do grupo. Escolha nave, tirosInimigos e chame o tiro de tiroQueAcertou.
+
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
+[confident, clear, unhurried voice] Dentro de o encontro da nave com os tiros inimigos, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] No então: Tirar o objeto do grupo, com tiroQueAcertou e tirosInimigos, e Machucar nave tirando 1 de vida.
+
+[upbeat, encouraging voice] Clique em Rodar de novo, aperte Enter e deixe um tiro encostar na nave: ele some, e a nave perde uma vida.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro da nave com tirosInimigos, com a guarda da partida, tira o tiro do grupo e machuca a nave.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Os tiros que passam pela nave continuam no grupo, atrás da câmera. Eles precisam sair, como as pedras.
+
+[confident, clear, unhurried voice] Logo abaixo de No grupo asteroides, tirar quem saiu, encaixe outro, de Jogo 3D e Grupos. Escolha tirosInimigos, conserve o z e use menos 36 e 6.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e aperte Enter. Os tiros passam e saem do grupo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no quadro, o grupo tirosInimigos tira quem sai, no z, de menos 36 até 6.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a patrulha também tem inimiga: ela atira de onde está, os tiros machucam e saem!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem duas perguntas para você pensar na inimiga. Quando aparecer Projeto enviado!, clique em Próxima parte.

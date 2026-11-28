@@ -9,9 +9,9 @@ export const inimigoQuiz2d: ManifestQuiz = {
       id: 'meio',
       predictionScene: 'inimigo-meio',
       prompt:
-        'O tiro da inimiga nasce em x 395, um número fixo. A inimiga está na ponta esquerda da tela. De onde sai o próximo tiro?',
+        'O tiro da inimiga nasce em x 395, um número fixo. A inimiga está do lado esquerdo da tela. De onde sai o próximo tiro?',
       choices: [
-        { id: 'a', label: 'Da ponta esquerda, de baixo da inimiga.' },
+        { id: 'a', label: 'Do lado esquerdo, de baixo da inimiga.' },
         { id: 'b', label: 'Do meio da tela: o x 395 não muda com a inimiga.' },
         { id: 'c', label: 'De um lugar sorteado.' },
       ],
@@ -23,7 +23,7 @@ export const inimigoQuiz2d: ManifestQuiz = {
       id: 'segue',
       predictionScene: 'inimigo-segue',
       prompt:
-        'Agora o x do tiro é o centro x da inimiga menos 5. A inimiga está na ponta direita. De onde sai o próximo tiro?',
+        'Agora o x do tiro é o centro x da inimiga menos 5. A inimiga está indo para a ponta direita. De onde sai o próximo tiro?',
       choices: [
         { id: 'a', label: 'Do meio da tela.' },
         { id: 'b', label: 'Da ponta esquerda.' },
